@@ -1564,6 +1564,11 @@ tested in running code and so might actually be broken.  This module might
 in fact work for you now, but it is officially pre-alpha quality.  Please
 treat it mainly as a developer preview, to experiment possible future use.>
 
+B<If you want to help out with this module's development, generally the
+most helpful thing you can do to start out is to flesh out the test suite.
+I suggest looking at the test suites of other Set:: modules as well as
+various database related modules as inspiration or a source for copying.>
+
 Loosely speaking, a Set::Relation object is a wrapper over a set of hash
 refs, where all the hash refs in the set have the same number of elements
 and the same set of hash keys; so in this context, a Perl hash ref and a
