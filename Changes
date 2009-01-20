@@ -1,0 +1,97 @@
+                               Set::Relation
+---------------------------------------------------------------------------
+
+2009-01-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.0.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.0.0.tar.gz.
+
+    * It constitutes a rewrite of Set::Relation for Perl 6 that had been
+    made in 2006 but was never functional; the large body of work going
+    into the Muldis D language and Muldis Rosetta framework during the
+    intervening period also fed into this new Set::Relation module; it is
+    expected that this new Set::Relation for Perl 5 will be ported to Perl
+    6 in the near future and so upgrade that 2006 version; meanwhile, this
+    Changes entry refers only to the Perl 5 version.
+
+    * This is the first release of the Perl 5 Set::Relation distribution,
+    and the first release of any distribution to contain a Perl 5 module
+    named Set::Relation.
+
+    * This is the initial file manifest:
+
+        Changes
+        INSTALL
+        lib/Set/Relation.pm
+        LICENSE/GPL
+        LICENSE/LGPL
+        Makefile.PL
+        MANIFEST
+        MANIFEST.SKIP
+        README
+        t/Set_Relation_00_Compile.t
+        t/Set_Relation_50_Synopsis.t
+        TODO
+
+    * As of this release, Set::Relation is officially in pre-alpha
+    development status.
+
+    * This is the initial complement of routines; besides the "new"
+    constructor submethod, there are these 40 object methods: "clone",
+    "export_for_new", "freeze_identity", "which", "members", "heading",
+    "body", "evacuate", "insert", "delete", "degree", "is_nullary",
+    "cardinality", "is_empty", "is_member", "empty", "insertion",
+    "deletion", "rename", "projection", "cmpl_projection", "restriction",
+    "cmpl_restriction", "extension", "static_extension", "map",
+    "is_identical", "is_subset", "is_proper_subset", "is_disjoint",
+    "union", "exclusion", "intersection", "difference", "semidifference",
+    "semijoin", "join", "product", "quotient", "composition".
+
+2009-01-04   Darren Duncan <perl@DarrenDuncan.net>
+
+    The next version of the Module List will list the following module:
+
+      modid:       Set::Relation
+      DSLIP:       cmpOl
+      description: Relation data type for Perl
+      userid:      DUNCAND (Darren Duncan)
+      chapterid:   6 (Data_Type_Utilities)
+      enteredby:   BDFOY (brian d foy)
+      enteredon:   Mon Jan  5 06:12:12 2009 GMT
+
+    The resulting entry will be:
+
+    Set::
+    ::Relation   cmpOl Relation data type for Perl                  DUNCAND
+
+2006-04-14 thru 2006-11-22
+
+    * A Perl 6 project named "Relation" is started (complementary to the
+    earlier existing to-be-named Muldis Rosetta project) which was intended
+    to provide native tuple and relation data types for ordinary use in
+    Perl 6 programs like other built-in collection types.  The first commit
+    was Pugs SVN rev 9938, on 2006-04-14, and Pugs 6.2.12 (2006-06-26)
+    included it.  Hence 2006 is the start of the declared copyright date
+    range for Set::Relation.
+
+    * On 2006-07-04, renamed this Perl 6 project to "Set-Relation", which
+    it remains to this day.  Pugs 6.2.13 and later included this.
+
+    * The Perl 6 Set-Relation received various small updates thru
+    2007-02-03 (Pugs SVN rev 15168), but is now stagnant; it will likely
+    get un-stuck after the initially newer Perl 5 version is made to work.
+
+2005-12-05
+
+    * Darren Duncan is introduced by David Wheeler to the truly relational
+    model of data, in a posting on the Bricolage development list in the
+    "Re: [6977] New branch for maintenance of Bricolage 1.10.x." thread.
+
+    * David said that Darren's expressed thought, that compound data types
+    in table fields was a violation of first normal form, was in fact a
+    misconception about the relational model.  David then referenced a
+    recent interview with C. J. Date.
+
+    * This set off a chain of events which was the largest paradigm shift
+    to ever affect what evolved into the Muldis Rosetta project, and also
+    resulted in the genesis of the Set::Relation module.

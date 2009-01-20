@@ -1,0 +1,39 @@
+                               Set::Relation
+---------------------------------------------------------------------------
+
+by Darren Duncan <perl@DarrenDuncan.net>
+
+PREFACE
+
+This distribution features the Perl 5 or 6 (depending on which copy of this
+README file you are reading) module named Set::Relation (Relation data type
+for Perl) and its support structure.
+
+Read below for how to get support or keep up to date.
+
+DOCUMENTATION READING ORDER
+
+If you want to read all the Set::Relation documentation that exists now in
+this distribution, I recommend doing so in this order:
+
+   1.       README
+   2. (opt) Changes
+   3.       lib/Set/Relation.pm
+   4. (opt) TODO
+
+Then you can carry on with anything else.
+
+You may prefer the nicely HTML-formatted versions of the above, which are
+available at "http://search.cpan.org/dist/Set-Relation/".
+
+KEEPING UP TO DATE
+
+(This documentation is pending.)
+
+SUPPORT
+
+(This documentation is pending.)
+
+FIN
+
+Share and Enjoy!

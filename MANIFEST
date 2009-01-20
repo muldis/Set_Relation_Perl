@@ -1,0 +1,12 @@
+Changes
+INSTALL
+lib/Set/Relation.pm
+LICENSE/GPL
+LICENSE/LGPL
+Makefile.PL
+MANIFEST
+MANIFEST.SKIP
+README
+t/Set_Relation_00_Compile.t
+t/Set_Relation_50_Synopsis.t
+TODO
