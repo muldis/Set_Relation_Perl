@@ -1378,14 +1378,34 @@ sub quotient {
             . q{ it isn't a Set::Relation object.}
         if !blessed $divisor or !$divisor->isa( __PACKAGE__ );
 
-    my (undef, $dividend_only, undef) = $dividend->_ptn_conj_and_disj(
-        $dividend->_heading(), $divisor->_heading() );
+    my (undef, $dividend_only, $divisor_only)
+        = $dividend->_ptn_conj_and_disj(
+            $dividend->_heading(), $divisor->_heading() );
+
+    confess q{quotient(): Bad $divisor arg;}
+            . q{ its heading isn't a subset of the invocant's heading.}
+        if @{$divisor_only} > 0;
 
     my $proj_of_dividend_only = $dividend->_projection( $dividend_only );
 
+    if ($dividend->is_empty() or $divisor->is_empty()) {
+        # At least one input has zero tup; res has all tup o dividend proj.
+        return $proj_of_dividend_only;
+    }
+
+    # If we get here, both inputs have at least one tuple.
+
+    if ($dividend->is_nullary() or $divisor->is_nullary()) {
+        # Both inputs or just divisor is ident-one tup; result is dividend.
+        return $dividend;
+    }
+
+    # If we get here, divisor has at least one attribute,
+    # and divisor heading is proper subset of dividend heading.
+
     return $proj_of_dividend_only
         ->_difference( $proj_of_dividend_only
-            ->_join( $divisor )
+            ->_product( $divisor )
             ->_difference( $dividend )
             ->_projection( $dividend_only )
         );
@@ -1590,7 +1610,7 @@ The name Set::Relation was chosen because it seems the most descriptive.  A
 relation can do everything a generic set can do plus more.  The Set::
 namespace is used to reduce confusion amongst other concepts of the word
 'relation', as some people think it means 'compare'; Set:: illustrates that
-my class' objects are functionally set-like collection values.
+this class' objects are functionally set-like collection values.
 
 I<This documentation is pending.>
 
@@ -2295,9 +2315,9 @@ called C<A> and C<B>, and their attribute sets are respectively named
 C<{X,Y}> and C<{Y}>, then the result relation has a heading composed of
 attributes C<{X}> (so the result and C<$divisor> headings are both
 complementary subsets of the C<$dividend> heading); the result has all
-tuples C<{X}> such that a q/tuple C<{X,Y}> appears in C<A> for all tuples
+tuples C<{X}> such that a tuple C<{X,Y}> appears in C<A> for all tuples
 C<{Y}> appearing in C<B>; that is, C<A / B> is shorthand for C<A{X} -
-((A{X} join B) - A){X}>.
+((A{X} * B) - A){X}>.
 
 =item C<method composition of Set::Relation ($topic: Set::Relation $other)>
 
