@@ -3,6 +3,12 @@
 
 Following is a summary of things that still need doing.
 
+* Add or confirm we have input checks regarding any attempts to insert a
+Set::Relation object into itself as an attribute value.  An exception
+specific to this bad recursion should be thrown, rather than some other
+problem happening later ... such as the insert eventually dying on an
+infinite _ident_str/etc recursion.
+
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
 * Make the test suite actually run the code, not just compile it; maybe
