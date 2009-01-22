@@ -1232,11 +1232,11 @@ sub _join {
     # If we get here, both inputs have at least one tuple.
 
     if ($topic->is_nullary()) {
-        # First input is identity-one tuple; result is second input.
+        # First input is identity-one relation; result is second input.
         return $other;
     }
     if ($other->is_nullary()) {
-        # Second input is identity-one tuple; result is first input.
+        # Second input is identity-one relation; result is first input.
         return $topic;
     }
 
@@ -1329,11 +1329,11 @@ sub product {
     # If we get here, both inputs have at least one tuple.
 
     if ($topic->is_nullary()) {
-        # First input is identity-one tuple; result is second input.
+        # First input is identity-one relation; result is second input.
         return $other;
     }
     if ($other->is_nullary()) {
-        # Second input is identity-one tuple; result is first input.
+        # Second input is identity-one relation; result is first input.
         return $topic;
     }
 
@@ -1396,7 +1396,7 @@ sub quotient {
     # If we get here, both inputs have at least one tuple.
 
     if ($dividend->is_nullary() or $divisor->is_nullary()) {
-        # Both inputs or just divisor is ident-one tup; result is dividend.
+        # Both inputs or just divisor is ident-one rel; result is dividend.
         return $dividend;
     }
 
@@ -1432,11 +1432,11 @@ sub composition {
     # If we get here, both inputs have at least one tuple.
 
     if ($topic->is_nullary()) {
-        # First input is identity-one tuple; result is second input.
+        # First input is identity-one relation; result is second input.
         return $other;
     }
     if ($other->is_nullary()) {
-        # Second input is identity-one tuple; result is first input.
+        # Second input is identity-one relation; result is first input.
         return $topic;
     }
 
