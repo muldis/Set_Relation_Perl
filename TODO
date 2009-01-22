@@ -9,17 +9,17 @@ specific to this bad recursion should be thrown, rather than some other
 problem happening later ... such as the insert eventually dying on an
 infinite _ident_str/etc recursion.
 
-* Add code examples, tutorial, cookbook, FAQ, etc.
-
-* Make the test suite actually run the code, not just compile it; maybe
-start off with running same code examples in documentation, tutorial, etc.
-
 * Make these operators N-ary: union, exclusion, intersection, join,
 product; if any were missed, then those too; rename arg to 'others'.
 
 * Add relational operators for wrap/unwrap, group/ungroup, summarize,
 transitive closure, reduction, rank and quota, substitution, outer joins,
 other misc missing.
+
+* Add code examples, tutorial, cookbook, FAQ, etc.
+
+* Make the test suite actually run the code, not just compile it; maybe
+start off with running same code examples in documentation, tutorial, etc.
 
 * Consider adding public operators such as for comparing headings eg for
 disjointness etc, mirroring some set operators, perhaps to help users
