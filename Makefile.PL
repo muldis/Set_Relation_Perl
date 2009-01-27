@@ -15,8 +15,10 @@ WriteMakefile(
         # These are bundled with Perls 5.10.x but not Perls 5.8.x.
         'version' => 0.74,
         # These are not bundled with any version of Perl.
-        'Moose' => 0.64,
-        'Class::MOP' => 0.75, # req latest indep of Moose
+        'Moose' => 0.65,
+        'Class::MOP' => 0.76, # req latest indep of Moose
+        # These are only used by the test suite, and are not bundled.
+        'Test::Deep' => 0,
     },
 );
 

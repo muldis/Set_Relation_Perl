@@ -6,7 +6,18 @@
     * Set::Relation version 0.1.0 for Perl 5 is released on CPAN as
     Set-Relation-0.1.0.tar.gz.
 
-    * (Relation.pm)  Minor code comment fixes.
+    * (Relation.pm)  Fixed two instances of a bug in the "rename" method.
+    Thanks to Todd Hepler for spotting the bug and providing a patch.
+
+    * Added new test file "t/Set_Relation_51_Database_in_Depth_Example.t",
+    which exercises more than a half-dozen Set::Relation methods that
+    previously had no tests; the "rename" bugs were exposed when writing
+    this.  Thanks to Todd Hepler who authored and contributed this file.
+
+    * This distribution has gained a new direct external dependency on the
+    Test::Deep module, which currently is only used by the new test file.
+
+    * (Relation.pm)  Minor code comment fixes and POD updates.
 
 2009-01-21   Darren Duncan <perl@DarrenDuncan.net>
 

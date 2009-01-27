@@ -9,7 +9,7 @@ use warnings FATAL => 'all';
 { package Set::Relation; # class
     use version 0.74; our $VERSION = qv('0.0.1');
 
-    use Moose 0.64;
+    use Moose 0.65;
 
     has '_heading' => (
         is  => 'rw',
@@ -628,8 +628,8 @@ sub _rename {
     my ($topic, $map) = @_;
 
     # Remove any explicit no-ops of an attr being renamed to the same name.
-    $map = CORE::map { ($_ => $map->{$_}) }
-        grep { $map->{$_} ne $_ } keys %{$map};
+    $map = {CORE::map { ($_ => $map->{$_}) }
+        grep { $map->{$_} ne $_ } keys %{$map}};
 
     if ((scalar keys %{$map}) == 0) {
         # Rename of zero attrs of input yields the input.
@@ -637,9 +637,9 @@ sub _rename {
     }
 
     # Expand map to specify all topic attrs being renamed to something.
-    $map = CORE::map { ($_ => (
+    $map = {CORE::map { ($_ => (
             exists $map->{$_} ? $map->{$_} : $_
-        )) } keys %{$topic->_heading()};
+        )) } keys %{$topic->_heading()}};
 
     my $result = __PACKAGE__->new();
 
@@ -2350,7 +2350,7 @@ installation by users of earlier Perl versions:
 L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<Moose-ver(0.64..*)|Moose>.
+L<Moose-ver(0.65..*)|Moose>.
 
 =head1 INCOMPATIBILITIES
 
@@ -2360,7 +2360,9 @@ None reported.
 
 The separate all-documentation distribution L<Muldis::D> is the formal
 definition of the Muldis D language, a portion of which Set::Relation is
-mainly based on.
+mainly based on.  The Muldis D language in turn has as a primary influence
+the work of Christopher J. Date and Hugh Darwen whose home website is
+L<http://www.thethirdmanifesto.com/>.
 
 These other Perl 6 packages: L<Muldis::Rosetta>, L<Set>.
 
@@ -2417,7 +2419,14 @@ practical way of suggesting improvements to the standard version.
 
 =head1 ACKNOWLEDGEMENTS
 
-None yet.
+=over
+
+=item Todd Hepler (C<thepler@employees.org>)
+
+Thanks for providing files for the test suite, module bug fixes, and other
+constructive input.
+
+=back
 
 =head1 FORUMS
 
