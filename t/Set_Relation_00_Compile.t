@@ -10,7 +10,7 @@ use Test::More;
 plan( 'tests' => 2 );
 
 use_ok( 'Set::Relation' );
-is( $Set::Relation::VERSION, qv('0.0.1'),
+is( $Set::Relation::VERSION, qv('0.0.2'),
     'Set::Relation is the correct version' );
 
 1; # Magic true value required at end of a reusable file's code.
