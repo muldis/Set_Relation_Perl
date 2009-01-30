@@ -743,7 +743,12 @@ sub restriction {
 
     for my $tuple_ident_str (keys %{$topic_b}) {
         my $tuple = $topic_b->{$tuple_ident_str};
-        if ($func->( $topic->_export_nfmt_tuple( $tuple ) )) {
+        my $is_matched;
+        {
+            local $_ = $topic->_export_nfmt_tuple( $tuple );
+            $is_matched = $func->();
+        }
+        if ($is_matched) {
             $result_b->{$tuple_ident_str} = $tuple;
         }
     }
@@ -764,7 +769,12 @@ sub cmpl_restriction {
 
     for my $tuple_ident_str (keys %{$topic_b}) {
         my $tuple = $topic_b->{$tuple_ident_str};
-        if (!$func->( $topic->_export_nfmt_tuple( $tuple ) )) {
+        my $is_matched;
+        {
+            local $_ = $topic->_export_nfmt_tuple( $tuple );
+            $is_matched = $func->();
+        }
+        if (!$is_matched) {
             $result_b->{$tuple_ident_str} = $tuple;
         }
     }
@@ -803,7 +813,11 @@ sub extension {
     my $result_b = $result->_body();
 
     for my $topic_t (values %{$topic->_body()}) {
-        my $exten_t = $func->( $topic->_export_nfmt_tuple( $topic_t ) );
+        my $exten_t;
+        {
+            local $_ = $topic->_export_nfmt_tuple( $topic_t );
+            $exten_t = $func->();
+        }
         $topic->_assert_valid_tuple_result_of_func_arg(
             'extension', '$func', '$attrs', $exten_t, $exten_h );
         $exten_t = $topic->_import_nfmt_tuple( $exten_t );
@@ -882,7 +896,11 @@ sub map {
     my $result_b = $result->_body();
 
     for my $topic_t (values %{$topic->_body()}) {
-        my $result_t = $func->( $topic->_export_nfmt_tuple( $topic_t ) );
+        my $result_t;
+        {
+            local $_ = $topic->_export_nfmt_tuple( $topic_t );
+            $result_t = $func->();
+        }
         $topic->_assert_valid_tuple_result_of_func_arg(
             'map', '$func', '$result_attrs', $result_t, $result_h );
         $result_t = $topic->_import_nfmt_tuple( $result_t );
@@ -2087,13 +2105,12 @@ argument.
 =item C<method restriction of Set::Relation ($topic: Code $func)>
 
 This functional method results in the relational restriction of its
-C<$topic> invocant as determined by applying the Bool-resulting Perl
-subroutine reference (having signature C<of Bool (Hash $topic)>)
-given in its C<$func> argument.  The result relation has the same
-heading as C<$topic>, and its body contains the subset of C<$topic> tuples
-where, for each tuple, the subroutine given in C<$func> results in true
-when passed the tuple as its C<$topic>
-argument.  As a trivial case, if C<$func> is defined to
+C<$topic> invocant as determined by applying the Bool-resulting
+zero-parameter Perl subroutine reference given in its C<$func> argument.
+The result relation has the same heading as C<$topic>, and its body
+contains the subset of C<$topic> tuples where, for each tuple, the
+subroutine given in C<$func> results in true when the tuple is its C<$_>
+topic.  As a trivial case, if C<$func> is defined to
 unconditionally result in true, then this method results simply in
 C<$topic>; or, for an unconditional false, this method results in the empty
 relation with the same heading.  Note that this operation is also
@@ -2112,24 +2129,23 @@ arguments.  See also the C<semidifference> method.
 $func)>
 
 This functional method results in the relational extension of its C<topic>
-invocant as determined by applying the tuple-resulting Perl subroutine
-reference (having signature C<of Hash (Hash $topic)>) given
-in its C<$func> argument.  The result relation has a heading that is a
-superset of that of C<$topic>, and its body contains the same number of
-tuples, with all attribute values of C<$topic> retained, and possibly extra
-present, determined as follows; for each C<$topic> tuple, the subroutine
-given in C<$func> results in a second tuple when passed the first tuple as
-its C<$topic> argument; the
+invocant as determined by applying the tuple/Hash-resulting zero-parameter
+Perl subroutine reference given in its C<$func> argument.  The result
+relation has a heading that is a superset of that of C<$topic>, and its
+body contains the same number of tuples, with all attribute values of
+C<$topic> retained, and possibly extra present, determined as follows; for
+each C<$topic> tuple, the subroutine given in C<$func> results in a second
+tuple when the first tuple is its C<$_> topic; the
 first and second tuples must have no attribute names in common, and the
 result tuple is derived by joining (cross-product) the tuples together.  As
 a trivial case, if C<$func> is defined to unconditionally result in the
-degree-zero tuple, then this function results simply in C<$topic>.  Now,
+degree-zero tuple, then this method results simply in C<$topic>.  Now,
 C<extension> requires the extra C<$attrs> argument to prevent ambiguity in
 the general case where C<$topic> might have zero tuples, because in that
 situation, C<$func> would never be invoked, and the names of the attributes
 to add to C<$topic> are not known (we don't generally assume that
 C<extension> can reverse-engineer C<$func> to see what attributes it would
-have resulted in).  This function will fail if C<$topic> has at least 1
+have resulted in).  This method will fail if C<$topic> has at least 1
 tuple and the result of C<$func> does not have matching attribute names to
 those named by C<$attrs>.
 
@@ -2149,8 +2165,8 @@ per-tuple transformations that otherwise might require the chaining of up
 to a half-dozen other operators like restriction, extension, and rename.
 This method results in a relation each of whose tuples is the result of
 applying, to each of the tuples of its C<$topic> invocant, the
-tuple-resulting Perl subroutine reference (having signature C<of Hash (Hash
-$topic)>) given in its C<$func> argument.  There is no
+tuple/Hash-resulting zero-parameter Perl subroutine reference given in its
+C<$func> argument.  There is no
 restriction on what attributes the result tuple of C<$func> may have
 (except that all tuples from C<$func> must have compatible headings); this
 tuple from C<$func> would completely replace the original tuple from
@@ -2158,8 +2174,8 @@ C<$topic>.  The result relation has a cardinality that is the same as that
 of C<$topic>, unless the result of C<$func> was redundant tuples, in which
 case the result has appropriately fewer tuples.  As a trivial case, if
 C<$func> is defined to unconditionally result in the same tuple as its own
-C<$topic> argument, then this function results simply in C<$topic>; or, if
-C<$func> is defined to have a static result, then this function's result
+C<$topic> argument, then this method results simply in C<$topic>; or, if
+C<$func> is defined to have a static result, then this method's result
 will have just 0..1 tuples.  Now, C<map> requires the extra
 C<$result_attrs> argument to prevent ambiguity in the general case where
 C<$topic> might have zero tuples, because in that situation, C<$func> would
@@ -2416,8 +2432,8 @@ practical way of suggesting improvements to the standard version.
 
 =item Todd Hepler (C<thepler@employees.org>)
 
-Thanks for providing files for the test suite, module bug fixes, and other
-constructive input.
+Thanks for proposing significant module design improvements and bug fixes,
+providing files for the test suite, and giving other constructive input.
 
 =back
 

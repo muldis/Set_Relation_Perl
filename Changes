@@ -15,6 +15,17 @@
     has, which make this parameter unnecessary in Perl.  The removal was to
     keep the Perl simpler; it also sets the stage for the next change item.
 
+    * (Relation.pm, Set_Relation_51_Database_in_Depth_Example.t)  Updated
+    each of the 4 functional methods ["(|cmpl_)restriction", "extension",
+    "map"] so that the Perl routine supplied as its "func" argument is now
+    assumed to have zero parameters rather than one, and the Perl routine
+    is now supplied its input tuple/Hash in $_, same as how Perl's built-in
+    map/grep operators work, rather than as a first/only argument.  Thanks
+    to Todd Hepler for proposing that design change to "restriction" to
+    make it more DWIM.
+
+    * (Relation.pm)  Minor POD updates and fixes.
+
 2009-01-26   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.0.2 for Perl 5 is released on CPAN as

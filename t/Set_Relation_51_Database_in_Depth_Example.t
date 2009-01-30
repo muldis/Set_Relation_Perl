@@ -130,10 +130,7 @@ my @shipment_tuples =
 # restriction
 {
     diag('restriction');
-    my $s1 = $s->restriction( sub { $_[0]->{sno} eq 'S1' } );
-    # DWIM these?
-#    my $s2 = $s->restriction( sno => 'S1' );
-#    my $s3 = $s->restriction( sub { $_->{sno} eq 'S1' } );
+    my $s1 = $s->restriction( sub { $_->{sno} eq 'S1' } );
     my $expect = Set::Relation->new( members => [ $supplier_tuples[0] ] );
     ok( $s1->is_identical($expect), 'restriction' );
     cmp_ok( $s1->cardinality, '==', 1, 'cardinality' );
@@ -240,7 +237,7 @@ my @shipment_tuples =
     my $expect = Set::Relation->new(
         members => [ [qw(sno sname status city pno qty)], [] ] );
     for my $sp (@shipment_tuples) {
-        my $r = $s->restriction( sub { $_[0]->{sno} eq $sp->{sno}} );
+        my $r = $s->restriction( sub { $_->{sno} eq $sp->{sno} } );
         ( $r->cardinality == 1 ) or die;
         my $sno = $r->members->[0];
         $expect = $expect->insertion({
