@@ -732,7 +732,7 @@ sub cmpl_projection {
 ###########################################################################
 
 sub restriction {
-    my ($topic, $func, $assuming) = @_;
+    my ($topic, $func) = @_;
 
     $topic->_assert_valid_func_arg( 'restriction', '$func', $func );
 
@@ -743,7 +743,7 @@ sub restriction {
 
     for my $tuple_ident_str (keys %{$topic_b}) {
         my $tuple = $topic_b->{$tuple_ident_str};
-        if ($func->( $topic->_export_nfmt_tuple( $tuple ), $assuming )) {
+        if ($func->( $topic->_export_nfmt_tuple( $tuple ) )) {
             $result_b->{$tuple_ident_str} = $tuple;
         }
     }
@@ -753,7 +753,7 @@ sub restriction {
 }
 
 sub cmpl_restriction {
-    my ($topic, $func, $assuming) = @_;
+    my ($topic, $func) = @_;
 
     $topic->_assert_valid_func_arg( 'cmpl_restriction', '$func', $func );
 
@@ -764,7 +764,7 @@ sub cmpl_restriction {
 
     for my $tuple_ident_str (keys %{$topic_b}) {
         my $tuple = $topic_b->{$tuple_ident_str};
-        if (!$func->( $topic->_export_nfmt_tuple( $tuple ), $assuming )) {
+        if (!$func->( $topic->_export_nfmt_tuple( $tuple ) )) {
             $result_b->{$tuple_ident_str} = $tuple;
         }
     }
@@ -776,7 +776,7 @@ sub cmpl_restriction {
 ###########################################################################
 
 sub extension {
-    my ($topic, $attrs, $func, $assuming) = @_;
+    my ($topic, $attrs, $func) = @_;
 
     my $exten_h = $topic->_attrs_hr_from_assert_valid_attrs_arg(
         'extension', '$attrs', $attrs );
@@ -803,8 +803,7 @@ sub extension {
     my $result_b = $result->_body();
 
     for my $topic_t (values %{$topic->_body()}) {
-        my $exten_t
-            = $func->( $topic->_export_nfmt_tuple( $topic_t ), $assuming );
+        my $exten_t = $func->( $topic->_export_nfmt_tuple( $topic_t ) );
         $topic->_assert_valid_tuple_result_of_func_arg(
             'extension', '$func', '$attrs', $exten_t, $exten_h );
         $exten_t = $topic->_import_nfmt_tuple( $exten_t );
@@ -859,7 +858,7 @@ sub static_extension {
 ###########################################################################
 
 sub map {
-    my ($topic, $result_attrs, $func, $assuming) = @_;
+    my ($topic, $result_attrs, $func) = @_;
 
     my $result_h = $topic->_attrs_hr_from_assert_valid_attrs_arg(
         'map', '$result_attrs', $result_attrs );
@@ -883,8 +882,7 @@ sub map {
     my $result_b = $result->_body();
 
     for my $topic_t (values %{$topic->_body()}) {
-        my $result_t
-            = $func->( $topic->_export_nfmt_tuple( $topic_t ), $assuming );
+        my $result_t = $func->( $topic->_export_nfmt_tuple( $topic_t ) );
         $topic->_assert_valid_tuple_result_of_func_arg(
             'map', '$func', '$result_attrs', $result_t, $result_h );
         $result_t = $topic->_import_nfmt_tuple( $result_t );
@@ -2086,18 +2084,16 @@ This functional method is the same as C<projection> but that it results in
 the complementary subset of attributes of its invocant when given the same
 argument.
 
-=item C<method restriction of Set::Relation ($topic: Code $func, Any
-$assuming?)>
+=item C<method restriction of Set::Relation ($topic: Code $func)>
 
 This functional method results in the relational restriction of its
 C<$topic> invocant as determined by applying the Bool-resulting Perl
-subroutine reference (having signature C<of Bool (Hash $topic, Any
-$assuming?)>) given in its C<$func> argument when said subroutine is
-curried by its C<$assuming> argument.  The result relation has the same
+subroutine reference (having signature C<of Bool (Hash $topic)>)
+given in its C<$func> argument.  The result relation has the same
 heading as C<$topic>, and its body contains the subset of C<$topic> tuples
 where, for each tuple, the subroutine given in C<$func> results in true
-when passed the tuple as its C<$topic> argument and C<$assuming> as its
-C<$assuming> argument.  As a trivial case, if C<$func> is defined to
+when passed the tuple as its C<$topic>
+argument.  As a trivial case, if C<$func> is defined to
 unconditionally result in true, then this method results simply in
 C<$topic>; or, for an unconditional false, this method results in the empty
 relation with the same heading.  Note that this operation is also
@@ -2106,26 +2102,24 @@ a simpler-syntax alternative for C<restriction> in its typical usage where
 restrictions are composed simply of anded or ored tests for attribute value
 equality.
 
-=item C<method cmpl_restriction of Set::Relation ($topic: Code $func, Any
-$assuming?)>
+=item C<method cmpl_restriction of Set::Relation ($topic: Code $func)>
 
 This functional method is the same as C<restriction> but that it results in
 the complementary subset of tuples of C<$topic> when given the same
 arguments.  See also the C<semidifference> method.
 
 =item C<method extension of Set::Relation ($topic: Array $attrs, Code
-$func, Any $assuming?)>
+$func)>
 
 This functional method results in the relational extension of its C<topic>
 invocant as determined by applying the tuple-resulting Perl subroutine
-reference (having signature C<of Hash (Hash $topic, Any $assuming?)>) given
-in its C<$func> argument when said subroutine is curried by its
-C<$assuming> argument.  The result relation has a heading that is a
+reference (having signature C<of Hash (Hash $topic)>) given
+in its C<$func> argument.  The result relation has a heading that is a
 superset of that of C<$topic>, and its body contains the same number of
 tuples, with all attribute values of C<$topic> retained, and possibly extra
 present, determined as follows; for each C<$topic> tuple, the subroutine
 given in C<$func> results in a second tuple when passed the first tuple as
-its C<$topic> argument and C<$assuming> as its C<$assuming> argument; the
+its C<$topic> argument; the
 first and second tuples must have no attribute names in common, and the
 result tuple is derived by joining (cross-product) the tuples together.  As
 a trivial case, if C<$func> is defined to unconditionally result in the
@@ -2148,7 +2142,7 @@ for each of the new attributes; the new attribute names and common values
 are given in the C<$attrs> argument.
 
 =item C<method map of Set::Relation ($topic: Array $result_attrs, Code
-$func, Any $assuming?)>
+$func)>
 
 This functional method provides a convenient one-place generalization of
 per-tuple transformations that otherwise might require the chaining of up
@@ -2156,8 +2150,7 @@ to a half-dozen other operators like restriction, extension, and rename.
 This method results in a relation each of whose tuples is the result of
 applying, to each of the tuples of its C<$topic> invocant, the
 tuple-resulting Perl subroutine reference (having signature C<of Hash (Hash
-$topic, Any $assuming?)>) given in its C<$func> argument when said
-subroutine is curried by its C<$assuming> argument.  There is no
+$topic)>) given in its C<$func> argument.  There is no
 restriction on what attributes the result tuple of C<$func> may have
 (except that all tuples from C<$func> must have compatible headings); this
 tuple from C<$func> would completely replace the original tuple from

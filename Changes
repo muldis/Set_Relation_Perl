@@ -1,6 +1,20 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-01-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.1.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.1.0.tar.gz.
+
+    * (Relation.pm)  Updated each of the 4 functional methods
+    ["(|cmpl_)restriction", "extension", "map"] to remove its optional
+    "assuming" parameter.  This parameter was a fossil left over from the
+    original Muldis D versions of these operators that the Perl version was
+    ported from; the parameter was necessary in Muldis D to have reasonable
+    flexibility due to Muldis D lacking certain other features that Perl
+    has, which make this parameter unnecessary in Perl.  The removal was to
+    keep the Perl simpler; it also sets the stage for the next change item.
+
 2009-01-26   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.0.2 for Perl 5 is released on CPAN as
