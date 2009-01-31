@@ -1920,16 +1920,15 @@ exception; most often this is due to invalid input.  If an invoked routine
 simply returns, you can assume that it has succeeded, even if the return
 value is undefined.
 
-=head2 Constructor Submethods
+=head1 Constructor Submethods
 
 This is currently the only routine declared by Set::Relation that you
 invoke off of the class name; currently you invoke all other routines off
 of a Set::Relation object.
 
-=over
+=head2 new
 
-=item C<submethod new of Set::Relation (Array|Hash|Set::Relation|Str
-:$members?)>
+C<submethod new of Set::Relation (Array|Hash|Set::Relation|Str :$members?)>
 
 This constructor submethod creates and returns a new C<Set::Relation>
 object, representing a single relation value, that is initialized primarily
@@ -1987,25 +1986,25 @@ C<$members>, as illustrated here:
 The new Set::Relation is initially a mutable object; its identity is not
 frozen.
 
-=back
-
-=head2 Accessor Methods
+=head1 Accessor Methods
 
 These Set::Relation object methods are mainly about extracting object
 attributes, essentially the reverse process of an object constructor; but
 some of these will mutate aspects of objects besides what relation
 attributes and tuples they have, and some do other misc things.
 
-=over
+=head2 clone
 
-=item C<method clone of Set::Relation ($self:)>
+C<method clone of Set::Relation ($self:)>
 
 This method results in a new Set::Relation object that has an exact clone
 of its invocant's attributes and tuples.  The new Set::Relation is
 initially a mutable object; its value identity is not frozen, regardless of
 whether the invocant is frozen or not.
 
-=item C<method export_for_new of Hash ($self: Bool|Array $want_ord_attrs?)>
+=head2 export_for_new
+
+C<method export_for_new of Hash ($self: Bool|Array $want_ord_attrs?)>
 
 This method results in a Perl Hash value whose Hash keys and values you can
 give as argument names and values to C<new> such that the latter would
@@ -2021,14 +2020,18 @@ C<$want_ord_attrs> is the Perl string value C<1>, then the result will have
 its attributes ordered alphabetically by attribute name (see the C<heading>
 method docs for why that is the case).
 
-=item C<method freeze_identity ($self:)>
+=head2 freeze_identity
+
+C<method freeze_identity ($self:)>
 
 This mutator method causes the invocant to become immutable when invoked;
 it freezes the invocant's value identity.  This change is not reversible
 (an immutable Set::Relation object can't be made mutable again), however
 invoking C<clone> on said object will give you a mutable duplicate.
 
-=item C<method which of Str ($self:)>
+=head2 which
+
+C<method which of Str ($self:)>
 
 This mutator method results in a character string representation of the
 invocant's value identity, and when invoked it has the side-effect of
@@ -2042,13 +2045,17 @@ guaranteed to have different ones.  This method is analagous to the special
 C<WHICH> method of Perl 6 and lets you treat Set::Relation as a "value
 type".
 
-=item C<method members of Array ($self: Bool|Array $want_ord_attrs?)>
+=head2 members
+
+C<method members of Array ($self: Bool|Array $want_ord_attrs?)>
 
 This method results in a Perl Array value as per the 'members' element of
 the Hash that C<export_for_new> would result in with the same invocant and
 with the same arguments.
 
-=item C<method heading of Array ($self:)>
+=head2 heading
+
+C<method heading of Array ($self:)>
 
 This method results in a Perl Array value whose elements are the attribute
 names of the invocant.  The attribute names are sorted alphabetically so
@@ -2059,41 +2066,43 @@ resulting from C<body> matches the default order resulting from C<heading>;
 in contrast, if C<body> was invoked to return attributes in named format,
 it doesn't matter what order C<heading> returns their names in.
 
-=item C<method body of Array ($self: Bool|Array $want_ord_attrs?)>
+=head2 body
+
+C<method body of Array ($self: Bool|Array $want_ord_attrs?)>
 
 This method results in a Perl Array value whose elements are the tuples of
 the invocant.  Each tuple is either a Perl Hash or a Perl Array depending
 on the value of the C<$want_ord_attrs>, like with the C<members> method.
 
-=back
-
-=head2 Mutator Methods
+=head1 Mutator Methods
 
 Invocations of these Set::Relation object methods will cause their
 invocants to mutate.  But they do not mutate any of their non-invocant
 arguments.  These methods also result in their invocants post-mutation, for
 the convenience of users that like to chain method calls.
 
-=over
+=head2 evacuate
 
-=item C<method evacuate of Set::Relation ($topic:)>
+C<method evacuate of Set::Relation ($topic:)>
 
 This mutator method deletes all of the tuples in its invocant relation.
 For a non-mutating equivalent, see the C<empty> functional method.
 
-=item C<method insert of Set::Relation ($r: Array|Hash $t)>
+=head2 insert
+
+C<method insert of Set::Relation ($r: Array|Hash $t)>
 
 This mutator method inserts its tuples argument into its invocant relation.
 For a non-mutating equivalent, see the C<insertion> functional method.
 
-=item C<method delete of Set::Relation ($r: Array|Hash $t)>
+=head2 delete
+
+C<method delete of Set::Relation ($r: Array|Hash $t)>
 
 This mutator method deletes its tuples argument from its invocant relation.
 For a non-mutating equivalent, see the C<deletion> functional method.
 
-=back
-
-=head2 Single Input Relation Functional Methods
+=head1 Single Input Relation Functional Methods
 
 These Set::Relation object methods are pure functional, each one whose
 execution results in a value and each one not mutating anything or having
@@ -2106,29 +2115,37 @@ These methods each have a single Set::Relation object as input, which is
 the invocant.  Some of them also result in a Set::Relation object while
 others do not.
 
-=over
+=head2 degree
 
-=item C<method degree of UInt ($topic:)>
+C<method degree of UInt ($topic:)>
 
 This functional method results in the degree of its invocant (that is, the
 count of attributes it has).
 
-=item C<method is_nullary of Bool ($topic:)>
+=head2 is_nullary
+
+C<method is_nullary of Bool ($topic:)>
 
 This functional method results in true iff its invocant has a degree of
 zero (that is, it has zero attributes), and false otherwise.
 
-=item C<method cardinality of UInt ($topic:)>
+=head2 cardinality
+
+C<method cardinality of UInt ($topic:)>
 
 This functional method results in the cardinality of its invocant (that is,
 the count of tuples its body has).
 
-=item C<method is_empty of Bool ($topic:)>
+=head2 is_empty
+
+C<method is_empty of Bool ($topic:)>
 
 This functional method results in true iff its invocant has a cardinality
 of zero (that is, it has zero tuples), and false otherwise.
 
-=item C<method is_member of Bool ($r: Array|Hash $t)>
+=head2 is_member
+
+C<method is_member of Bool ($r: Array|Hash $t)>
 
 This functional method results in true iff all of the tuples of its C<$t>
 argument match tuples of its invocant (that is, iff conceptually C<$t> is a
@@ -2136,27 +2153,35 @@ member of C<$r>), and false otherwise.  This method is like C<is_subset>
 except that the tuples being looked for don't have to be wrapped in a
 relation.
 
-=item C<method empty of Set::Relation ($topic:)>
+=head2 empty
+
+C<method empty of Set::Relation ($topic:)>
 
 This functional method results in the empty relation of the same heading of
 its invocant, that is having the same degree and attribute names; it has
 zero tuples.
 
-=item C<method insertion of Set::Relation ($r: Array|Hash $t)>
+=head2 insertion
+
+C<method insertion of Set::Relation ($r: Array|Hash $t)>
 
 This functional method results in a relation that is the relational union
 of C<$r> and a relation whose tuples are C<$t>; that is, conceptually the
 result is C<$t> inserted into C<$r>.  As a trivial case, if all of C<$t>
 already exist in C<$r>, then the result is just C<$r>.
 
-=item C<method deletion of Set::Relation ($r: Array|Hash $t)>
+=head2 deletion
+
+C<method deletion of Set::Relation ($r: Array|Hash $t)>
 
 This functional method results in a relation that is the relational
 difference from C<$r> of a relation whose tuples are C<$t>; that is,
 conceptually the result is C<$t> deleted from C<$r>.  As a trivial case, if
 all of C<$t> already doesn't exist in C<$r>, then the result is just C<$r>.
 
-=item C<method rename of Set::Relation ($topic: Hash $map)>
+=head2 rename
+
+C<method rename of Set::Relation ($topic: Hash $map)>
 
 This functional method results in a relation value that is the same as its
 C<$topic> invocant but that some of its attributes have different names.
@@ -2169,7 +2194,9 @@ This method will fail if C<$map> specifies any old names that C<$topic>
 doesn't have, or any new names that are the same as C<$topic> attributes
 that aren't being renamed.
 
-=item C<method projection of Set::Relation ($topic: Array|Str $attrs)>
+=head2 projection
+
+C<method projection of Set::Relation ($topic: Array|Str $attrs)>
 
 This functional method results in the relational projection of its
 C<$topic> invocant that has just the subset of attributes of C<$topic>
@@ -2179,13 +2206,17 @@ C<$topic>; or, it is a nullary relation if C<$attrs> is empty.  This method
 will fail if C<$attrs> specifies any attribute names that C<$topic> doesn't
 have.
 
-=item C<method cmpl_projection of Set::Relation ($topic: Array|Str $attrs)>
+=head2 cmpl_projection
+
+C<method cmpl_projection of Set::Relation ($topic: Array|Str $attrs)>
 
 This functional method is the same as C<projection> but that it results in
 the complementary subset of attributes of its invocant when given the same
 argument.
 
-=item C<method restriction of Set::Relation ($topic: Code $func)>
+=head2 restriction
+
+C<method restriction of Set::Relation ($topic: Code $func)>
 
 This functional method results in the relational restriction of its
 C<$topic> invocant as determined by applying the Bool-resulting
@@ -2202,14 +2233,17 @@ a simpler-syntax alternative for C<restriction> in its typical usage where
 restrictions are composed simply of anded or ored tests for attribute value
 equality.
 
-=item C<method cmpl_restriction of Set::Relation ($topic: Code $func)>
+=head2 cmpl_restriction
+
+C<method cmpl_restriction of Set::Relation ($topic: Code $func)>
 
 This functional method is the same as C<restriction> but that it results in
 the complementary subset of tuples of C<$topic> when given the same
 arguments.  See also the C<semidifference> method.
 
-=item C<method extension of Set::Relation ($topic: Array|Str $attrs, Code
-$func)>
+=head2 extension
+
+C<method extension of Set::Relation ($topic: Array|Str $attrs, Code $func)>
 
 This functional method results in the relational extension of its C<topic>
 invocant as determined by applying the tuple/Hash-resulting zero-parameter
@@ -2232,7 +2266,9 @@ have resulted in).  This method will fail if C<$topic> has at least 1
 tuple and the result of C<$func> does not have matching attribute names to
 those named by C<$attrs>.
 
-=item C<method static_extension of Set::Relation ($topic: Hash $attrs)>
+=head2 static_extension
+
+C<method static_extension of Set::Relation ($topic: Hash $attrs)>
 
 This functional method is a simpler-syntax alternative to both C<extension>
 and C<product> in the typical scenario of extending a relation, given in
@@ -2240,7 +2276,9 @@ the C<$topic> invocant, such that every tuple has mutually identical values
 for each of the new attributes; the new attribute names and common values
 are given in the C<$attrs> argument.
 
-=item C<method map of Set::Relation ($topic: Array|Str $result_attrs, Code
+=head2 map
+
+C<method map of Set::Relation ($topic: Array|Str $result_attrs, Code
 $func)>
 
 This functional method provides a convenient one-place generalization of
@@ -2268,9 +2306,7 @@ to see what attributes it would have resulted in).  This method will fail
 if C<$topic> has at least 1 tuple and the result of C<$func> does not have
 matching attribute names to those named by C<$result_attrs>.
 
-=back
-
-=head2 Multiple Input Relation Functional Methods
+=head1 Multiple Input Relation Functional Methods
 
 These Set::Relation object methods are pure functional, each one whose
 execution results in a value and each one not mutating anything or having
@@ -2283,34 +2319,41 @@ These methods each have at least 2 Set::Relation objects as input, one of
 which is the invocant and the other of which is an additional argument.
 Some of them also result in a Set::Relation object while others do not.
 
-=over
+=head2 is_identical
 
-=item C<method is_identical of Bool ($topic: Set::Relation $other)>
+C<method is_identical of Bool ($topic: Set::Relation $other)>
 
 This functional method results in true iff its (mutually commutative)
 invocant and argument are exactly the same value (that is, Set::Relation
 considers them to have the same value identity), and false otherwise.
 
-=item C<method is_subset of Bool ($look_in: Set::Relation $look_for)>
+=head2 is_subset
+
+C<method is_subset of Bool ($look_in: Set::Relation $look_for)>
 
 This functional method results in true iff the set of tuples comprising
 C<$look_for> is a subset of the set of tuples comprising C<$look_in> (both
 must have the same heading regardless), and false otherwise.
 
-=item C<method is_proper_subset of Bool ($look_in: Set::Relation
-$look_for)>
+=head2 is_proper_subset
+
+C<method is_proper_subset of Bool ($look_in: Set::Relation $look_for)>
 
 This functional method is exactly the same as C<is_subset> except that it
 results in false if C<$look_in> and C<$look_for> are identical.
 
-=item C<method is_disjoint of Bool ($topic: Set::Relation $other)>
+=head2 is_disjoint
+
+C<method is_disjoint of Bool ($topic: Set::Relation $other)>
 
 This functional method results in true iff the set of tuples comprising
 each of its same-heading mutually commutative invocant and argument are
 mutually disjoint, that is, iff the intersection of the invocant and
 argument is empty; it results in false otherwise.
 
-=item C<method union of Set::Relation ($topic: Set::Relation $other)>
+=head2 union
+
+C<method union of Set::Relation ($topic: Set::Relation $other)>
 
 This functional method results in the relational union/inclusive-or of its
 same-heading invocant and argument.  The result relation has the same
@@ -2319,7 +2362,9 @@ in either of the inputs.  Relational union is both a commutative and
 associative operation, and its identity value is the same-heading empty
 relation value (having zero tuples).
 
-=item C<method exclusion of Set::Relation ($topic: Set::Relation $other)>
+=head2 exclusion
+
+C<method exclusion of Set::Relation ($topic: Set::Relation $other)>
 
 This functional method results in the relational exclusion/exclusive-or of
 its same-heading invocant and argument.  The result relation has the same
@@ -2329,8 +2374,9 @@ and associative operation, and its identity value is the same as for
 C<union>.  Note that this operation is also legitimately known as
 I<symmetric difference>.
 
-=item C<method intersection of Set::Relation ($topic: Set::Relation
-$other)>
+=head2 intersection
+
+C<method intersection of Set::Relation ($topic: Set::Relation $other)>
 
 This functional method results in the relational intersection/and of its
 same-heading invocant and argument.  The result relation has the same
@@ -2341,8 +2387,9 @@ universal relation value (having all the tuples that could possible exist
 together in a common relation value with that heading; this is impossibly
 large to represent in the general case, except perhaps lazily).
 
-=item C<method difference of Set::Relation ($source: Set::Relation
-$filter)>
+=head2 difference
+
+C<method difference of Set::Relation ($source: Set::Relation $filter)>
 
 This functional method results in the relational difference when its
 C<$filter> argument is subtracted from its same-heading C<$source>
@@ -2352,15 +2399,18 @@ C<$filter>.  Note that this I<difference> operator is conceptually a
 special case of I<semidifference>, applicable when the headings of the
 inputs are the same.
 
-=item C<method semidifference of Set::Relation ($source: Set::Relation
-$filter)>
+=head2 semidifference
+
+C<method semidifference of Set::Relation ($source: Set::Relation $filter)>
 
 This functional method is the same as C<semijoin> but that it results in
 the complementary subset of tuples of C<$source> when given the same
 arguments.  Note that this operation is also legitimately known as
 I<antijoin> or I<anti-semijoin>.
 
-=item C<method semijoin of Set::Relation ($source: Set::Relation $filter)>
+=head2 semijoin
+
+C<method semijoin of Set::Relation ($source: Set::Relation $filter)>
 
 This functional method results in the relational semijoin of its invocant
 and argument.  The result relation has the same heading as C<$source>, and
@@ -2370,7 +2420,9 @@ short-hand for first doing an ordinary relational join between C<$source>
 and C<$filter>, and then performing a relational projection on all of the
 attributes that just C<$source> has.
 
-=item C<method join of Set::Relation ($topic: Set::Relation $other)>
+=head2 join
+
+C<method join of Set::Relation ($topic: Set::Relation $other)>
 
 This functional method results in the relational join (natural inner join)
 of its invocant and argument.  The result relation has a heading that is a
@@ -2390,15 +2442,18 @@ then the join of those is an intersection; or, if one input's set of
 attribute names is a proper subset of the other's, then the join of just
 those two is a semijoin with the former filtering the latter.
 
-=item C<method product of Set::Relation ($topic: Set::Relation $other)>
+=head2 product
+
+C<method product of Set::Relation ($topic: Set::Relation $other)>
 
 This functional method results in the relational cartesian/cross product of
 its invocant and argument; it is conceptually a special case of C<join>
 where the input relations have mutually distinct attribute names; unlike
 C<join>, C<product> will fail if any inputs have attribute names in common.
 
-=item C<method quotient of Set::Relation ($dividend: Set::Relation
-$divisor)>
+=head2 quotient
+
+C<method quotient of Set::Relation ($dividend: Set::Relation $divisor)>
 
 This functional method results in the quotient when its C<$dividend>
 invocant is divided by its C<$divisor> argument using relational division.
@@ -2411,7 +2466,9 @@ tuples C<{X}> such that a tuple C<{X,Y}> appears in C<A> for all tuples
 C<{Y}> appearing in C<B>; that is, C<A / B> is shorthand for C<A{X} -
 ((A{X} * B) - A){X}>.
 
-=item C<method composition of Set::Relation ($topic: Set::Relation $other)>
+=head2 composition
+
+C<method composition of Set::Relation ($topic: Set::Relation $other)>
 
 This functional method results in the relational composition of its
 mutually commutative invocant and argument.  It is conceptually a
@@ -2420,8 +2477,6 @@ relations, and then performing a relational projection on all of the
 attributes that only one of the arguments has; that is, the result has all
 of and just the attributes that were not involved in matching the tuples of
 the inputs.
-
-=back
 
 =head1 DIAGNOSTICS
 

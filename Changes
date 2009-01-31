@@ -6,6 +6,11 @@
     * Set::Relation version 0.1.0 for Perl 5 is released on CPAN as
     Set-Relation-0.1.0.tar.gz.
 
+    * This release features a few API changes, some significant feature
+    additions, and bug fixes to existing routines, but no public facing
+    routines have been added or removed.  New routines should feature in
+    the next 0.Y.0 release.
+
     * (Relation.pm)  Updated each of the 4 functional methods
     ["(|cmpl_)restriction", "extension", "map"] to remove its optional
     "assuming" parameter.  This parameter was a fossil left over from the
@@ -47,6 +52,16 @@
     components; this update fixes a general bug where the module could
     infinitely recurse when processing that input, since tuple-representing
     input from the user is deep-copied.
+
+    * (Relation.pm)  Some POD reformatting:  Took what used to be the 5
+    level-2 headings under the INTERFACE level-1 heading and changed said 5
+    into level-1 headings, but did not uppercase their text.  Then
+    converted the routine lists from being "=over/=item <routine>/=back" to
+    each routine having its own level-2 heading.  For each routine, the new
+    heading is just the short name of the routine, and the full signature
+    of the routine displays just as its own paragraph.  All these changes
+    combined should look visually like we are faking 3 levels of headings,
+    with top and middle being upcased and mixed case "=head1" respectively.
 
     * (Relation.pm)  Minor POD updates and fixes.
 
