@@ -76,6 +76,7 @@ use warnings FATAL => 'all';
         default => sub { {} },
     );
 
+    use Scalar::Util 'refaddr';
     use List::Util 'first';
 
 ###########################################################################
@@ -335,7 +336,27 @@ sub insert {
     confess q{insert(): Can't mutate invocant that has a frozen identity.}
         if $r->_has_frozen_identity();
     $t = $r->_normalize_tuples_arg( 'insert', '$t', $t );
+    for my $tuple (@{$t}) {
+        $r->_insert_assert_self_not_in_tuples_arg_elem( $tuple );
+    }
     return $r->_insert( $t );
+}
+
+sub _insert_assert_self_not_in_tuples_arg_elem {
+    my ($self, $tuple) = @_;
+    for my $atvl (values %{$tuple}) {
+        if (blessed $atvl and $atvl->isa( __PACKAGE__ )) {
+            confess q{insert(): Bad $t arg; it contains the invocant}
+                    . q{ Set::Relation object as a value-typed component,}
+                    . q{ and so attempting to insert it into the invocant}
+                    . q{ would fail as an infinitely recursive deep copy.}
+                if refaddr $atvl == refaddr $self;
+        }
+        elsif (ref $atvl eq 'HASH') {
+            $self->_insert_assert_self_not_in_tuples_arg_elem( $atvl );
+        }
+        # else $atvl treated as scalar, so no tests to do
+    }
 }
 
 sub _insert {

@@ -3,7 +3,8 @@
 
 Following is a summary of things that still need doing.
 
-* Add or confirm we have input checks regarding any attempts to insert a
+* IN PROGRESS ... RECURSIVE HASHREFS REMAINING ...
+Add or confirm we have input checks regarding any attempts to insert a
 Set::Relation object into itself as an attribute value.  An exception
 specific to this bad recursion should be thrown, rather than some other
 problem happening later ... such as the insert eventually dying on an

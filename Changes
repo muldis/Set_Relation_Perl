@@ -33,6 +33,11 @@
     so its "members" parameter may also take a Str argument; this would
     produce a relation object with 1 attribute and zero tuples.
 
+    * (Relation.pm)  Fixed "insert" mutator method bug so it detects and
+    blocks attempts to insert the invocant Set::Relation object into itself
+    as a value-typed component, which would have been an infinite recursive
+    deep copy op, or would have failed anyway due to freezing itself.
+
     * (Relation.pm)  Minor POD updates and fixes.
 
 2009-01-26   Darren Duncan <perl@DarrenDuncan.net>
