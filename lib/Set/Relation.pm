@@ -462,15 +462,21 @@ sub _normalize_tuples_arg {
 }
 
 sub _tuple_arg_has_circular_refs {
-    my ($self, $tuple, $seen) = @_;
-    $seen ||= { (refaddr $tuple) => undef };
+    # This routine just checks that no Hash which would be treated as
+    # being of a value type contains itself as a component, where the
+    # component and any intermediate components are treated as value types.
+    # It *is* fine for a Hash to contain the same other Hash more than once
+    # such that the other is a sibling/cousin/etc to itself.
+    my ($self, $tuple, $ancs_of_tup_atvls) = @_;
+    $ancs_of_tup_atvls = $ancs_of_tup_atvls ? {%{$ancs_of_tup_atvls}} : {};
+    $ancs_of_tup_atvls->{refaddr $tuple} = undef;
     for my $atvl (values %{$tuple}) {
         if (ref $atvl eq 'HASH') {
             return 1
-                if exists $seen->{refaddr $atvl};
-            $seen->{refaddr $atvl} = undef;
+                if exists $ancs_of_tup_atvls->{refaddr $atvl};
             return 1
-                if $self->_tuple_arg_has_circular_refs( $atvl, $seen );
+                if $self->_tuple_arg_has_circular_refs(
+                    $atvl, $ancs_of_tup_atvls );
         }
     }
     return 0;
