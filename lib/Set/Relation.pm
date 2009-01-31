@@ -150,6 +150,11 @@ sub BUILD {
                         . q{ don't have exactly the same set of hkeys.}
                     if ref $tuple ne 'HASH'
                         or !$self->_is_identical_hkeys( $heading, $tuple );
+                confess q{new(): Bad :$members arg;}
+                        . q{ at least one of its hash-ref elems}
+                        . q{ is such that there exists circular refs}
+                        . q{ between itself or its value-typed components.}
+                    if $self->_tuple_arg_has_circular_refs( $tuple );
                 $tuple = $self->_import_nfmt_tuple( $tuple );
                 $body->{$self->_ident_str( $tuple )} = $tuple;
             }
@@ -181,6 +186,15 @@ sub BUILD {
                         . q{ array-ref, or that doesn't have the same}
                         . q{ count of elems as the :$members first elem.}
                     if ref $tuple ne 'ARRAY' or @{$tuple} != @{$member0};
+                for my $atvl (@{$tuple}) {
+                    confess q{new(): Bad :$members arg;}
+                            . q{ at least one of its array-ref elems}
+                            . q{ is such that there exists circular refs}
+                            . q{ between its value-typed components.}
+                        if ref $atvl eq 'HASH'
+                            and $self->_tuple_arg_has_circular_refs(
+                                $atvl );
+                }
                 $tuple = $self->_import_ofmt_tuple( $member0, $tuple );
                 $body->{$self->_ident_str( $tuple )} = $tuple;
             }
@@ -438,9 +452,28 @@ sub _normalize_tuples_arg {
                 . q{ same set of attr names as the invocant.}
             if ref $tuple ne 'HASH'
                 or !$r->_is_identical_hkeys( $r_h, $tuple );
+        confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
+                . q{ it is a hash-ref, and there exist circular refs}
+                . q{ between itself or its value-typed components.}
+            if $r->_tuple_arg_has_circular_refs( $tuple );
     }
 
     return $t;
+}
+
+sub _tuple_arg_has_circular_refs {
+    my ($self, $tuple, $seen) = @_;
+    $seen ||= { (refaddr $tuple) => undef };
+    for my $atvl (values %{$tuple}) {
+        if (ref $atvl eq 'HASH') {
+            return 1
+                if exists $seen->{refaddr $atvl};
+            $seen->{refaddr $atvl} = undef;
+            return 1
+                if $self->_tuple_arg_has_circular_refs( $atvl, $seen );
+        }
+    }
+    return 0;
 }
 
 sub _self_is_component_of_tuple_arg {
@@ -881,6 +914,11 @@ sub static_extension {
             . q{ isn't disjoint with the invocant's heading.}
         if @{$both} > 0;
 
+    confess q{static_extension(): Bad $attrs arg;}
+            . q{ it is a hash-ref, and there exist circular refs}
+            . q{ between itself or its value-typed components.}
+        if $topic->_tuple_arg_has_circular_refs( $attrs );
+
     $attrs = $topic->_import_nfmt_tuple( $attrs );
 
     my $result = __PACKAGE__->new();
@@ -989,6 +1027,11 @@ sub _assert_valid_tuple_result_of_func_arg {
             . qq{ set of hkeys as specified by the $arg_nm_attrs arg.}
         if ref $result_t ne 'HASH'
             or !$self->_is_identical_hkeys( $heading, $result_t );
+    confess qq{$rtn_nm(): Bad $arg_nm_func arg;}
+            . q{ at least one result of executing that Perl subroutine}
+            . q{ reference was a hash-ref, and there exist circular refs}
+            . q{ between itself or its value-typed components.}
+        if $self->_tuple_arg_has_circular_refs( $result_t );
 }
 
 ###########################################################################

@@ -33,12 +33,20 @@
     so its "members" parameter may also take a Str argument; this would
     produce a relation object with 1 attribute and zero tuples.
 
-    * (Relation.pm)  Fixed the "insert" mutator method bug so it detects
+    * (Relation.pm)  Fixed an "insert" mutator method bug so it detects
     and blocks attempts to insert the invocant Set::Relation object into
     itself as a value-typed component, which would have had the side-effect
     of freezing the invocant, or would have conceptually been an infinite
-    recursive deep copy operation; also updated the "delete" mutator with
+    recursive deep copy operation; also fixed the "delete" mutator with
     the same detector since it would have had the same freezing problem.
+
+    * (Relation.pm)  Updated all routines that take tuple-representing Hash
+    values from the user, either directly or as tuple-valued attrs, either
+    as a routine argument or a closure return value, so that each Hash is
+    tested for circular references between itself or its value-typed
+    components; this update fixes a general bug where the module could
+    infinitely recurse when processing that input, since tuple-representing
+    input from the user is deep-copied.
 
     * (Relation.pm)  Minor POD updates and fixes.
 
