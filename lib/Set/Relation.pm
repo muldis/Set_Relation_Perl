@@ -337,26 +337,12 @@ sub insert {
         if $r->_has_frozen_identity();
     $t = $r->_normalize_tuples_arg( 'insert', '$t', $t );
     for my $tuple (@{$t}) {
-        $r->_insert_assert_self_not_in_tuples_arg_elem( $tuple );
+        confess q{insert(): Bad $t arg; it contains the invocant}
+                . q{ Set::Relation object as a value-typed component,}
+                . q{ so the invocant would be frozen as a side-effect.}
+            if $r->_self_is_component_of_tuple_arg( $tuple );
     }
     return $r->_insert( $t );
-}
-
-sub _insert_assert_self_not_in_tuples_arg_elem {
-    my ($self, $tuple) = @_;
-    for my $atvl (values %{$tuple}) {
-        if (blessed $atvl and $atvl->isa( __PACKAGE__ )) {
-            confess q{insert(): Bad $t arg; it contains the invocant}
-                    . q{ Set::Relation object as a value-typed component,}
-                    . q{ and so attempting to insert it into the invocant}
-                    . q{ would fail as an infinitely recursive deep copy.}
-                if refaddr $atvl == refaddr $self;
-        }
-        elsif (ref $atvl eq 'HASH') {
-            $self->_insert_assert_self_not_in_tuples_arg_elem( $atvl );
-        }
-        # else $atvl treated as scalar, so no tests to do
-    }
 }
 
 sub _insert {
@@ -393,6 +379,12 @@ sub delete {
     confess q{delete(): Can't mutate invocant that has a frozen identity.}
         if $r->_has_frozen_identity();
     $t = $r->_normalize_tuples_arg( 'delete', '$t', $t );
+    for my $tuple (@{$t}) {
+        confess q{delete(): Bad $t arg; it contains the invocant}
+                . q{ Set::Relation object as a value-typed component,}
+                . q{ so the invocant would be frozen as a side-effect.}
+            if $r->_self_is_component_of_tuple_arg( $tuple );
+    }
     return $r->_delete( $t );
 }
 
@@ -449,6 +441,21 @@ sub _normalize_tuples_arg {
     }
 
     return $t;
+}
+
+sub _self_is_component_of_tuple_arg {
+    my ($self, $tuple) = @_;
+    for my $atvl (values %{$tuple}) {
+        if (blessed $atvl and $atvl->isa( __PACKAGE__ )) {
+            return 1
+                if refaddr $atvl == refaddr $self;
+        }
+        elsif (ref $atvl eq 'HASH') {
+            return 1
+                if $self->_self_is_component_of_tuple_arg( $atvl );
+        }
+    }
+    return 0;
 }
 
 ###########################################################################
@@ -1756,11 +1763,12 @@ reversed, though you can clone said object to get an un-frozen duplicate.
 There are 3 main ways to make a Set::Relation object immutable.  The first
 is explicitly, by invoking its C<freeze_identity> method.  The second is
 implicitly, by invoking its C<which> method I<(this one may be reconsidered
-on users' request)>.  The third is if another Set::Relation object is
-constructed that is given the first object as a tuple attribute value; this
-was done rather than cloning the input object under the assumption that
-most of the time you wouldn't want to mutate the input object afterwards,
-for efficiency.
+on users' request)>; this also happens to be done indirectly any time a
+tuple-representing Hash is given to a Set::Relation routine.  The third is
+if another Set::Relation object is constructed that is given the first
+object as a tuple attribute value; this was done rather than cloning the
+input object under the assumption that most of the time you wouldn't want
+to mutate the input object afterwards, for efficiency.
 
 =head2 Matters of Performance
 
