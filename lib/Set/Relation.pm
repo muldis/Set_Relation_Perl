@@ -91,11 +91,12 @@ sub BUILD {
         # Extra option 1.
         $members = [];
     }
-    elsif (ref $members eq 'HASH') {
-        # Extra option 2;
+    elsif (!ref $members or ref $members eq 'HASH') {
+        # Extra options 2 and 3.
         $members = [$members];
     }
-    confess q{new(): Bad :$members arg; it must be either undefined}
+    confess q{new(): Bad :$members arg;}
+            . q{ it must be either undefined or a non-ref}
             . q{ or an array-ref or a hash-ref or a Set::Relation object.}
         if ref $members ne 'ARRAY'
             and not (blessed $members and $members->isa( __PACKAGE__ ));
@@ -665,8 +666,9 @@ sub _rename {
 sub projection {
     my ($topic, $attrs) = @_;
 
-    my $proj_h = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'projection', '$attrs', $attrs );
+    (my $proj_h, $attrs)
+        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+            'projection', '$attrs', $attrs );
     my (undef, undef, $proj_only)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $proj_h );
     confess q{projection(): Bad $attrs arg; that attr list}
@@ -717,8 +719,9 @@ sub cmpl_projection {
 
     my $topic_h = $topic->_heading();
 
-    my $cproj_h = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'cmpl_projection', '$attrs', $attrs );
+    (my $cproj_h, $attrs)
+        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+            'cmpl_projection', '$attrs', $attrs );
     my (undef, undef, $cproj_only)
         = $topic->_ptn_conj_and_disj( $topic_h, $cproj_h );
     confess q{cmpl_projection(): Bad $attrs arg; that attr list}
@@ -788,8 +791,9 @@ sub cmpl_restriction {
 sub extension {
     my ($topic, $attrs, $func) = @_;
 
-    my $exten_h = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'extension', '$attrs', $attrs );
+    (my $exten_h, $attrs)
+        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+            'extension', '$attrs', $attrs );
     $topic->_assert_valid_func_arg( 'extension', '$func', $func );
 
     if (@{$attrs} == 0) {
@@ -874,8 +878,9 @@ sub static_extension {
 sub map {
     my ($topic, $result_attrs, $func) = @_;
 
-    my $result_h = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'map', '$result_attrs', $result_attrs );
+    (my $result_h, $result_attrs)
+        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+            'map', '$result_attrs', $result_attrs );
     $topic->_assert_valid_func_arg( 'map', '$func', $func );
 
     if (@{$result_attrs} == 0) {
@@ -919,8 +924,11 @@ sub map {
 sub _attrs_hr_from_assert_valid_attrs_arg {
     my ($self, $rtn_nm, $arg_nm, $attrs) = @_;
 
+    if (defined $attrs and !ref $attrs) {
+        $attrs = [$attrs];
+    }
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
-            . q{ it must be an array-ref.}
+            . q{ it must be an array-ref or a defined non-ref.}
         if ref $attrs ne 'ARRAY';
     for my $atnm (@{$attrs}) {
         confess qq{$rtn_nm(): Bad $arg_nm arg;}
@@ -934,7 +942,7 @@ sub _attrs_hr_from_assert_valid_attrs_arg {
             . q{ attr names with at least one duplicated name.}
         if (keys %{$heading}) != @{$attrs};
 
-    return $heading;
+    return ($heading, $attrs);
 }
 
 sub _assert_valid_func_arg {
@@ -1848,7 +1856,7 @@ of a Set::Relation object.
 
 =over
 
-=item C<submethod new of Set::Relation (Array|Hash|Set::Relation
+=item C<submethod new of Set::Relation (Array|Hash|Set::Relation|Str
 :$members?)>
 
 This constructor submethod creates and returns a new C<Set::Relation>
@@ -1900,6 +1908,9 @@ C<$members>, as illustrated here:
 
     # One way to clone a relation object.
     my $r8 = Set::Relation->new( members => $r5 );
+
+    # Abbreviated way to specify 1 attr + zero tuples.
+    my $r9 = Set::Relation->new( members => 'value' );
 
 The new Set::Relation is initially a mutable object; its identity is not
 frozen.
@@ -2086,7 +2097,7 @@ This method will fail if C<$map> specifies any old names that C<$topic>
 doesn't have, or any new names that are the same as C<$topic> attributes
 that aren't being renamed.
 
-=item C<method projection of Set::Relation ($topic: Array $attrs)>
+=item C<method projection of Set::Relation ($topic: Array|Str $attrs)>
 
 This functional method results in the relational projection of its
 C<$topic> invocant that has just the subset of attributes of C<$topic>
@@ -2096,7 +2107,7 @@ C<$topic>; or, it is a nullary relation if C<$attrs> is empty.  This method
 will fail if C<$attrs> specifies any attribute names that C<$topic> doesn't
 have.
 
-=item C<method cmpl_projection of Set::Relation ($topic: Array $attrs)>
+=item C<method cmpl_projection of Set::Relation ($topic: Array|Str $attrs)>
 
 This functional method is the same as C<projection> but that it results in
 the complementary subset of attributes of its invocant when given the same
@@ -2125,7 +2136,7 @@ This functional method is the same as C<restriction> but that it results in
 the complementary subset of tuples of C<$topic> when given the same
 arguments.  See also the C<semidifference> method.
 
-=item C<method extension of Set::Relation ($topic: Array $attrs, Code
+=item C<method extension of Set::Relation ($topic: Array|Str $attrs, Code
 $func)>
 
 This functional method results in the relational extension of its C<topic>
@@ -2157,7 +2168,7 @@ the C<$topic> invocant, such that every tuple has mutually identical values
 for each of the new attributes; the new attribute names and common values
 are given in the C<$attrs> argument.
 
-=item C<method map of Set::Relation ($topic: Array $result_attrs, Code
+=item C<method map of Set::Relation ($topic: Array|Str $result_attrs, Code
 $func)>
 
 This functional method provides a convenient one-place generalization of

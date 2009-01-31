@@ -142,9 +142,7 @@ my @shipment_tuples =
     diag('projection');
     my $expect = Set::Relation->new(
         members => [ map { { city => $_ } } qw(London Paris Athens) ] );
-    my $s1 = $s->projection( ['city'] );
-    # DWIM this?
-    #my $s2 = $s->projection('city');
+    my $s1 = $s->projection('city');
     ok( $s1->is_identical($expect), 'projection' );
     cmp_ok( $s1->cardinality, '==', 3, 'cardinality' );
     cmp_bag( $s1->members, $expect->members, 'same members' );
@@ -160,8 +158,6 @@ my @shipment_tuples =
         city   => 'd',
     };
     my $s1 = $s->rename($map);
-    # DWIM this?
-    # my $s2 = $s->rename(%$map);
     cmp_ok( $s->cardinality, '==', $s1->cardinality,
         'same cardinality on rename' );
     my $expect = Set::Relation->new( members => [

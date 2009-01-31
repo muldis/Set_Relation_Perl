@@ -24,6 +24,15 @@
     to Todd Hepler for proposing that design change to "restriction" to
     make it more DWIM.
 
+    * (Relation.pm, Set_Relation_51_Database_in_Depth_Example.t)  Updated
+    each of the 4 functional methods ["(|cmpl_)projection", "extension",
+    "map"] so that the "(|result_)attrs" parameter can also take a Str
+    argument rather than just an Array of Str argument.  Thanks to Todd
+    Hepler for proposing that design change to "projection" to make it more
+    DWIM.  Also updated the Set::Relation constructor submethod similarly,
+    so its "members" parameter may also take a Str argument; this would
+    produce a relation object with 1 attribute and zero tuples.
+
     * (Relation.pm)  Minor POD updates and fixes.
 
 2009-01-26   Darren Duncan <perl@DarrenDuncan.net>
