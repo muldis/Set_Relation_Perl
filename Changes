@@ -1,6 +1,13 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-02-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.2.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.2.0.tar.gz.
+
+    * (Relation.pm)  Minor code updates.
+
 2009-01-31   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.1.0 for Perl 5 is released on CPAN as
@@ -73,7 +80,7 @@
     combined should look visually like we are faking 3 levels of headings,
     with top and middle being upcased and mixed case "=head1" respectively.
 
-    * (Relation.pm)  Minor POD updates and fixes.
+    * (Relation.pm)  Minor code and POD updates and fixes.
 
 2009-01-26   Darren Duncan <perl@DarrenDuncan.net>
 

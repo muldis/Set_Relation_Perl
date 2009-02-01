@@ -1118,7 +1118,7 @@ sub union {
 
     my $result = $largest->clone();
 
-    my $smaller_bs = [map { $_->_body() } @{$inputs}];
+    my $smaller_bs = [CORE::map { $_->_body() } @{$inputs}];
     my $result_b = $result->_body();
 
     for my $smaller_b (@{$smaller_bs}) {
@@ -1163,7 +1163,7 @@ sub exclusion {
 
     my $result = $largest->clone();
 
-    my $smaller_bs = [map { $_->_body() } @{$inputs}];
+    my $smaller_bs = [CORE::map { $_->_body() } @{$inputs}];
     my $result_b = $result->_body();
 
     for my $smaller_b (@{$smaller_bs}) {
@@ -1213,7 +1213,7 @@ sub _intersection {
     my $result = $smallest->empty();
 
     my $smallest_b = $smallest->_body();
-    my $larger_bs = [map { $_->_body() } @{$inputs}];
+    my $larger_bs = [CORE::map { $_->_body() } @{$inputs}];
     my $result_b = $result->_body();
 
     TUPLE:
@@ -1409,8 +1409,8 @@ sub _join {
 
     if (first { $_->is_empty() } $topic, @{$others}) {
         # At least one input has zero tuples; so does result.
-        my $result_h = {map { %{$_->_heading()} } $topic, @{$others}};
-        return __PACKAGE__->new( members => [keys %{$result_h}] );
+        my $rslt_h = {CORE::map { %{$_->_heading()} } $topic, @{$others}};
+        return __PACKAGE__->new( members => [keys %{$rslt_h}] );
     }
 
     # If we get here, all inputs have at least one tuple.
@@ -1537,8 +1537,8 @@ sub product {
 
     if (first { $_->is_empty() } $topic, @{$others}) {
         # At least one input has zero tuples; so does result.
-        my $result_h = {map { %{$_->_heading()} } $topic, @{$others}};
-        return __PACKAGE__->new( members => [keys %{$result_h}] );
+        my $rslt_h = {CORE::map { %{$_->_heading()} } $topic, @{$others}};
+        return __PACKAGE__->new( members => [keys %{$rslt_h}] );
     }
 
     # If we get here, all inputs have at least one tuple.
