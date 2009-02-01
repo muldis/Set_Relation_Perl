@@ -3,9 +3,6 @@
 
 Following is a summary of things that still need doing.
 
-* Make these operators N-ary: union, exclusion, intersection, join,
-product; if any were missed, then those too; rename arg to 'others'.
-
 * Add relational operators for wrap/unwrap, group/ungroup, summarize,
 transitive closure, reduction, rank and quota, substitution, outer joins,
 other misc missing.

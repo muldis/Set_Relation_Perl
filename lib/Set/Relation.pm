@@ -349,7 +349,7 @@ sub insert {
     my ($r, $t) = @_;
     confess q{insert(): Can't mutate invocant that has a frozen identity.}
         if $r->_has_frozen_identity();
-    $t = $r->_normalize_tuples_arg( 'insert', '$t', $t );
+    $t = $r->_normalize_same_heading_tuples_arg( 'insert', '$t', $t );
     for my $tuple (@{$t}) {
         confess q{insert(): Bad $t arg; it contains the invocant}
                 . q{ Set::Relation object as a value-typed component,}
@@ -392,7 +392,7 @@ sub delete {
     my ($r, $t) = @_;
     confess q{delete(): Can't mutate invocant that has a frozen identity.}
         if $r->_has_frozen_identity();
-    $t = $r->_normalize_tuples_arg( 'delete', '$t', $t );
+    $t = $r->_normalize_same_heading_tuples_arg( 'delete', '$t', $t );
     for my $tuple (@{$t}) {
         confess q{delete(): Bad $t arg; it contains the invocant}
                 . q{ Set::Relation object as a value-typed component,}
@@ -434,11 +434,10 @@ sub _delete {
     return $r;
 }
 
-sub _normalize_tuples_arg {
+sub _normalize_same_heading_tuples_arg {
     my ($r, $rtn_nm, $arg_nm, $t) = @_;
 
     my $r_h = $r->_heading();
-    my $r_b = $r->_body();
 
     if (ref $t eq 'HASH') {
         $t = [$t];
@@ -629,7 +628,7 @@ sub is_empty {
 
 sub is_member {
     my ($r, $t) = @_;
-    $t = $r->_normalize_tuples_arg( 'is_member', '$t', $t );
+    $t = $r->_normalize_same_heading_tuples_arg( 'is_member', '$t', $t );
     my $r_b = $r->_body();
     return !first {
             !exists $r_b->{$r->_ident_str( $r->_import_nfmt_tuple( $_ ) )}
@@ -645,13 +644,13 @@ sub empty {
 
 sub insertion {
     my ($r, $t) = @_;
-    $t = $r->_normalize_tuples_arg( 'insertion', '$t', $t );
+    $t = $r->_normalize_same_heading_tuples_arg( 'insertion', '$t', $t );
     return $r->clone()->_insert( $t );
 }
 
 sub deletion {
     my ($r, $t) = @_;
-    $t = $r->_normalize_tuples_arg( 'deletion', '$t', $t );
+    $t = $r->_normalize_same_heading_tuples_arg( 'deletion', '$t', $t );
     return $r->clone()->_delete( $t );
 }
 
@@ -1088,31 +1087,46 @@ sub is_disjoint {
     my ($topic, $other) = @_;
     $topic->_assert_same_heading_relation_arg(
         'is_disjoint', '$other', $other );
-    return $topic->_intersection( $other )->is_empty();
+    return $topic->_intersection( [$other] )->is_empty();
 }
 
 ###########################################################################
 
 sub union {
-    my ($topic, $other) = @_;
+    my ($topic, $others) = @_;
 
-    $topic->_assert_same_heading_relation_arg( 'union', '$other', $other );
+    $others = $topic->_normalize_same_heading_relations_arg(
+        'union', '$others', $others );
 
-    my ($sm, $lg) = ($topic->cardinality() < $other->cardinality())
-        ? ($topic, $other) : ($other, $topic);
+    my $inputs = [
+        sort { $b->cardinality() <=> $a->cardinality() }
+        grep { !$_->is_empty() } # filter out identity value instances
+        $topic, @{$others}];
 
-    if ($sm->is_empty()) {
-        return $lg;
+    if (@{$inputs} == 0) {
+        # All inputs were the identity value; so is result.
+        return $topic->empty();
+    }
+    if (@{$inputs} == 1) {
+        # Only one non-identity value input; so it is the result.
+        return $inputs->[0];
     }
 
-    my $result = $lg->clone();
+    # If we get here, there are at least 2 non-empty input relations.
 
-    my $sm_b = $sm->_body();
+    my $largest = shift @{$inputs};
+
+    my $result = $largest->clone();
+
+    my $smaller_bs = [map { $_->_body() } @{$inputs}];
     my $result_b = $result->_body();
 
-    for my $tuple_ident_str (keys %{$sm_b}) {
-        if (!exists $result_b->{$tuple_ident_str}) {
-            $result_b->{$tuple_ident_str} = $sm_b->{$tuple_ident_str};
+    for my $smaller_b (@{$smaller_bs}) {
+        for my $tuple_ident_str (keys %{$smaller_b}) {
+            if (!exists $result_b->{$tuple_ident_str}) {
+                $result_b->{$tuple_ident_str}
+                    = $smaller_b->{$tuple_ident_str};
+            }
         }
     }
     $result->_cardinality( scalar keys %{$result_b} );
@@ -1124,30 +1138,43 @@ sub union {
 
 sub exclusion {
     # Also known as symmetric_difference().
-    my ($topic, $other) = @_;
+    my ($topic, $others) = @_;
 
-    $topic->_assert_same_heading_relation_arg(
-        'exclusion', '$other', $other );
+    $others = $topic->_normalize_same_heading_relations_arg(
+        'exclusion', '$others', $others );
 
-    my ($sm, $lg) = ($topic->cardinality() < $other->cardinality())
-        ? ($topic, $other) : ($other, $topic);
+    my $inputs = [
+        sort { $b->cardinality() <=> $a->cardinality() }
+        grep { !$_->is_empty() } # filter out identity value instances
+        $topic, @{$others}];
 
-    if ($sm->is_empty()) {
-        return $lg;
+    if (@{$inputs} == 0) {
+        # All inputs were the identity value; so is result.
+        return $topic->empty();
+    }
+    if (@{$inputs} == 1) {
+        # Only one non-identity value input; so it is the result.
+        return $inputs->[0];
     }
 
-    my $result = $lg->clone();
+    # If we get here, there are at least 2 non-empty input relations.
 
-    my $sm_b = $sm->_body();
-    my $lg_b = $lg->_body();
+    my $largest = shift @{$inputs};
+
+    my $result = $largest->clone();
+
+    my $smaller_bs = [map { $_->_body() } @{$inputs}];
     my $result_b = $result->_body();
 
-    for my $tuple_ident_str (keys %{$sm_b}) {
-        if (exists $lg_b->{$tuple_ident_str}) {
-            CORE::delete $result_b->{$tuple_ident_str};
-        }
-        else {
-            $result_b->{$tuple_ident_str} = $sm_b->{$tuple_ident_str};
+    for my $smaller_b (@{$smaller_bs}) {
+        for my $tuple_ident_str (keys %{$smaller_b}) {
+            if (exists $result_b->{$tuple_ident_str}) {
+                CORE::delete $result_b->{$tuple_ident_str};
+            }
+            else {
+                $result_b->{$tuple_ident_str}
+                    = $smaller_b->{$tuple_ident_str};
+            }
         }
     }
     $result->_cardinality( scalar keys %{$result_b} );
@@ -1158,36 +1185,91 @@ sub exclusion {
 ###########################################################################
 
 sub intersection {
-    my ($topic, $other) = @_;
-    $topic->_assert_same_heading_relation_arg(
-        'intersection', '$other', $other );
-    return $topic->_intersection( $other );
+    my ($topic, $others) = @_;
+    $others = $topic->_normalize_same_heading_relations_arg(
+        'intersection', '$others', $others );
+    return $topic->_intersection( $others );
 }
 
 sub _intersection {
-    my ($topic, $other) = @_;
+    my ($topic, $others) = @_;
 
-    my ($sm, $lg) = ($topic->cardinality() < $other->cardinality())
-        ? ($topic, $other) : ($other, $topic);
-
-    if ($sm->is_empty()) {
-        return $sm;
+    if (@{$others} == 0) {
+        return $topic;
     }
 
-    my $result = $lg->empty();
+    my $inputs = [
+        sort { $a->cardinality() <=> $b->cardinality() }
+        $topic, @{$others}];
 
-    my $sm_b = $sm->_body();
-    my $lg_b = $lg->_body();
+    my $smallest = shift @{$inputs};
+
+    if ($smallest->is_empty()) {
+        return $smallest;
+    }
+
+    # If we get here, there are at least 2 non-empty input relations.
+
+    my $result = $smallest->empty();
+
+    my $smallest_b = $smallest->_body();
+    my $larger_bs = [map { $_->_body() } @{$inputs}];
     my $result_b = $result->_body();
 
-    for my $tuple_ident_str (keys %{$sm_b}) {
-        if (exists $lg_b->{$tuple_ident_str}) {
-            $result_b->{$tuple_ident_str} = $sm_b->{$tuple_ident_str};
+    TUPLE:
+    for my $tuple_ident_str (keys %{$smallest_b}) {
+        for my $larger_b (@{$larger_bs}) {
+            next TUPLE
+                if !exists $larger_b->{$tuple_ident_str};
         }
+        $result_b->{$tuple_ident_str} = $smallest_b->{$tuple_ident_str};
     }
     $result->_cardinality( scalar keys %{$result_b} );
 
     return $result;
+}
+
+###########################################################################
+
+sub _normalize_same_heading_relations_arg {
+    my ($self, $rtn_nm, $arg_nm, $others) = @_;
+
+    my $self_h = $self->_heading();
+
+    if (blessed $others and $others->isa( __PACKAGE__ )) {
+        $others = [$others];
+    }
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ it must be an array-ref or a Set::Relation object.}
+        if ref $others ne 'ARRAY';
+    for my $other (@{$others}) {
+        confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
+                . q{ it isn't a Set::Relation object, or it doesn't have}
+                . q{ exactly the same set of attr names as the invocant.}
+            if !blessed $other or !$other->isa( __PACKAGE__ )
+                or !$self->_is_identical_hkeys(
+                    $self_h, $other->_heading() );
+    }
+
+    return $others;
+}
+
+sub _normalize_relations_arg {
+    my ($self, $rtn_nm, $arg_nm, $others) = @_;
+
+    if (blessed $others and $others->isa( __PACKAGE__ )) {
+        $others = [$others];
+    }
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ it must be an array-ref or a Set::Relation object.}
+        if ref $others ne 'ARRAY';
+    for my $other (@{$others}) {
+        confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
+                . q{ it isn't a Set::Relation object.}
+            if !blessed $other or !$other->isa( __PACKAGE__ );
+    }
+
+    return $others;
 }
 
 ###########################################################################
@@ -1274,7 +1356,7 @@ sub _semijoin {
     }
     if (@{$source_only} == 0 and @{$filter_only} == 0) {
         # The inputs have identical headings; result is intersection.
-        return $source->_intersection( $filter );
+        return $source->_intersection( [$filter] );
     }
 
     # If we get here, the inputs also have overlapping non-ident headings.
@@ -1312,63 +1394,87 @@ sub _regular_semijoin {
 ###########################################################################
 
 sub join {
-    my ($topic, $other) = @_;
-    confess q{join(): Bad $other arg; it isn't a Set::Relation object.}
-        if !blessed $other or !$other->isa( __PACKAGE__ );
-    return $topic->_join( $other );
+    my ($topic, $others) = @_;
+    $others = $topic->_normalize_relations_arg(
+        'join', '$others', $others );
+    return $topic->_join( $others );
 }
 
 sub _join {
-    my ($topic, $other) = @_;
+    my ($topic, $others) = @_;
 
-    my ($both, $topic_only, $other_only) = $topic->_ptn_conj_and_disj(
-        $topic->_heading(), $other->_heading() );
-
-    if ($topic->is_empty() or $other->is_empty()) {
-        # At least one input has zero tuples; so does result.
-        return __PACKAGE__->new(
-            members => [@{$both}, @{$topic_only}, @{$other_only}] );
-    }
-
-    # If we get here, both inputs have at least one tuple.
-
-    if ($topic->is_nullary()) {
-        # First input is identity-one relation; result is second input.
-        return $other;
-    }
-    if ($other->is_nullary()) {
-        # Second input is identity-one relation; result is first input.
+    if (@{$others} == 0) {
         return $topic;
     }
 
-    # If we get here, both inputs also have at least one attribute.
-
-    if (@{$both} == 0) {
-        # The inputs have disjoint headings; result is cross-product.
-        return $topic->_regular_product( $other );
-    }
-    if (@{$topic_only} == 0 and @{$other_only} == 0) {
-        # The inputs have identical headings; result is intersection.
-        return $topic->_intersection( $other );
+    if (first { $_->is_empty() } $topic, @{$others}) {
+        # At least one input has zero tuples; so does result.
+        my $result_h = {map { %{$_->_heading()} } $topic, @{$others}};
+        return __PACKAGE__->new( members => [keys %{$result_h}] );
     }
 
-    # If we get here, the inputs also have overlapping non-ident headings.
+    # If we get here, all inputs have at least one tuple.
 
-    if (@{$topic_only} == 0) {
-        # The first input's attributes are a proper subset of the second's;
-        # result has same heading as second, a subset of second's tuples.
-        return $other->_regular_semijoin( $topic, $both );
+    my $inputs = [
+        sort { $a->cardinality() <=> $b->cardinality() }
+        grep { !$_->is_nullary() } # filter out identity value instances
+        $topic, @{$others}];
+
+    if (@{$inputs} == 0) {
+        # All inputs were the identity value; so is result.
+        return $topic;
     }
-    if (@{$other_only} == 0) {
-        # The second input's attributes are a proper subset of the first's;
-        # result has same heading as first, a subset of first's tuples.
-        return $topic->_regular_semijoin( $other, $both );
+    if (@{$inputs} == 1) {
+        # Only one non-identity value input; so it is the result.
+        return $inputs->[0];
     }
 
-    # If we get here, both inputs also have at least one attr of their own.
+    # If we get here, there are at least 2 non-empty non-nullary inp rels.
 
-    return $topic->_regular_join(
-        $other, $both, $topic_only, $other_only );
+    my $result = shift @{$inputs};
+    INPUT:
+    for my $input (@{$inputs}) {
+        # TODO: Optimize this better by determining more strategic order
+        # to join the various inputs, such as by doing intersections first,
+        # then semijoins, then regular joins, then cross-products.
+        # But at least we're going min to max cardinality meanwhile.
+
+        my ($both, $result_only, $input_only)
+            = $result->_ptn_conj_and_disj(
+                $result->_heading(), $input->_heading() );
+
+        if (@{$both} == 0) {
+            # The inputs have disjoint headings; result is cross-product.
+            $result = $result->_regular_product( $input );
+            next INPUT;
+        }
+        if (@{$result_only} == 0 and @{$input_only} == 0) {
+            # The inputs have identical headings; result is intersection.
+            $result = $result->_intersection( [$input] );
+            next INPUT;
+        }
+
+        # If we get here, the inputs also have overlapping non-ident heads.
+
+        if (@{$result_only} == 0) {
+            # The first input's attrs are a proper subset of the second's;
+            # result has same heading as second, a subset of sec's tuples.
+            $result = $input->_regular_semijoin( $result, $both );
+            next INPUT;
+        }
+        if (@{$input_only} == 0) {
+            # The second input's attrs are a proper subset of the first's;
+            # result has same heading as first, a subset of first's tuples.
+            $result = $result->_regular_semijoin( $input, $both );
+            next INPUT;
+        }
+
+        # If we get here, both inputs also have mini one attr of their own.
+
+        $result = $result->_regular_join(
+            $input, $both, $result_only, $input_only );
+    }
+    return $result;
 }
 
 sub _regular_join {
@@ -1409,38 +1515,55 @@ sub _regular_join {
 ###########################################################################
 
 sub product {
-    my ($topic, $other) = @_;
+    my ($topic, $others) = @_;
 
-    confess q{product(): Bad $other arg; it isn't a Set::Relation object.}
-        if !blessed $other or !$other->isa( __PACKAGE__ );
+    $others = $topic->_normalize_relations_arg(
+        'product', '$others', $others );
 
-    my ($both, $topic_only, $other_only) = $topic->_ptn_conj_and_disj(
-        $topic->_heading(), $other->_heading() );
-
-    confess q{product(): Bad $other arg;}
-            . q{ its heading isn't disjoint with the invocant.}
-        if @{$both} > 0;
-
-    if ($topic->is_empty() or $other->is_empty()) {
-        # At least one input has zero tuples; so does result.
-        return __PACKAGE__->new(
-            members => [@{$topic_only}, @{$other_only}] );
-    }
-
-    # If we get here, both inputs have at least one tuple.
-
-    if ($topic->is_nullary()) {
-        # First input is identity-one relation; result is second input.
-        return $other;
-    }
-    if ($other->is_nullary()) {
-        # Second input is identity-one relation; result is first input.
+    if (@{$others} == 0) {
         return $topic;
     }
 
-    # If we get here, both inputs also have at least one attribute.
+    my $seen_attrs = {%{$topic->_heading()}};
+    for my $other (@{$others}) {
+        for my $atnm (keys %{$others->_heading()}) {
+            confess q{product(): Bad $others arg;}
+                    . q{ one of its elems has an attr name duplicated by}
+                    . q{ either the invocant or another $others elem.}
+                if exists $seen_attrs->{$atnm};
+            $seen_attrs->{$atnm} = undef;
+        }
+    }
 
-    return $topic->_regular_product( $other );
+    if (first { $_->is_empty() } $topic, @{$others}) {
+        # At least one input has zero tuples; so does result.
+        my $result_h = {map { %{$_->_heading()} } $topic, @{$others}};
+        return __PACKAGE__->new( members => [keys %{$result_h}] );
+    }
+
+    # If we get here, all inputs have at least one tuple.
+
+    my $inputs = [
+        sort { $a->cardinality() <=> $b->cardinality() }
+        grep { !$_->is_nullary() } # filter out identity value instances
+        $topic, @{$others}];
+
+    if (@{$inputs} == 0) {
+        # All inputs were the identity value; so is result.
+        return $topic;
+    }
+    if (@{$inputs} == 1) {
+        # Only one non-identity value input; so it is the result.
+        return $inputs->[0];
+    }
+
+    # If we get here, there are at least 2 non-empty non-nullary inp rels.
+
+    my $result = shift @{$inputs};
+    for my $input (@{$inputs}) {
+        $result = $result->_regular_product( $input );
+    }
+    return $result;
 }
 
 sub _regular_product {
@@ -2359,39 +2482,54 @@ argument is empty; it results in false otherwise.
 
 =head2 union
 
-C<method union of Set::Relation ($topic: Set::Relation $other)>
+C<method union of Set::Relation ($topic: Array|Set::Relation $others)>
 
-This functional method results in the relational union/inclusive-or of its
-same-heading invocant and argument.  The result relation has the same
-heading as the input relations, and its body contains every tuple that is
-in either of the inputs.  Relational union is both a commutative and
-associative operation, and its identity value is the same-heading empty
-relation value (having zero tuples).
+This functional method results in the relational union/inclusive-or of the
+collective N element values of its same-heading invocant and argument,
+hereafter referred to as C<$inputs>; it is a reduction operator that
+recursively takes each pair of input values and relationally unions (which
+is both commutative and associative) them together until just one is left,
+which is the result.  The result relation has the same heading as all of
+its input relations, and its body contains every tuple that is in any of
+the input relations.  The identity value of relational union is the
+same-heading empty relation value (having zero tuples).
 
 =head2 exclusion
 
-C<method exclusion of Set::Relation ($topic: Set::Relation $other)>
+C<method exclusion of Set::Relation ($topic: Array|Set::Relation $others)>
 
 This functional method results in the relational exclusion/exclusive-or of
-its same-heading invocant and argument.  The result relation has the same
-heading as the input relations, and its body contains every tuple that is
-in just one of the two inputs.  Relational exclusion is both a commutative
-and associative operation, and its identity value is the same as for
-C<union>.  Note that this operation is also legitimately known as
-I<symmetric difference>.
+the collective N element values of its same-heading invocant and argument,
+hereafter referred to as C<$inputs>; it is a reduction operator that
+recursively takes each pair of input values and relationally excludes
+(which is both commutative and associative) them together until just one is
+left, which is the result.  The result relation has the same heading as all
+of its input relations, and its body contains every tuple that is in just
+an odd number of the input relations.  The identity value of relational
+exclusion is the same as for C<union>.  Note that this operation is also
+legitimately known as I<symmetric difference>.
 
 =head2 intersection
 
-C<method intersection of Set::Relation ($topic: Set::Relation $other)>
+C<method intersection of Set::Relation ($topic: Array|Set::Relation
+$others)>
 
-This functional method results in the relational intersection/and of its
-same-heading invocant and argument.  The result relation has the same
-heading as the input relations, and its body contains only the tuples that
-are in both of the inputs.  Relational intersection is both a commutative
-and associative operation, and its identity value is the same-heading
-universal relation value (having all the tuples that could possible exist
-together in a common relation value with that heading; this is impossibly
-large to represent in the general case, except perhaps lazily).
+This functional method results in the relational intersection/and of the
+collective N element values of its same-heading invocant and argument,
+hereafter referred to as C<$inputs>; it is a reduction operator that
+recursively takes each pair of input values and relationally intersects
+(which is both commutative and associative) them together until just one is
+left, which is the result.  The result relation has the same heading as all
+of its input relations, and its body contains only the tuples that are in
+every one of the input relations.  The identity value of relational
+intersection is the same-heading universal relation value (having all the
+tuples that could possible exist together in a common relation value with
+that heading; this is impossibly large to represent in the general case,
+except perhaps lazily).  Note that this C<intersection> method is
+conceptually a special case of C<join>, applicable when the headings of the
+inputs are the same, and C<join> will produce the same result as this when
+given the same inputs, but with the exception that relational intersection
+has a different identity value for zero inputs than relational join has.
 
 =head2 difference
 
@@ -2428,33 +2566,39 @@ attributes that just C<$source> has.
 
 =head2 join
 
-C<method join of Set::Relation ($topic: Set::Relation $other)>
+C<method join of Set::Relation ($topic: Array|Set::Relation $others)>
 
 This functional method results in the relational join (natural inner join)
-of its invocant and argument.  The result relation has a heading that is a
-union of the headings of the input relations, and its body is the result of
-first pairwise-matching every tuple of the input relations, then where each
-member of a tuple pair has attribute names in common, eliminating pairs
-where the values of those attributes differ and unioning the remaining said
-tuple pairs, then eliminating any result tuples that duplicate others.
-Relational join is both a commutative and associative operation, and its
-identity value is the relation value having zero attributes and a single
-tuple.  As a trivial case, if either input relation has zero tuples, then
-the method's result will too; or, if either input is the nullary relation
-with one tuple, the result is the other input (see identity value); or, if
-the inputs have no attribute names in common, then the join of those is a
-cartesian product; or, if the inputs have all attribute names in common,
-then the join of those is an intersection; or, if one input's set of
-attribute names is a proper subset of the other's, then the join of just
-those two is a semijoin with the former filtering the latter.
+of the collective N element values of its invocant and argument, hereafter
+referred to as C<$inputs>; it is a reduction operator that recursively
+takes each pair of input values and relationally joins (which is both
+commutative and associative) them together until just one is left, which is
+the result.  The result relation has a heading that is a union of all of
+the headings of its input relations, and its body is the result of first
+pairwise-matching every tuple of each input relation with every tuple of
+each other input relation, then where each member of a tuple pair has
+attribute names in common, eliminating pairs where the values of those
+attributes differ and unioning the remaining said tuple pairs, then
+eliminating any result tuples that duplicate others.  The identity value of
+relational join is the nullary (zero attribute) relation value having a
+single tuple.  As a trivial case, if any input relation has zero tuples,
+then the function's result will too; or, if any input is the nullary
+relation with one tuple, that input can be ignored (see identity value);
+or, if any 2 inputs have no attribute names in common, then the join of
+just those 2 is a cartesian product; or, if any 2 inputs have all attribute
+names in common, then the join of just those 2 is an intersection; or, if
+for 2 inputs, one's set of attribute names is a proper subset of another's,
+then the join of just those two is a semijoin with the former filtering the
+latter.
 
 =head2 product
 
-C<method product of Set::Relation ($topic: Set::Relation $other)>
+C<method product of Set::Relation ($topic: Array|Set::Relation $others)>
 
 This functional method results in the relational cartesian/cross product of
-its invocant and argument; it is conceptually a special case of C<join>
-where the input relations have mutually distinct attribute names; unlike
+the collective N element values of its invocant and argument, hereafter
+referred to as C<$inputs>; it is conceptually a special case of C<join>
+where all input relations have mutually distinct attribute names; unlike
 C<join>, C<product> will fail if any inputs have attribute names in common.
 
 =head2 quotient

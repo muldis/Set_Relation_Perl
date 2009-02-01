@@ -11,6 +11,16 @@
     routines have been added or removed.  New routines should feature in
     the next 0.Y.0 release.
 
+    * (Relation.pm)  Updated each of the 5 functional methods ["union",
+    "exclusion", "intersection", "join", "product"] so it is now an N-adic
+    operator rather than a dyadic operator.  Each method's "other"
+    parameter was renamed to "others" and now takes either a single
+    Set::Relation object as before or an Array of 0..N Set::Relation
+    objects which is new.  With this change, these operators are now at
+    feature parity with the Muldis D functions they are based on, except
+    that they never handle the niladic option; being object methods, there
+    is always at least one operand which is the invocant.
+
     * (Relation.pm)  Updated each of the 4 functional methods
     ["(|cmpl_)restriction", "extension", "map"] to remove its optional
     "assuming" parameter.  This parameter was a fossil left over from the
