@@ -2819,6 +2819,142 @@ wasn't grouped.  This method is a convenient tool for gathering both parent
 and child records from a database using a single query while avoiding
 duplication of the parent record values.
 
+=head1 Relational Substitution Functional Methods
+
+These Set::Relation object methods are pure functional.  They are specific
+to supporting substitutions.
+
+=head2 TODO - substitution
+
+C<method substitution of Set::Relation ($topic: Array|Str $attrs, Code
+$func)>
+
+This functional method is similar to C<extension> except that it
+substitutes values of existing relation attributes rather than adding new
+attributes.  The result relation has the same heading as C<$topic>.  The
+result tuple of the Perl subroutine reference given in C<$func> must have a
+heading that is a subset of the heading of C<$topic>; corresponding values
+resulting from the subroutine given in C<$func> will replace the values of
+the tuples of C<$topic>.  The result relation has a cardinality that is the
+same as that of C<$topic>, unless the result of any substitutions was
+redundant tuples, in which case the result has appropriately fewer tuples.
+As a trivial case, if C<$func> is defined to unconditionally result in
+either the degree-zero tuple or in the same tuple as its own C<$topic>
+argument, then this method results simply in C<$topic>; or, if C<$func> is
+defined to have a static result and it replaces all attributes, then this
+method's result will have just 0..1 tuples.  Now, strictly speaking,
+C<substitution> could conceivably be implemented such that each result from
+C<$func> is allowed to specify replacement values for different subsets of
+C<$topic> attributes; however, to improve the method's predictability and
+ease of implementation over disparate foundations, C<substitution> requires
+the extra C<$attrs> argument so that users can specify a consistent subset
+that C<$func> will update (possibly to itself).  This method will fail if
+C<$topic> has at least 1 tuple and the result of C<$func> does not have
+matching attribute names to those named by C<$attrs>.
+
+=head2 TODO - static_substitution
+
+C<method static_substitution of Set::Relation ($topic: Hash $attrs)>
+
+This functional method is a simpler-syntax alternative to C<substitution>
+in the typical scenario where every tuple of a relation, given in the
+C<$topic> invocant, is updated with identical values for the same
+attributes; the new attribute values are given in the C<$attrs> argument.
+
+=head2 TODO - substitution_in_restriction
+
+C<method substitution_in_restriction of Set::Relation ($topic: Code
+$restr_func, Array|Str $subst_attrs, Code $subst_func)>
+
+This functional method is like C<substitution> except that it only
+transforms a subset of the tuples of C<$topic> rather than all of them.  It
+is a short-hand for first separating the tuples of C<$topic> into 2 groups
+where those passed by a relational restriction (defined by C<$restr_func>)
+are then transformed (defined by C<subst_attrs> and C<subst_func>), then
+the result of the substitution is unioned with the un-transformed group. 
+See also the C<substitution_in_semijoin> method, which is a simpler-syntax
+alternative for C<substitution_in_restriction> in its typical usage where
+restrictions are composed simply of anded or ored tests for attribute value
+equality.
+
+=head2 TODO - static_substitution_in_restriction
+
+C<method static_substitution_in_restriction of Set::Relation ($topic: Code
+$restr_func, Hash $subst)>
+
+This functional method is to C<substitution_in_restriction> what
+C<static_substitution> is to C<substitution>.  See also the
+C<static_substitution_in_semijoin> function.
+
+=head2 TODO - substitution_in_semijoin
+
+C<method substitution_in_semijoin of Set::Relation ($topic: Set::Relation
+$restr, Array|Str $subst_attrs, Code $subst_func)>
+
+This functional method is like C<substitution_in_restriction> except that
+the subset of the tuples of C<$topic> to be transformed is determined by
+those matched by a semijoin with C<$restr> rather than those that pass a
+generic relational restriction.
+
+=head2 TODO - static_substitution_in_semijoin
+
+C<method static_substitution_in_semijoin of Set::Relation ($topic:
+Set::Relation $restr, Hash $subst)>
+
+This functional method is to C<substitution_in_semijoin> what
+C<static_substitution> is to C<substitution>.
+
+=head1 Relational Outer-Join Functional Methods
+
+These Set::Relation object methods are pure functional.  They are specific
+to supporting outer-joins.
+
+=head2 TODO - outer_join_with_group
+
+C<method outer_join_with_group of Set::Relation ($primary: Set::Relation
+$secondary, Str $group_attr)>
+
+This functional method is the same as C<join_with_group> except that it
+results in a half-outer natural join rather than an inner natural join;
+every tuple of C<$primary> has exactly 1 corresponding tuple in the result,
+but where there were no matching C<$secondary> tuples, the result attribute
+named by C<$group_attr> contains zero tuples rather than 1+.
+
+=head2 TODO - outer_join_with_undefs
+
+C<method outer_join_with_undefs of Set::Relation ($primary: Set::Relation
+$secondary)>
+
+This functional method results in a plain half-outer natural join of its
+C<$primary> invocant and C<$secondary> argument where, for all result
+tuples coming from a C<$primary> tuple that didn't match a C<$secondary>
+tuple, the result attributes coming from just C<$secondary> are filled with
+the Perl undef.
+
+=head2 TODO - outer_join_with_static_extension
+
+C<method outer_join_with_static_extension of Set::Relation ($primary:
+Set::Relation $secondary, Hash $filler)>
+
+This functional method is the same as C<outer_join_with_undefs> but that
+C<$secondary>-sourced result attributes are not filled with the Perl undef;
+rather, for result tuples from non-matches, the missing values are provided
+explicitly from the C<$filler> argument, which is a tuple/Hash whose
+heading matches the projection of C<$secondary>'s attributes that aren't in
+common with C<$primary>, and whose body is the literal values to use for
+those missing attribute values.
+
+=head2 TODO - outer_join_with_extension
+
+C<method outer_join_with_extension of Set::Relation ($primary:
+Set::Relation $secondary, Code $exten_func)>
+
+This functional method is the same as C<outer_join_with_static_extension>
+but that the result tuples from non-matches are the result of performing a
+relational extension on the un-matched C<$primary> tuples such that each
+said result tuple is determined by applying the Perl subroutine given in
+C<$exten_func> to each said C<$primary> tuple.
+
 =head1 DIAGNOSTICS
 
 I<This documentation is pending.>
