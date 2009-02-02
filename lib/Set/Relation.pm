@@ -336,6 +336,16 @@ sub _normalize_true_want_ord_attrs_arg {
 
 ###########################################################################
 
+sub slice {
+    confess q{this routine isn't implemented yet};
+}
+
+sub attr {
+    confess q{this routine isn't implemented yet};
+}
+
+###########################################################################
+
 sub evacuate {
     my ($topic) = @_;
     confess q{evacuate(): Can't mutate invocant having a frozen identity.}
@@ -619,6 +629,14 @@ sub is_nullary {
     return $topic->degree() == 0;
 }
 
+sub has_attrs {
+    confess q{this routine isn't implemented yet};
+}
+
+sub attr_names {
+    confess q{this routine isn't implemented yet};
+}
+
 ###########################################################################
 
 sub is_empty {
@@ -796,6 +814,45 @@ sub cmpl_projection {
 
     return $topic->_projection(
         [grep { !$cproj_h->{$_} } keys %{$topic_h}] );
+}
+
+###########################################################################
+
+sub wrap {
+    confess q{this routine isn't implemented yet};
+}
+
+sub cmpl_wrap {
+    confess q{this routine isn't implemented yet};
+}
+
+sub unwrap {
+    confess q{this routine isn't implemented yet};
+}
+
+###########################################################################
+
+sub group {
+    confess q{this routine isn't implemented yet};
+}
+
+sub cmpl_group {
+    confess q{this routine isn't implemented yet};
+}
+
+sub ungroup {
+    confess q{this routine isn't implemented yet};
+}
+
+###########################################################################
+
+sub transitive_closure {
+    my ($topic) = @_;
+    confess q{transitive_closure(): This method may only be invoked on a}
+            . q{ Set::Relation object with exactly 2 (same-typed) attrs.}
+        if $topic->degree() != 2;
+
+    confess q{this routine isn't implemented yet};
 }
 
 ###########################################################################
@@ -988,6 +1045,12 @@ sub map {
     $result->_cardinality( scalar keys %{$result_b} );
 
     return $result;
+}
+
+###########################################################################
+
+sub summary {
+    confess q{this routine isn't implemented yet};
 }
 
 ###########################################################################
@@ -1732,6 +1795,68 @@ sub _want_index {
 
 ###########################################################################
 
+sub join_with_group {
+    confess q{this routine isn't implemented yet};
+}
+
+###########################################################################
+
+sub rank {
+    confess q{this routine isn't implemented yet};
+}
+
+sub limit {
+    confess q{this routine isn't implemented yet};
+}
+
+###########################################################################
+
+sub substitution {
+    confess q{this routine isn't implemented yet};
+}
+
+sub static_substitution {
+    confess q{this routine isn't implemented yet};
+}
+
+###########################################################################
+
+sub substitution_in_restriction {
+    confess q{this routine isn't implemented yet};
+}
+
+sub static_substitution_in_restriction {
+    confess q{this routine isn't implemented yet};
+}
+
+sub substitution_in_semijoin {
+    confess q{this routine isn't implemented yet};
+}
+
+sub static_substitution_in_semijoin {
+    confess q{this routine isn't implemented yet};
+}
+
+###########################################################################
+
+sub outer_join_with_group {
+    confess q{this routine isn't implemented yet};
+}
+
+sub outer_join_with_undefs {
+    confess q{this routine isn't implemented yet};
+}
+
+sub outer_join_with_static_extension {
+    confess q{this routine isn't implemented yet};
+}
+
+sub outer_join_with_extension {
+    confess q{this routine isn't implemented yet};
+}
+
+###########################################################################
+
 } # class Set::Relation
 
 ###########################################################################
@@ -2393,7 +2518,7 @@ C<$topic> invocant but that, for each of its member tuples, some of its
 attributes have been wrapped up into a new tuple-typed attribute, which
 exists in place of the original attributes.  The C<$inner> argument
 specifies which C<$topic> attributes are to be removed and wrapped up, and
-the C<$outer> argument specifies the name of their replacement attribute. 
+the C<$outer> argument specifies the name of their replacement attribute.
 The result relation has the same cardinality as C<$topic>.  As a trivial
 case, if C<$inner> is empty, then the result has all the same attributes as
 before plus a new tuple-typed attribute of degree zero; or, if C<$inner>
@@ -2477,7 +2602,7 @@ C<method ungroup of Set::Relation ($topic: Str $outer, Array|Str $inner)>
 This functional method is the inverse of C<group> as C<unwrap> is to
 C<wrap>; it will ungroup a relation-type attribute into its member
 attributes and tuples.  A relation can be first grouped and then that
-result ungrouped to produce the original relation, with no data loss. 
+result ungrouped to produce the original relation, with no data loss.
 However, the ungroup of a relation on a relation-valued attribute will lose
 the information in any outer relation tuples whose inner relation value has
 zero tuples; a group on this result won't bring them back.  This method
@@ -2939,8 +3064,8 @@ This functional method is like C<substitution> except that it only
 transforms a subset of the tuples of C<$topic> rather than all of them.  It
 is a short-hand for first separating the tuples of C<$topic> into 2 groups
 where those passed by a relational restriction (defined by C<$restr_func>)
-are then transformed (defined by C<subst_attrs> and C<subst_func>), then
-the result of the substitution is unioned with the un-transformed group. 
+are then transformed (defined by C<$subst_attrs> and C<$subst_func>), then
+the result of the substitution is unioned with the un-transformed group.
 See also the C<substitution_in_semijoin> method, which is a simpler-syntax
 alternative for C<substitution_in_restriction> in its typical usage where
 restrictions are composed simply of anded or ored tests for attribute value
