@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # class
-    use version 0.74; our $VERSION = qv('0.1.0');
+    use version 0.74; our $VERSION = qv('0.2.0');
 
     use Moose 0.65;
 
@@ -1876,7 +1876,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.1.0 for Perl 5.
+This document describes Set::Relation version 0.2.0 for Perl 5.
 
 =head1 SYNOPSIS
 
