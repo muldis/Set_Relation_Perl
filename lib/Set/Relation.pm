@@ -2204,6 +2204,29 @@ This method results in a Perl Array value whose elements are the tuples of
 the invocant.  Each tuple is either a Perl Hash or a Perl Array depending
 on the value of the C<$want_ord_attrs>, like with the C<members> method.
 
+=head2 TODO - slice
+
+C<method slice of Array ($self: Array|Str $attrs, Bool $want_ord_attrs?)>
+
+This method is like C<body> except that the result has just a subset of the
+attributes of the invocant, those named by C<$attrs>.  Unlike using
+C<projection> followed by C<body> to do this, any duplicate subtuples are
+retained in the result of C<slice>.  Each result subtuple is either a Perl
+Hash or a Perl Array depending on the value of the C<$want_ord_attrs>, like
+with C<body>, except that C<$want_ord_attrs> may only be a Bool here; when
+that argument is true, the exported attributes are in the same order as
+specified in C<$attrs>.
+
+=head2 TODO - attr
+
+C<method attr of Array ($self: Str $name)>
+
+This method is like C<slice> except that the result has exactly one of the
+invocant's attributes, the one named by C<$name>, and each result element
+is that attribute value directly, not a single-element tuple.  This method
+is expected to see a lot of use in relation summarizing operations, for
+extracting the input values for reduction or aggregate operators.
+
 =head1 Mutator Methods
 
 Invocations of these Set::Relation object methods will cause their
@@ -2818,6 +2841,52 @@ will fail if C<$group_attr> is the same name as any source attribute that
 wasn't grouped.  This method is a convenient tool for gathering both parent
 and child records from a database using a single query while avoiding
 duplication of the parent record values.
+
+=head1 Relational Ranking and Quota Functional Methods
+
+These Set::Relation object methods are pure functional.  They are specific
+to supporting ranking and quotas.
+
+=head2 TODO - rank
+
+C<method rank of Set::Relation ($topic: Str $name, Code $ord_func)>
+
+This functional method results in the relational extension of its C<$topic>
+invocant by a single nonnegative-integer-typed attribute whose name is
+provided by the C<$name> argument, where the value of the new attribute for
+each tuple is the rank of that tuple as determined by the Order-resulting
+zero-parameter Perl subroutine reference given in its C<$ord_func>
+argument.  The subroutine compares tuples, similarly to Perl's built-in
+C<sort> operator, with each invocation of it having a C<$_> topic whose
+value is a binary tuple/Hash with attributes named C<a> and C<b>, each of
+the latter having a C<$topic> tuple as its value.  The new attribute of
+C<rank>'s result has a value of zero for its ranked-first tuple, and each
+further consecutive ranked tuple has the next larger integer value.  Note
+that C<rank> provides the functionality of SQL's "RANK" feature but that
+the result of C<rank> is always a total ordering and so there is no "dense"
+/ "not dense" distinction (however a partial ordering can be implemented
+over it).
+
+=head2 TODO - limit
+
+C<method limit of Set::Relation ($topic: Code $ord_func, UInt $min_rank,
+UInt $max_rank)>
+
+This functional method results in the relational restriction of its
+C<$topic> argument as determined by first ranking its tuples as per C<rank>
+function (using C<$ord_func>) and then keeping just those tuples whose rank
+is within the inclusive range specified by the C<$min_rank> and
+C<$max_rank> arguments (C<rank>'s extra attribute is not kept).  The
+C<limit> function implements a certain kind of quota query where all the
+result tuples are consecutive in their ranks.  This function will fail if
+C<$max_rank> is before C<$min_rank>.  It is valid for C<$min_rank> or
+C<$max_rank> to be greater than the maximum rank of the source tuples; in
+the first case, the result has zero tuples; in the second case, the result
+has all remaining tuples starting at C<min_rank>.  If C<$topic> has any
+tuples and C<$min_rank> matches the rank of a source tuple, then the result
+will always have at least 1 tuple.  Note that C<limit> provides the
+functionality of SQL's "LIMIT/OFFSET" feature in combination with "ORDER
+BY" but that the result tuples of C<limit> do not remain ordered.
 
 =head1 Relational Substitution Functional Methods
 
