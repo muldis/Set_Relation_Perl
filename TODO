@@ -3,8 +3,9 @@
 
 Following is a summary of things that still need doing.
 
-* Add relational operators for wrap/unwrap, group/ungroup, summarize,
-transitive closure, reduction, rank and quota, substitution, outer joins,
+* IN PROGRESS ...
+Add relational operators for wrap/unwrap, group/ungroup, summarize,
+transitive closure, rank and quota, substitution, outer joins,
 other misc missing.
 
 * Add code examples, tutorial, cookbook, FAQ, etc.

@@ -2193,7 +2193,8 @@ C<body> on the same invocant with a non-Array but true valued
 C<$want_ord_attrs> then the default order of the ordered attributes
 resulting from C<body> matches the default order resulting from C<heading>;
 in contrast, if C<body> was invoked to return attributes in named format,
-it doesn't matter what order C<heading> returns their names in.
+it doesn't matter what order C<heading> returns their names in.  This
+method is currently an alias for the C<attr_names> functional method.
 
 =head2 body
 
@@ -2257,6 +2258,23 @@ C<method is_nullary of Bool ($topic:)>
 
 This functional method results in true iff its invocant has a degree of
 zero (that is, it has zero attributes), and false otherwise.
+
+=head2 TODO - has_attrs
+
+C<method has_attrs of Bool ($topic: Array $attrs)>
+
+This functional method results in true iff, for every one of the attribute
+names specified by its argument, its invocant has an attribute with that
+name; otherwise it results in false.  As a trivial case, this method's
+result is true if its argument is empty.
+
+=head2 TODO - attr_names
+
+C<method attr_names of Array ($topic:)>
+
+This functional method results in the set of the names of the attributes of
+its invocant.  This method is currently an alias for the C<heading>
+accessor method.
 
 =head2 cardinality
 
@@ -2342,6 +2360,127 @@ C<method cmpl_projection of Set::Relation ($topic: Array|Str $attrs)>
 This functional method is the same as C<projection> but that it results in
 the complementary subset of attributes of its invocant when given the same
 argument.
+
+=head2 TODO - wrap
+
+C<method wrap of Set::Relation ($topic: Array|Str $inner, Str $outer)>
+
+This functional method results in a relation value that is the same as its
+C<$topic> invocant but that, for each of its member tuples, some of its
+attributes have been wrapped up into a new tuple-typed attribute, which
+exists in place of the original attributes.  The C<$inner> argument
+specifies which C<$topic> attributes are to be removed and wrapped up, and
+the C<$outer> argument specifies the name of their replacement attribute. 
+The result relation has the same cardinality as C<$topic>.  As a trivial
+case, if C<$inner> is empty, then the result has all the same attributes as
+before plus a new tuple-typed attribute of degree zero; or, if C<$inner>
+lists all attributes of C<$topic>, then for each of its member tuples
+C<TT>, the result tuple C<TR> has a single attribute whose value is the
+same as C<TT>.  This method supports the new attribute having the same name
+as an old one being wrapped into it.  This method will fail if C<$inner>
+specifies any attribute names that C<$topic> doesn't have, or if C<$outer>
+is the same as a C<$topic> attribute that isn't being wrapped.
+
+=head2 TODO - cmpl_wrap
+
+C<method cmpl_wrap of Set::Relation ($topic: Array|Str $cmpl_inner, Str
+$outer)>
+
+This functional method is the same as C<wrap> but that it wraps the
+complementary subset of attributes of C<$topic> to those specified by
+C<$cmpl_inner>.
+
+=head2 TODO - unwrap
+
+C<method unwrap of Set::Relation ($topic: Str $outer, Array|Str $inner)>
+
+This functional method is the inverse of C<wrap>, such that it will unwrap
+a tuple-type attribute into its member attributes.  This method will fail
+if C<$outer> specifies any attribute name that C<$topic> doesn't have, or
+if C<$topic{$outer}> does not have a same-heading tuple value for every
+tuple of C<$topic> (because then there would be no consistent set of
+attribute names to extend C<$topic> with), or if an attribute of
+C<$topic{$outer}> has the same name as another C<$topic> attribute.  Now,
+C<unwrap> requires the extra C<$inner> argument to prevent ambiguity in the
+general case where C<$topic> might have zero tuples, because in that
+situation the names of the attributes to add to C<$topic> in place of
+C<$topic{$outer}> can not be determined from C<$topic{$outer}>.  This
+method will fail if C<$topic> has at least 1 tuple and C<$inner> does not
+match the names of the attributes of C<$topic{$outer}> for every tuple of
+C<$topic>.
+
+=head2 TODO - group
+
+C<method group of Set::Relation ($topic: Array|Str $inner, Str $outer)>
+
+This functional method is similar to C<wrap> but that the C<$topic>
+attribute-wrapping transformations result in new relation-typed attributes
+rather than new tuple-typed attributes, and moreover multiple C<$topic>
+tuples may be combined into fewer tuples whose new relation-typed
+attributes have multiple tuples.  This method takes a relation of N tuples
+and divides the tuples into M groups where all the tuples in a group have
+the same values in the attributes which aren't being grouped (and distinct
+values in the attributes that are being grouped); it then results in a new
+relation of M tuples where the new relation-valued attribute of the result
+has the tuples of the M groups.  A grouped relation contains all of the
+information in the original relation, but it has less redundancy due to
+redundant non-grouped attributes now just being represented in one tuple
+per the multiple tuples whose grouped attributes had them in common.  A
+relation having relation-valued attributes like this is a common way to
+group so-called child tuples under their parents.  As a trivial case, if
+C<$inner> is empty, then the result has all the same tuples and attributes
+as before plus a new relation-typed attribute of degree zero whose value
+per tuple is of cardinality one; or, if C<$inner> lists all attributes of
+C<$topic>, then the result has a single tuple of a single attribute whose
+value is the same as C<$topic>.  This method supports the new attribute
+having the same name as an old one being grouped into it.  This method
+will fail if C<$inner> specifies any attribute names that C<$topic> doesn't
+have, or if C<$outer> is the same as C<$topic> attributes that aren't being
+grouped.
+
+=head2 TODO - cmpl_group
+
+C<method cmpl_group of Set::Relation ($topic: Array|Str $group_per, Str
+$outer)>
+
+This functional method is the same as C<group> but that it groups the
+complementary subset of attributes of C<$topic> to those specified by
+C<$group_per>.
+
+=head2 TODO - ungroup
+
+C<method ungroup of Set::Relation ($topic: Str $outer, Array|Str $inner)>
+
+This functional method is the inverse of C<group> as C<unwrap> is to
+C<wrap>; it will ungroup a relation-type attribute into its member
+attributes and tuples.  A relation can be first grouped and then that
+result ungrouped to produce the original relation, with no data loss. 
+However, the ungroup of a relation on a relation-valued attribute will lose
+the information in any outer relation tuples whose inner relation value has
+zero tuples; a group on this result won't bring them back.  This method
+will fail if C<$outer> specifies any attribute name that C<$topic> doesn't
+have, or if C<$topic{$outer}> does not have a same-heading relation value
+for every tuple of C<$topic> (because then there would be no consistent set
+of attribute names to extend C<$topic> with), or if an attribute of
+C<$topic{$outer}> has the same name as another C<$topic> attribute.
+
+=head2 TODO - transitive_closure
+
+C<method transitive_closure of Set::Relation ($topic:)>
+
+This functional method results in the transitive closure of its invocant.
+The invocant must be a binary relation whose attributes are both of the
+same type (for whatever concept of "type" you want to have), and the result
+is a relation having the same heading and a body which is a superset of the
+invocant's tuples.  Assuming that the invocant represents all of the node
+pairs in a directed graph that have an arc between them, and so each
+invocant tuple represents an arc, C<transitive_closure> will determine all
+of the node pairs in that graph which have a path between them (a recursive
+operation), so each tuple of the result represents a path.  The result is a
+superset since all arcs are also complete paths.  The C<transitive_closure>
+function is intended to support recursive queries, such as in connection
+with the "part explosion problem" (the problem of finding all components,
+at all levels, of some specified part).
 
 =head2 restriction
 
@@ -2434,6 +2573,42 @@ known (we don't generally assume that C<map> can reverse-engineer C<$func>
 to see what attributes it would have resulted in).  This method will fail
 if C<$topic> has at least 1 tuple and the result of C<$func> does not have
 matching attribute names to those named by C<$result_attrs>.
+
+=head2 TODO - summary
+
+C<method summary of Set::Relation ($topic: Array|Str $group_per, Array|Str
+$result_attrs, Code $summ_func)>
+
+This functional method provides a convenient context for using aggregate
+functions to derive a per-group summary relation, which is its result, from
+another relation, which is its C<$topic> invocant.  This method first
+performs a C<cmpl_group> on C<$topic> using C<$group_per> to specify which
+attributes get grouped into a new relation-valued attribute and which
+don't; those that don't instead get wrapped into a tuple-valued attribute.
+Then, per binary tuple in the main relation, this method applies the
+tuple/Hash-resulting zero-parameter Perl subroutine reference given in its
+C<$summ_func> argument; for each post-group main relation tuple, the
+subroutine given in C<$summ_func> results in a second tuple when the first
+tuple is its C<$_> topic; the C<$_> tuple has the 2 attribute names
+C<summarize> and C<per>, which are valued with the relation-valued
+attribute and tuple-valued attribute, respectively.  As per a subroutine
+that C<map> applies, the subroutine given in C<$summ_func> effectively
+takes a whole post-grouping input tuple and results in a whole tuple; the
+applied subroutine would directly invoke any N-adic / aggregate operators,
+and extract their inputs from (or calculate) C<summarize> as it sees fit.
+Note that C<summary> is not intended to be used to summarize an entire
+C<$topic> relation at once (except by chance of it resolving to 1 group);
+you should instead invoke your summarize-all C<$summ_func> directly, or
+inline it, rather than by way of C<summary>, especially if you want a
+single-tuple result on an empty C<$topic> (which C<summary>) won't do.
+Now, C<summary> requires the extra C<$result_attrs> argument to prevent
+ambiguity in the general case where C<$topic> might have zero tuples,
+because in that situation, C<$summ_func> would never be invoked, and the
+names of the attributes of the result are not known (we don't generally
+assume that C<summary> can reverse-engineer C<$summ_func> to see what
+attributes it would have resulted in).  This method will fail if C<$topic>
+has at least 1 tuple and the result of C<$summ_func> does not have matching
+attribute names to those named by C<$result_attrs>.
 
 =head1 Multiple Input Relation Functional Methods
 
@@ -2582,7 +2757,7 @@ attributes differ and unioning the remaining said tuple pairs, then
 eliminating any result tuples that duplicate others.  The identity value of
 relational join is the nullary (zero attribute) relation value having a
 single tuple.  As a trivial case, if any input relation has zero tuples,
-then the function's result will too; or, if any input is the nullary
+then the method's result will too; or, if any input is the nullary
 relation with one tuple, that input can be ignored (see identity value);
 or, if any 2 inputs have no attribute names in common, then the join of
 just those 2 is a cartesian product; or, if any 2 inputs have all attribute
@@ -2627,6 +2802,22 @@ relations, and then performing a relational projection on all of the
 attributes that only one of the arguments has; that is, the result has all
 of and just the attributes that were not involved in matching the tuples of
 the inputs.
+
+=head2 TODO - join_with_group
+
+C<method join_with_group of Set::Relation ($primary: Set::Relation
+$secondary, Str $group_attr)>
+
+This functional method is a short-hand for first taking a (natural inner)
+C<join> of its C<$primary> invocant and C<$secondary> argument, and then
+taking a C<group> on all of the attributes that only the C<$secondary>
+argument had, such that the attribute resulting from the group has the name
+C<$group_attr>.  The result has 1 tuple for every tuple of C<$primary>
+where at least 1 matching tuple exists in C<$secondary>.  This function
+will fail if C<$group_attr> is the same name as any source attribute that
+wasn't grouped.  This method is a convenient tool for gathering both parent
+and child records from a database using a single query while avoiding
+duplication of the parent record values.
 
 =head1 DIAGNOSTICS
 

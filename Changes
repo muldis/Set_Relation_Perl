@@ -6,6 +6,15 @@
     * Set::Relation version 0.2.0 for Perl 5 is released on CPAN as
     Set-Relation-0.2.0.tar.gz.
 
+    * IN PROGRESS ...
+    (Relation.pm)  Added full documentation for the balance of the
+    routines that Set::Relation expects to have implemented prior to being
+    moved to alpha development status; each is marked TODO in its title;
+    those routines won't be listed in this change item, but when they are
+    implemented later the change log will mention them simply as being new,
+    same as if they hadn't been pre-documented now (and the TODO marker on
+    their docs will be silently removed).
+
     * (Relation.pm)  Minor code updates.
 
 2009-01-31   Darren Duncan <perl@DarrenDuncan.net>
