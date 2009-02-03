@@ -2626,7 +2626,7 @@ invocant tuple represents an arc, C<transitive_closure> will determine all
 of the node pairs in that graph which have a path between them (a recursive
 operation), so each tuple of the result represents a path.  The result is a
 superset since all arcs are also complete paths.  The C<transitive_closure>
-function is intended to support recursive queries, such as in connection
+method is intended to support recursive queries, such as in connection
 with the "part explosion problem" (the problem of finding all components,
 at all levels, of some specified part).
 
@@ -2961,7 +2961,7 @@ C<join> of its C<$primary> invocant and C<$secondary> argument, and then
 taking a C<group> on all of the attributes that only the C<$secondary>
 argument had, such that the attribute resulting from the group has the name
 C<$group_attr>.  The result has 1 tuple for every tuple of C<$primary>
-where at least 1 matching tuple exists in C<$secondary>.  This function
+where at least 1 matching tuple exists in C<$secondary>.  This method
 will fail if C<$group_attr> is the same name as any source attribute that
 wasn't grouped.  This method is a convenient tool for gathering both parent
 and child records from a database using a single query while avoiding
@@ -2999,11 +2999,11 @@ UInt $max_rank)>
 
 This functional method results in the relational restriction of its
 C<$topic> argument as determined by first ranking its tuples as per C<rank>
-function (using C<$ord_func>) and then keeping just those tuples whose rank
+method (using C<$ord_func>) and then keeping just those tuples whose rank
 is within the inclusive range specified by the C<$min_rank> and
 C<$max_rank> arguments (C<rank>'s extra attribute is not kept).  The
-C<limit> function implements a certain kind of quota query where all the
-result tuples are consecutive in their ranks.  This function will fail if
+C<limit> method implements a certain kind of quota query where all the
+result tuples are consecutive in their ranks.  This method will fail if
 C<$max_rank> is before C<$min_rank>.  It is valid for C<$min_rank> or
 C<$max_rank> to be greater than the maximum rank of the source tuples; in
 the first case, the result has zero tuples; in the second case, the result
@@ -3078,7 +3078,7 @@ $restr_func, Hash $subst)>
 
 This functional method is to C<substitution_in_restriction> what
 C<static_substitution> is to C<substitution>.  See also the
-C<static_substitution_in_semijoin> function.
+C<static_substitution_in_semijoin> method.
 
 =head2 TODO - substitution_in_semijoin
 
