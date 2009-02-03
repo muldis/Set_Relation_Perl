@@ -853,8 +853,13 @@ sub transitive_closure {
             . q{ Set::Relation object with exactly 2 (same-typed) attrs.}
         if $topic->degree() != 2;
 
-    return $topic
-        if $topic->cardinality() < 2;
+    if ($topic->cardinality() < 2) {
+        # Can't create paths of 2+ arcs when not more than 1 arc exists.
+        return $topic;
+    }
+
+    # If we get here, there are at least 2 arcs, so there is a chance they
+    # may connect into longer paths.
 
     my ($atnm1, $atnm2) = sort keys %{$topic->_heading()};
 
@@ -873,13 +878,28 @@ sub _transitive_closure_of_xy {
     my $xyz = $xy->_rename( { 'x' => 'y', 'y' => 'z' } )
         ->_regular_join( $xy, ['y'], ['z'], ['x'] );
 
-    return $xy
-        if $xyz->is_empty();
+    if ($xyz->is_empty()) {
+        # No paths of xy connect to any other paths of xy.
+        return $xy;
+    }
 
-    return $xyz->_projection( ['x', 'z'] )
+    # If we get here, then at least one pair of paths in xy can connect
+    # to form a longer path.
+
+    my $ttt = $xyz->_projection( ['x', 'z'] )
         ->_rename( { 'z' => 'y' } )
-        ->_union( [$xy] )
-        ->_transitive_closure_of_xy();
+        ->_union( [$xy] );
+
+    if ($ttt->_is_identical( $xy )) {
+        # All the longer paths resulting from conn were already in xy.
+        return $xy;
+    }
+
+    # If we get here, then at least one longer path produced above was not
+    # already in xy and was added; so now we need to check if any
+    # yet-longer paths can be made from the just-produced.
+
+    return $ttt->_transitive_closure_of_xy();
 }
 
 ###########################################################################
@@ -1136,6 +1156,11 @@ sub is_identical {
     confess q{is_identical(): Bad $other arg;}
             . q{ it must be a Set::Relation object.}
         if !blessed $other or !$other->isa( __PACKAGE__ );
+    return $topic->_is_identical( $other );
+}
+
+sub _is_identical {
+    my ($topic, $other) = @_;
     return ($topic->_is_identical_hkeys(
             $topic->_heading(), $other->_heading() )
         and $topic->_is_identical_hkeys(
