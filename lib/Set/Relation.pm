@@ -670,11 +670,17 @@ sub is_nullary {
 }
 
 sub has_attrs {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $attrs) = @_;
+    (my $proj_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        'has_attrs', '$attrs', $attrs );
+    my (undef, undef, $proj_only)
+        = $topic->_ptn_conj_and_disj( $topic->_heading(), $proj_h );
+    return @{$proj_only} == 0;
 }
 
 sub attr_names {
-    confess q{this routine isn't implemented yet};
+    my ($topic) = @_;
+    return [sort keys %{$topic->_heading()}];
 }
 
 ###########################################################################
@@ -2508,16 +2514,16 @@ C<method is_nullary of Bool ($topic:)>
 This functional method results in true iff its invocant has a degree of
 zero (that is, it has zero attributes), and false otherwise.
 
-=head2 TODO - has_attrs
+=head2 has_attrs
 
-C<method has_attrs of Bool ($topic: Array $attrs)>
+C<method has_attrs of Bool ($topic: Array|Str $attrs)>
 
 This functional method results in true iff, for every one of the attribute
 names specified by its argument, its invocant has an attribute with that
 name; otherwise it results in false.  As a trivial case, this method's
 result is true if its argument is empty.
 
-=head2 TODO - attr_names
+=head2 attr_names
 
 C<method attr_names of Array ($topic:)>
 
