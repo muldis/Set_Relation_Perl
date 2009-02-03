@@ -325,7 +325,7 @@ sub _normalize_true_want_ord_attrs_arg {
             . q{ it must be either undefined|false or the scalar value '1'}
             . q{ or an array-ref of attr names whose degree and}
             . q{ elements match the heading of the invocant.}
-        if not ($want_ord_attrs eq '1'
+        if not (!ref $want_ord_attrs and $want_ord_attrs eq '1'
             or ref $want_ord_attrs eq 'ARRAY'
                 and @{$want_ord_attrs} == @{$attr_names}
                 and !grep { !exists $heading->{$_} } @{$want_ord_attrs});
@@ -337,11 +337,51 @@ sub _normalize_true_want_ord_attrs_arg {
 ###########################################################################
 
 sub slice {
-    confess q{this routine isn't implemented yet};
+    my ($self, $attrs, $want_ord_attrs) = @_;
+
+    (my $proj_h, $attrs) = $self->_attrs_hr_from_assert_valid_attrs_arg(
+        'slice', '$attrs', $attrs );
+    my (undef, undef, $proj_only)
+        = $self->_ptn_conj_and_disj( $self->_heading(), $proj_h );
+    confess q{slice(): Bad $attrs arg; that attr list}
+            . q{ isn't a subset of the invocant's heading.}
+        if @{$proj_only} > 0;
+
+    my $body = $self->_body();
+
+    if ($want_ord_attrs) {
+        confess q{slice(): Bad $want_ord_attrs arg; it must be}
+                . q{ either undefined|false or the scalar value '1'.}
+            if $want_ord_attrs ne '1';
+        $body = [CORE::map { $self->_export_ofmt_tuple(
+            $attrs, $_ ) } values %{$body}];
+    }
+    else {
+        $body = [CORE::map {
+            my $t = $_;
+            $t = {CORE::map { ($_ => $t->{$_}) } @{$attrs}};
+            $self->_export_nfmt_tuple( $t );
+        } values %{$body}];
+    }
+
+    return $body;
 }
 
 sub attr {
-    confess q{this routine isn't implemented yet};
+    my ($self, $name) = @_;
+
+    $self->_assert_valid_atnm_arg( 'attr', '$name', $name );
+    confess q{attr(): Bad $name arg; that attr name}
+            . q{ doesn't match an attr of the invocant's heading.}
+        if !exists $self->_heading()->{$name};
+
+    return [CORE::map {
+            my $atvl = $_->{$name}->[0];
+            if (ref $atvl eq 'HASH') {
+                $atvl = $self->_export_nfmt_tuple( $atvl );
+            }
+            $atvl;
+        } values %{$self->_body()}];
 }
 
 ###########################################################################
@@ -750,9 +790,8 @@ sub _rename {
 sub projection {
     my ($topic, $attrs) = @_;
 
-    (my $proj_h, $attrs)
-        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-            'projection', '$attrs', $attrs );
+    (my $proj_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        'projection', '$attrs', $attrs );
     my (undef, undef, $proj_only)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $proj_h );
     confess q{projection(): Bad $attrs arg; that attr list}
@@ -803,9 +842,8 @@ sub cmpl_projection {
 
     my $topic_h = $topic->_heading();
 
-    (my $cproj_h, $attrs)
-        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-            'cmpl_projection', '$attrs', $attrs );
+    (my $cproj_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        'cmpl_projection', '$attrs', $attrs );
     my (undef, undef, $cproj_only)
         = $topic->_ptn_conj_and_disj( $topic_h, $cproj_h );
     confess q{cmpl_projection(): Bad $attrs arg; that attr list}
@@ -961,9 +999,8 @@ sub cmpl_restriction {
 sub extension {
     my ($topic, $attrs, $func) = @_;
 
-    (my $exten_h, $attrs)
-        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-            'extension', '$attrs', $attrs );
+    (my $exten_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        'extension', '$attrs', $attrs );
     $topic->_assert_valid_func_arg( 'extension', '$func', $func );
 
     if (@{$attrs} == 0) {
@@ -1124,6 +1161,14 @@ sub _attrs_hr_from_assert_valid_attrs_arg {
         if (keys %{$heading}) != @{$attrs};
 
     return ($heading, $attrs);
+}
+
+sub _assert_valid_atnm_arg {
+    my ($self, $rtn_nm, $arg_nm, $atnm) = @_;
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ it should be just be an attr name,}
+            . q{ but it is undefined or is a ref.}
+        if !defined $atnm or ref $atnm;
 }
 
 sub _assert_valid_func_arg {
@@ -2385,7 +2430,7 @@ This method results in a Perl Array value whose elements are the tuples of
 the invocant.  Each tuple is either a Perl Hash or a Perl Array depending
 on the value of the C<$want_ord_attrs>, like with the C<members> method.
 
-=head2 TODO - slice
+=head2 slice
 
 C<method slice of Array ($self: Array|Str $attrs, Bool $want_ord_attrs?)>
 
@@ -2398,7 +2443,7 @@ with C<body>, except that C<$want_ord_attrs> may only be a Bool here; when
 that argument is true, the exported attributes are in the same order as
 specified in C<$attrs>.
 
-=head2 TODO - attr
+=head2 attr
 
 C<method attr of Array ($self: Str $name)>
 
