@@ -848,11 +848,38 @@ sub ungroup {
 
 sub transitive_closure {
     my ($topic) = @_;
+
     confess q{transitive_closure(): This method may only be invoked on a}
             . q{ Set::Relation object with exactly 2 (same-typed) attrs.}
         if $topic->degree() != 2;
 
-    confess q{this routine isn't implemented yet};
+    return $topic
+        if $topic->cardinality() < 2;
+
+    my ($atnm1, $atnm2) = sort keys %{$topic->_heading()};
+
+    return $topic->_rename( { $atnm1 => 'x', $atnm2 => 'y' } )
+        ->_transitive_closure_of_xy()
+        ->_rename( { 'x' => $atnm1, 'y' => $atnm2 } );
+}
+
+# TODO: Reimplement transitive_closure to do all the work internally rather
+# than farming out to rename/join/projection/union/etc; this should make
+# performance an order of magnitude better and without being complicated.
+
+sub _transitive_closure_of_xy {
+    my ($xy) = @_;
+
+    my $xyz = $xy->_rename( { 'x' => 'y', 'y' => 'z' } )
+        ->_regular_join( $xy, ['y'], ['z'], ['x'] );
+
+    return $xy
+        if $xyz->is_empty();
+
+    return $xyz->_projection( ['x', 'z'] )
+        ->_rename( { 'z' => 'y' } )
+        ->_union( [$xy] )
+        ->_transitive_closure_of_xy();
 }
 
 ###########################################################################
@@ -1157,9 +1184,13 @@ sub is_disjoint {
 
 sub union {
     my ($topic, $others) = @_;
-
     $others = $topic->_normalize_same_heading_relations_arg(
         'union', '$others', $others );
+    return $topic->_union( $others );
+}
+
+sub _union {
+    my ($topic, $others) = @_;
 
     my $inputs = [
         sort { $b->cardinality() <=> $a->cardinality() }
@@ -2612,7 +2643,7 @@ for every tuple of C<$topic> (because then there would be no consistent set
 of attribute names to extend C<$topic> with), or if an attribute of
 C<$topic{$outer}> has the same name as another C<$topic> attribute.
 
-=head2 TODO - transitive_closure
+=head2 transitive_closure
 
 C<method transitive_closure of Set::Relation ($topic:)>
 

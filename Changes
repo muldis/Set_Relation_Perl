@@ -6,6 +6,8 @@
     * Set::Relation version 0.3.0 for Perl 5 is released on CPAN as
     Set-Relation-0.3.0.tar.gz.
 
+    * (Relation.pm)  Added these N object methods: "transitive_closure".
+
     * (Relation.pm)  Other minor POD fixes.
 
 2009-02-01   Darren Duncan <perl@DarrenDuncan.net>
