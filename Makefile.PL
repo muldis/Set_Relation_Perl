@@ -7,7 +7,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     'NAME' => 'Set::Relation',
-    'VERSION' => '0.2.0',
+    'VERSION' => '0.3.0',
     'ABSTRACT' => 'Relation data type for Perl',
     'AUTHOR' => 'Darren Duncan <perl@DarrenDuncan.net>',
     'LICENSE' => 'lgpl',

@@ -3,10 +3,13 @@
 
 Following is a summary of things that still need doing.
 
-* IN PROGRESS ...
-Add relational operators for wrap/unwrap, group/ungroup, summarize,
-rank and quota, substitution, outer joins,
-other misc missing.
+* Add these 20 relational operators: wrap, cmpl_wrap, unwrap, group,
+cmpl_group, ungroup, summary, join_with_group, rank, limit, substitution,
+static_substitution, substitution_in_restriction,
+static_substitution_in_restriction, substitution_in_semijoin,
+static_substitution_in_semijoin, outer_join_with_group,
+outer_join_with_undefs, outer_join_with_static_extension,
+outer_join_with_extension.
 
 * Add code examples, tutorial, cookbook, FAQ, etc.
 

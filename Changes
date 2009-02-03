@@ -1,15 +1,15 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
-2009-02-xx   Darren Duncan <perl@DarrenDuncan.net>
+2009-02-02   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.3.0 for Perl 5 is released on CPAN as
     Set-Relation-0.3.0.tar.gz.
 
-    * (Relation.pm)  Added these N object methods: "slice", "attr",
-    "has_attrs", "attr_names", "transitive_closure".
+    * (Relation.pm)  Added these 5 object methods (still 20 to go):
+    "slice", "attr", "has_attrs", "attr_names", "transitive_closure".
 
-    * (Relation.pm)  Other minor POD fixes.
+    * (Relation.pm)  Other minor updates and fixes.
 
 2009-02-01   Darren Duncan <perl@DarrenDuncan.net>
 
