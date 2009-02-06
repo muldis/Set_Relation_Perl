@@ -1,6 +1,30 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-02-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.4.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.4.0.tar.gz.
+
+    * Updated external dependencies: Moose/etc to version 0.68.
+
+    * (Relation.pm)  Added new documentation sub-section under
+    "DESCRIPTION" named "Appropriate Uses For Set::Relation", which should
+    hopefully answer some FAQs, such as why does the module exist, and
+    pointing out some strengths and weaknesses.
+
+    * (Relation.pm)  Corrected a forgetful oversight in the module
+    documentation concerning Set::Relation's "has_frozen_identity" object
+    attribute; this attribute had an auto-generated read-only public
+    accessor method plus is automatically initialized from a same-named
+    constructor method; added "has_frozen_identity" to the accessor method
+    list, and updated the "new" constructor submethod signature.
+
+    * (Relation.pm)  Added the Moose concerning recommended practice
+    "__PACKAGE__->meta()->make_immutable();" line to the end of the module,
+    which should help performance regarding Moose-generated stuff; this
+    would've been done before release 0.0.0 but was forgotten at the time.
+
 2009-02-02   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.3.0 for Perl 5 is released on CPAN as

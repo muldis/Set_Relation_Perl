@@ -9,7 +9,7 @@ use warnings FATAL => 'all';
 { package Set::Relation; # class
     use version 0.74; our $VERSION = qv('0.3.0');
 
-    use Moose 0.65;
+    use Moose 0.68;
 
     has '_heading' => (
         is  => 'rw',
@@ -228,6 +228,14 @@ sub export_for_new {
     return {
         'members' => $self->_members(
             'export_for_new', '$want_ord_attrs', $want_ord_attrs ),
+        # Note, we make an exception by not exporting the
+        # 'has_frozen_identity' object attribute even though the 'new'
+        # constructor can take an argument to user-initialize it;
+        # there doesn't seem to be a point, as if a user wanted an
+        # immutable clone of an immutable object, just use the original;
+        # or if they wanted a mutable clone of a mutable object, then
+        # mutable is what they get by default anyway; more likely they want
+        # a mutable clone of an immutable object.
     };
 }
 
@@ -1964,6 +1972,8 @@ sub outer_join_with_extension {
 
 ###########################################################################
 
+    __PACKAGE__->meta()->make_immutable();
+
 } # class Set::Relation
 
 ###########################################################################
@@ -2070,6 +2080,160 @@ this class' objects are functionally set-like collection values.
 
 I<This documentation is pending.>
 
+=head2 Appropriate Uses For Set::Relation
+
+Set::Relation I<is> intended to be used in production environments.  It has
+been developed according to a rigorously thought out API and behaviour
+specification, and it should be easy to learn, to install and use, and to
+extend.  It is expected to be maintained and supported by the original
+author over the long term, either standalone or by the author providing an
+effective migration path to a suitable replacement.
+
+At the same time, the primary design goal of Set::Relation is to be simple.
+
+Set::Relation focuses on providing all the operators of the relational
+model of data to Perl developers in as concise a manner as is possible
+while focusing on correctness of behaviour above all else, and also
+focusing on ease of understanding and maintainability, since generally a
+developer's time is the most valuable resource for us to conserve.
+
+Despite initial design efforts to help Set::Relation's execution (CPU, RAM,
+etc) performance, this module is still assumed to be very un-optimized for
+its conceptually low level task of data crunching.  It generally applies
+the same internal representation and algorithms regardless of the actual
+structure or meaning of the data, and regardless of the amount of data.  It
+generically applies certain up-front costs in the form of data hashing that
+should both speed up later operations and simplify the implementation code
+of most operations, but any actual performance benefit depends a lot on
+actual use, and it may even have a net loss of execution performance.
+
+This module is still assumed to be considerably, perhaps an order or three
+of magnitude, slower than a hand-rolled task-specific solution.  If your
+primary concern is execution performance, you will most likely not want to
+use Set::Relation but rather hand-code what it does specifically for your
+task with your specific data, or alternately employ some other dependency
+to do the work for you (or even, if necessary, write the task in C).
+
+Set::Relation is best used in situations where you either want to just get
+some correct solution up and working quickly (conserving developer time),
+such as because it is a prototype or proof of concept, or where your data
+set is relatively small (so Set::Relation's overhead cost is less
+noticeable), or where your task is one that is less time sensitive like a
+batch process where a longer execution time isn't harmful.
+
+Some specific suggested uses for Set::Relation are:
+
+=over
+
+=item Flat File Processing
+
+Use it to simplify some kinds of batch processing data from flat files such
+as CSV text files; a Set::Relation object can be used to store the content
+of one source file, and then the relational operators can be used to easily
+join or filter the file contents against each other, and eventually reports
+or other results be produced.
+
+=item SQL Generation
+
+Use it when gathering and pre-processing data that needs to end up in a SQL
+database for longer term use.  If you generate your INSERT SQL from
+Set::Relation objects then those objects can help you do it all in a batch
+up front, and Set::Relation can help you test for duplicates or various
+kinds of dirty data that might violate database constraints.  So it is less
+likely that you would need to connect to your SQL database interactively to
+test your data against it before insertion, and it is more likely you can
+just talk to it once when your single batch of SQL INSERTs is ready to go.
+
+=item Database APIs
+
+Various DBMS wrappers, ORMs, persistence tools, etc can use Set::Relation
+objects internally or as part of their API to represent database row sets.
+Wrappers that like to do some database-like work internally, such as
+associating parent and child row sets, or testing key constraints, or
+various other tasks can use Set::Relation to do some of their work for
+them, making development and maintenance of said tools easier.  Note that
+in general this would fall under the "small data set" use category since a
+large number of applications, particularly web apps, just access or display
+from one to a hundred rows at a time.
+
+=item Testing
+
+Since it represents row-sets and provides all the relational operators,
+with a focus on correctness, Set::Relation should be useful in helping to
+test all sorts of other code intended to work with databases, particularly
+code that is a wrapper for a database, as a basis for comparison to whether
+the other code is having correct behaviour or not.  For example, it could
+help test that code which generates and runs SQL is producing the correct
+results with various inputs and scenarios.
+
+=item Teaching
+
+Set::Relation should be helpful in teaching the relational model to people,
+helping them to know what is really going on conceptually with different
+operations, without being distracted by a lot of ancillary matters, and
+without being distracted by limitations of various DBMSs that may not
+expose the whole relational model or may do it incorrectly.  It provides
+something students can experiment with right now.
+
+=item General List or Set Operations
+
+Set::Relation is complementary to the things you do with Perl's built-in
+Array and Hash types, including 'map' and 'grep' operations.  It is useful
+when you want to do miscellaneous combining or filtering of lists of data
+against other lists, particularly multi-dimensional ones, or helping in
+summarizing lists of data for reports.  Maybe helping with some tasks that
+are easier in Perl 6 than in Perl 5, when you're using Perl 5.
+
+=back
+
+Of course, like any generic tool, Set::Relation should be widely applicable
+in many different situations.
+
+Now, another situation where you may not want to use Set::Relation is when
+its sibling project L<Muldis Rosetta|Muldis::Rosetta> would serve you
+better.  In contrast to Set::Relation, which is standalone and intended to
+integrate closely with Perl, Muldis Rosetta implements a whole programming
+language distinct from Perl, L<Muldis D|Muldis::D>, and presents a superior
+environment at large for working with the relational model of data; you use
+it sort of like how you use L<DBI> to talk to a SQL DBMS, as a separate
+thing walled off from Perl.  The benefits of using Muldis Rosetta over
+Set::Relation are multiple, including much better performance and
+scalability, and that it can directly persist data as you'd expect a DBMS
+to do, as well as provide easy access to many other relational model
+features like stronger typing and arbitrary database constraints, and
+nested transactions, as well as access to full powered DBMS engines like
+PostgreSQL and Oracle and SQLite (though you don't have to use those and
+Muldis Rosetta can be used purely implemented in Perl).
+
+I<That all said, Set::Relation is actually implemented and works today,
+while Muldis Rosetta is still under construction and you can't use it yet.>
+
+That brings out another important reason why Set::Relation exists now; it
+also serves as a proof of concept for a main part of Muldis D and Muldis
+Rosetta, or for a so-called "truly relational DBMSs" in general.  It
+demonstrates ideal features and behaviour for relational operators, in a
+functioning form that users can experiment with right now.  Set::Relation
+is also meant to serve as inspiration for similar projects, and better
+illustrate features that would be nice for modern programming languages to
+have built-in, same as they have collection types like ordered and
+associative arrays and one-dimensional sets and bags built-in.  It I<is>
+reasonable for standard equipment to not just be plain set operators but
+the other relational model operators too, such as relational join.
+
+I<Note:  Assistance is appreciated in making Set::Relation perform better,
+such that some of its present-day caveats can disappear, keeping in mind
+its general design goals.  But generally first we will need to have a
+complete test suite to confirm correct behaviour, and correct any
+outstanding API issues, and preferably also a benchmark suite.  That way,
+when the likely extensive changes are made for performance, we can actually
+measure their effect and know we didn't break the behaviour.  Also if the
+behaviour/API is nailed first, then new benchmarks we make along the way
+will be backwards compatible with previous baseline versions.  But keep in
+mind that only some kinds of improvements are suitable; some others may be
+inordinately complex and may better be relegated to Muldis Rosetta or other
+overlapping solutions instead; the distinction can be discussed
+case-by-case as solutions are proposed.>
+
 =head2 Matters of Value Identity
 
 The relational model of data fundamentally involves values as being
@@ -2175,6 +2339,8 @@ input object under the assumption that most of the time you wouldn't want
 to mutate the input object afterwards, for efficiency.
 
 =head2 Matters of Performance
+
+Note:  See also the L</Appropriate Uses For Set::Relation> section above.
 
 Set::Relation by itself is strictly an in-memory data structure, same as
 Perl's built-in arrays and hashes.  Its design focuses on providing
@@ -2289,7 +2455,8 @@ of a Set::Relation object.
 
 =head2 new
 
-C<submethod new of Set::Relation (Array|Hash|Set::Relation|Str :$members?)>
+C<submethod new of Set::Relation (Array|Hash|Set::Relation|Str :$members?,
+Bool :$has_frozen_identity?)>
 
 This constructor submethod creates and returns a new C<Set::Relation>
 object, representing a single relation value, that is initialized primarily
@@ -2344,8 +2511,10 @@ C<$members>, as illustrated here:
     # Abbreviated way to specify 1 attr + zero tuples.
     my $r9 = Set::Relation->new( members => 'value' );
 
-The new Set::Relation is initially a mutable object; its identity is not
-frozen.
+If the optional argument C<$has_frozen_identity> is true, then the new
+Set::Relation object is made value-immutable once initialized (its identity
+is frozen); otherwise, if that argument is false or not provided, then the
+new object is initially mutable (its identity is not frozen).
 
 =head1 Accessor Methods
 
@@ -2381,11 +2550,18 @@ C<$want_ord_attrs> is the Perl string value C<1>, then the result will have
 its attributes ordered alphabetically by attribute name (see the C<heading>
 method docs for why that is the case).
 
+=head2 has_frozen_identity
+
+C<method has_frozen_identity of Bool ($self:)>
+
+This method results in true if the invocant is currently value-immutable,
+and it results in false otherwise.
+
 =head2 freeze_identity
 
 C<method freeze_identity ($self:)>
 
-This mutator method causes the invocant to become immutable when invoked;
+This method causes the invocant to become value-immutable when invoked;
 it freezes the invocant's value identity.  This change is not reversible
 (an immutable Set::Relation object can't be made mutable again), however
 invoking C<clone> on said object will give you a mutable duplicate.
@@ -2394,17 +2570,16 @@ invoking C<clone> on said object will give you a mutable duplicate.
 
 C<method which of Str ($self:)>
 
-This mutator method results in a character string representation of the
-invocant's value identity, and when invoked it has the side-effect of
-making the invocant immutable (as per C<freeze_identity>) if it isn't
-already.  The identity value result of this method is essentially a
-serialization of all the invocant's attribute names and tuple values, all
-of which are encoded and sorted in such a way that any 2 Set::Relation
-values having the same attributes and tuples are guaranteed to have the
-same value identity, and any 2 with different attributes or tuples are
-guaranteed to have different ones.  This method is analagous to the special
-C<WHICH> method of Perl 6 and lets you treat Set::Relation as a "value
-type".
+This method results in a character string representation of the invocant's
+value identity, and when invoked it has the side-effect of making the
+invocant value-immutable (as per C<freeze_identity>) if it isn't already.
+The identity value result of this method is essentially a serialization of
+all the invocant's attribute names and tuple values, all of which are
+encoded and sorted in such a way that any 2 Set::Relation values having the
+same attributes and tuples are guaranteed to have the same value identity,
+and any 2 with different attributes or tuples are guaranteed to have
+different ones.  This method is analagous to the special C<WHICH> method of
+Perl 6 and lets you treat Set::Relation as a "value type".
 
 =head2 members
 
@@ -3275,7 +3450,7 @@ installation by users of earlier Perl versions:
 L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<Moose-ver(0.65..*)|Moose>.
+L<Moose-ver(0.68..*)|Moose>.
 
 =head1 INCOMPATIBILITIES
 
