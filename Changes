@@ -25,6 +25,10 @@
     which should help performance regarding Moose-generated stuff; this
     would've been done before release 0.0.0 but was forgotten at the time.
 
+    * (Relation.pm)  Updated the "LICENSE AND COPYRIGHT" documentation
+    section to change the Copyright declaration from "Darren Duncan" to
+    "Muldis Data Systems, Inc." (which is wholly owned by Darren Duncan).
+
 2009-02-02   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.3.0 for Perl 5 is released on CPAN as

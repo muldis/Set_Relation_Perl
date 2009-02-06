@@ -3486,8 +3486,9 @@ Darren Duncan (C<perl@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2009, Darren Duncan.  All rights
-reserved.
+Set::Relation is Copyright © 2006-2009, Muldis Data Systems, Inc.
+
+L<http://www.muldis.com/>
 
 Set::Relation is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License (LGPL) as
