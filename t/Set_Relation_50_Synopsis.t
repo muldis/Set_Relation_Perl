@@ -13,7 +13,7 @@ use Set::Relation;
 
 ####
 
-my $r1 = Set::Relation->new( members => [ [ 'x', 'y' ], [
+my $r1 = Set::Relation->new( [ [ 'x', 'y' ], [
     [ 4, 7 ],
     [ 3, 2 ],
 ] ] );
@@ -34,7 +34,7 @@ is_deeply( $got_r1_as_nfmt_perl, $exp_r1_as_nfmt_perl, q{$r1n val corr} );
 
 ####
 
-my $r2 = Set::Relation->new( members => [
+my $r2 = Set::Relation->new( [
     { 'y' => 5, 'z' => 6 },
     { 'y' => 2, 'z' => 1 },
     { 'y' => 2, 'z' => 4 },

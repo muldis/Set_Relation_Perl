@@ -33,6 +33,26 @@
     constructor method; added "has_frozen_identity" to the accessor method
     list, and updated the "new" constructor submethod signature.
 
+    * (Relation.pm, Set_Relation_50_Synopsis.t,
+    Set_Relation_51_Database_in_Depth_Example.t)  Updated the "new"
+    constructor submethod so that it now accepts a single positional
+    argument as an invocation option, where before it just accepted named
+    arguments (and it still does); a single positional argument to "new" is
+    treated the same as a single "members" named argument.  This change
+    means that the majority of current or anticipated future use cases of
+    Set::Relation are now terser by about 9-11 characters ("members => ")
+    per "new" invocation.  (This new feature was implemented mainly by
+    adding a simple BUILDARGS method to Relation.pm.)  Updated all the
+    examples and tests to use the new terser format.
+
+    * (Relation.pm)  As a consequence of the previous change, the "new"
+    constructor has also been updated so that the "members" argument is no
+    longer allowed to be a Perl Hash (because a lone Hash positional
+    argument is one of the standard Moose format options to supply named
+    arguments) so any invocations of "new" which gave a Hash argument will
+    have to become 2 characters ("[]") more verbose, wrapping it in an
+    Array.  Removed the example using a Hash.
+
     * (Relation.pm)  Added the Moose concerning recommended practice
     "__PACKAGE__->meta()->make_immutable();" line to the end of the module,
     which should help performance regarding Moose-generated stuff; this

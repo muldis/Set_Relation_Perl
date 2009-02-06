@@ -83,6 +83,20 @@ use warnings FATAL => 'all';
 
 ###########################################################################
 
+sub BUILDARGS {
+    my ($class, @args) = @_;
+    if (@args == 1 and ref $args[0] ne 'HASH') {
+        # Constructor was called with a single positional argument.
+        return { members => $args[0] };
+    }
+    else {
+        # Constructor was called with named arguments or no arguments.
+        return $class->SUPER::BUILDARGS( @args );
+    }
+}
+
+###########################################################################
+
 sub BUILD {
     my ($self, $args) = @_;
     my ($members) = @{$args}{'members'};
@@ -94,13 +108,12 @@ sub BUILD {
         # Extra option 1.
         $members = [];
     }
-    elsif (!ref $members or ref $members eq 'HASH') {
-        # Extra options 2 and 3.
+    elsif (!ref $members) {
+        # Extra option 2.
         $members = [$members];
     }
-    confess q{new(): Bad :$members arg;}
-            . q{ it must be either undefined or a non-ref}
-            . q{ or an array-ref or a hash-ref or a Set::Relation object.}
+    confess q{new(): Bad :$members arg; it must be either undefined}
+            . q{ or an array-ref or a non-ref or a Set::Relation object.}
         if ref $members ne 'ARRAY'
             and not (blessed $members and $members->isa( __PACKAGE__ ));
 
@@ -220,7 +233,7 @@ sub BUILD {
 
 sub clone {
     my ($self) = @_;
-    return __PACKAGE__->new( members => $self );
+    return __PACKAGE__->new( $self );
 }
 
 ###########################################################################
@@ -713,7 +726,7 @@ sub is_member {
 
 sub empty {
     my ($topic) = @_;
-    return __PACKAGE__->new( members => $topic->heading() );
+    return __PACKAGE__->new( $topic->heading() );
 }
 
 sub insertion {
@@ -826,7 +839,7 @@ sub _projection {
             return __PACKAGE__->new();
         }
         else {
-            return __PACKAGE__->new( members => [ {} ] );
+            return __PACKAGE__->new( [ {} ] );
         }
     }
     if (@{$attrs} == $topic->degree()) {
@@ -1117,7 +1130,7 @@ sub map {
             return __PACKAGE__->new();
         }
         else {
-            return __PACKAGE__->new( members => [ {} ] );
+            return __PACKAGE__->new( [ {} ] );
         }
     }
 
@@ -1590,7 +1603,7 @@ sub _join {
     if (first { $_->is_empty() } $topic, @{$others}) {
         # At least one input has zero tuples; so does result.
         my $rslt_h = {CORE::map { %{$_->_heading()} } $topic, @{$others}};
-        return __PACKAGE__->new( members => [keys %{$rslt_h}] );
+        return __PACKAGE__->new( [keys %{$rslt_h}] );
     }
 
     # If we get here, all inputs have at least one tuple.
@@ -1718,7 +1731,7 @@ sub product {
     if (first { $_->is_empty() } $topic, @{$others}) {
         # At least one input has zero tuples; so does result.
         my $rslt_h = {CORE::map { %{$_->_heading()} } $topic, @{$others}};
-        return __PACKAGE__->new( members => [keys %{$rslt_h}] );
+        return __PACKAGE__->new( [keys %{$rslt_h}] );
     }
 
     # If we get here, all inputs have at least one tuple.
@@ -1829,8 +1842,7 @@ sub composition {
 
     if ($topic->is_empty() or $other->is_empty()) {
         # At least one input has zero tuples; so does result.
-        return __PACKAGE__->new(
-            members => [@{$topic_only}, @{$other_only}] );
+        return __PACKAGE__->new( [@{$topic_only}, @{$other_only}] );
     }
 
     # If we get here, both inputs have at least one tuple.
@@ -1852,7 +1864,7 @@ sub composition {
     }
     if (@{$topic_only} == 0 and @{$other_only} == 0) {
         # The inputs have identical headings; result is ident-one relation.
-        return __PACKAGE__->new( members => [ {} ] );
+        return __PACKAGE__->new( [ {} ] );
     }
 
     # If we get here, the inputs also have overlapping non-ident headings.
@@ -2001,12 +2013,12 @@ This document describes Set::Relation version 0.3.0 for Perl 5.
 
     use Set::Relation;
 
-    my $r1 = Set::Relation->new( members => [ [ 'x', 'y' ], [
+    my $r1 = Set::Relation->new( [ [ 'x', 'y' ], [
         [ 4, 7 ],
         [ 3, 2 ],
     ] ] );
 
-    my $r2 = Set::Relation->new( members => [
+    my $r2 = Set::Relation->new( [
         { 'y' => 5, 'z' => 6 },
         { 'y' => 2, 'z' => 1 },
         { 'y' => 2, 'z' => 4 },
@@ -2457,8 +2469,10 @@ of a Set::Relation object.
 
 =head2 new
 
-C<submethod new of Set::Relation (Array|Hash|Set::Relation|Str :$members?,
+C<submethod new of Set::Relation (Array|Set::Relation|Str :$members?,
 Bool :$has_frozen_identity?)>
+
+C<submethod new of Set::Relation (Array|Set::Relation|Str $members?)>
 
 This constructor submethod creates and returns a new C<Set::Relation>
 object, representing a single relation value, that is initialized primarily
@@ -2472,16 +2486,16 @@ are just ordinary Perl values and not HDMD_Perl5_Tiny value literal nodes.
 Examples are:
 
     # Zero attrs + zero tuples.
-    my $r1 = Set::Relation->new( members => [] );
+    my $r1 = Set::Relation->new( [] );
 
     # 3 attrs + zero tuples.
-    my $r2 = Set::Relation->new( members => [ 'x', 'y', 'z' ] );
+    my $r2 = Set::Relation->new( [ 'x', 'y', 'z' ] );
 
     # Zero attrs + 1 tuple
-    my $r3 = Set::Relation->new( members => [ {} ] );
+    my $r3 = Set::Relation->new( [ {} ] );
 
     # Named attributes format: 3 attrs + 1 tuple.
-    my $r4 = Set::Relation->new( members => [
+    my $r4 = Set::Relation->new( [
         {
             'login_name' => 'hartmark',
             'login_pass' => 'letmein',
@@ -2490,7 +2504,7 @@ Examples are:
     ] );
 
     # Ordered attributes format: 2 attrs + 1 tuple.
-    my $r5 = Set::Relation->new( members => [ [ 'name', 'age' ], [
+    my $r5 = Set::Relation->new( [ [ 'name', 'age' ], [
         [ 'Michelle', 17 ],
     ] ] );
 
@@ -2500,18 +2514,11 @@ C<$members>, as illustrated here:
     # The default value of a Set::Relation has zero attrs + zero tuples.
     my $r6 = Set::Relation->new();
 
-    # How to wrap any single tuple in a relation.
-    my $r7 = Set::Relation->new( members => {
-        'login_name' => 'hartmark',
-        'login_pass' => 'letmein',
-        'is_special' => 1,
-    } );
-
     # One way to clone a relation object.
-    my $r8 = Set::Relation->new( members => $r5 );
+    my $r7 = Set::Relation->new( $r5 );
 
     # Abbreviated way to specify 1 attr + zero tuples.
-    my $r9 = Set::Relation->new( members => 'value' );
+    my $r8 = Set::Relation->new( 'value' );
 
 If the optional argument C<$has_frozen_identity> is true, then the new
 Set::Relation object is made value-immutable once initialized (its identity
