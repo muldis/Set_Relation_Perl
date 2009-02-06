@@ -8,6 +8,19 @@
 
     * Updated external dependencies: Moose/etc to version 0.68.
 
+    * As of this release, Set::Relation for Perl 5 uses the
+    namespace::clean pragma for good hygiene; this distribution has now
+    gained an external dependency on the Perl 5 module 'namespace::clean',
+    which is not bundled with any version of Perl and will need to be
+    installed from CPAN; namespace::clean also has a few not-bundled
+    dependencies of its own.
+
+    * (Relation.pm)  Added "use namespace::clean" statements inside the
+    package declaration following any other "use" statements, so their
+    exports into our package doesn't also become part of our own public API
+    as a side-effect; the only exception is the "meta" method that Moose
+    adds, which is kept.
+
     * (Relation.pm)  Added new documentation sub-section under
     "DESCRIPTION" named "Appropriate Uses For Set::Relation", which should
     hopefully answer some FAQs, such as why does the module exist, and

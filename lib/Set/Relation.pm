@@ -9,7 +9,12 @@ use warnings FATAL => 'all';
 { package Set::Relation; # class
     use version 0.74; our $VERSION = qv('0.3.0');
 
+    use Scalar::Util 'refaddr';
+    use List::Util 'first';
+
     use Moose 0.68;
+
+    use namespace::clean -except => 'meta';
 
     has '_heading' => (
         is  => 'rw',
@@ -75,9 +80,6 @@ use warnings FATAL => 'all';
                             # - structure same as '_body', is slice o _body
         default => sub { {} },
     );
-
-    use Scalar::Util 'refaddr';
-    use List::Util 'first';
 
 ###########################################################################
 
