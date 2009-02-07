@@ -976,6 +976,10 @@ sub restriction {
 
     $topic->_assert_valid_func_arg( 'restriction', '$func', $func );
 
+    if ($topic->is_empty()) {
+        return $topic;
+    }
+
     my $result = $topic->empty();
 
     my $topic_b = $topic->_body();
@@ -997,10 +1001,55 @@ sub restriction {
     return $result;
 }
 
+sub restriction_and_cmpl {
+    my ($topic, $func) = @_;
+    $topic->_assert_valid_func_arg(
+        'restriction_and_cmpl', '$func', $func );
+    return $topic->_restriction_and_cmpl( $func );
+}
+
+sub _restriction_and_cmpl {
+    my ($topic, $func) = @_;
+
+    if ($topic->is_empty()) {
+        return [$topic, $topic];
+    }
+
+    my $pass_result = $topic->empty();
+    my $fail_result = $topic->empty();
+
+    my $topic_b = $topic->_body();
+    my $pass_result_b = $pass_result->_body();
+    my $fail_result_b = $fail_result->_body();
+
+    for my $tuple_ident_str (keys %{$topic_b}) {
+        my $tuple = $topic_b->{$tuple_ident_str};
+        my $is_matched;
+        {
+            local $_ = $topic->_export_nfmt_tuple( $tuple );
+            $is_matched = $func->();
+        }
+        if ($is_matched) {
+            $pass_result_b->{$tuple_ident_str} = $tuple;
+        }
+        else {
+            $fail_result_b->{$tuple_ident_str} = $tuple;
+        }
+    }
+    $pass_result->_cardinality( scalar keys %{$pass_result_b} );
+    $fail_result->_cardinality( scalar keys %{$fail_result_b} );
+
+    return [$pass_result, $fail_result];
+}
+
 sub cmpl_restriction {
     my ($topic, $func) = @_;
 
     $topic->_assert_valid_func_arg( 'cmpl_restriction', '$func', $func );
+
+    if ($topic->is_empty()) {
+        return $topic;
+    }
 
     my $result = $topic->empty();
 
@@ -1512,6 +1561,26 @@ sub semidifference {
         return $source;
     }
     return $source->_regular_difference( $source->_semijoin( $filter ) );
+}
+
+sub semijoin_and_semidifference {
+    my ($source, $filter) = @_;
+    confess q{semijoin_and_semidifference(): Bad $filter arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $filter or !$filter->isa( __PACKAGE__ );
+    return $source->_semijoin_and_semidifference( $filter );
+}
+
+sub _semijoin_and_semidifference {
+    my ($source, $filter) = @_;
+    if ($source->is_empty()) {
+        return [$source, $source];
+    }
+    if ($filter->is_empty()) {
+        return [$source->empty(), $source];
+    }
+    my $semijoin = $source->_semijoin( $filter );
+    return [$semijoin, $source->_regular_difference( $semijoin )];
 }
 
 sub semijoin {
@@ -3046,6 +3115,16 @@ a simpler-syntax alternative for C<restriction> in its typical usage where
 restrictions are composed simply of anded or ored tests for attribute value
 equality.
 
+=head2 restriction_and_cmpl
+
+C<method restriction_and_cmpl of Array ($topic: Code $func)>
+
+This functional method performs a 2-way partitioning of all the tuples of
+C<$topic> and results in a 2-element Perl Array whose 2 element values are
+each Set::Relation objects; the first and second elements are what
+C<restriction> and C<cmpl_restriction>, respectively, would result in when
+having the same invocant and argument.
+
 =head2 cmpl_restriction
 
 C<method cmpl_restriction of Set::Relation ($topic: Code $func)>
@@ -3271,6 +3350,17 @@ This functional method is the same as C<semijoin> but that it results in
 the complementary subset of tuples of C<$source> when given the same
 arguments.  Note that this operation is also legitimately known as
 I<antijoin> or I<anti-semijoin>.
+
+=head2 semijoin_and_semidifference
+
+C<method semijoin_and_semidifference of Array ($source: Set::Relation
+$filter)>
+
+This functional method performs a 2-way partitioning of all the tuples of
+C<$source> and results in a 2-element Perl Array whose 2 element values are
+each Set::Relation objects; the first and second elements are what
+C<semijoin> and C<semidifference>, respectively, would result in when
+having the same invocant and argument.
 
 =head2 semijoin
 
