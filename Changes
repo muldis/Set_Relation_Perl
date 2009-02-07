@@ -1,6 +1,13 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-02-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.5.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.5.0.tar.gz.
+
+    * (Relation.pm)  Other minor updates and fixes.
+
 2009-02-05   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.4.0 for Perl 5 is released on CPAN as

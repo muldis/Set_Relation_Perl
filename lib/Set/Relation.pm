@@ -2469,10 +2469,12 @@ of a Set::Relation object.
 
 =head2 new
 
-C<submethod new of Set::Relation (Array|Set::Relation|Str :$members?,
+C<multi submethod new of Set::Relation (Array|Set::Relation|Str :$members,
 Bool :$has_frozen_identity?)>
 
-C<submethod new of Set::Relation (Array|Set::Relation|Str $members?)>
+C<multi submethod new of Set::Relation (Array|Set::Relation|Str $members)>
+
+C<multi submethod new of Set::Relation ()>
 
 This constructor submethod creates and returns a new C<Set::Relation>
 object, representing a single relation value, that is initialized primarily
@@ -3459,6 +3461,7 @@ installation by users of earlier Perl versions:
 L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
+L<namespace::clean-ver(0.09..*)|namespace::clean>,
 L<Moose-ver(0.68..*)|Moose>.
 
 =head1 INCOMPATIBILITIES
