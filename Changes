@@ -6,9 +6,10 @@
     * Set::Relation version 0.5.0 for Perl 5 is released on CPAN as
     Set-Relation-0.5.0.tar.gz.
 
-    * (Relation.pm)  Added these 4 object methods (still 18 to go):
+    * (Relation.pm)  Added these 8 object methods (still 14 to go):
     "restriction_and_cmpl", "semijoin_and_diff", "substitution",
-    "static_substitution".
+    "static_substitution", "subst_in_restr", "static_subst_in_restr",
+    "subst_in_semijoin", "static_subst_in_semijoin".
 
     * (Relation.pm)  Other minor updates and fixes.
 

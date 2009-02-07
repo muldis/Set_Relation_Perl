@@ -726,18 +726,27 @@ sub is_member {
 
 sub empty {
     my ($topic) = @_;
+    if ($topic->is_empty()) {
+        return $topic;
+    }
     return __PACKAGE__->new( $topic->heading() );
 }
 
 sub insertion {
     my ($r, $t) = @_;
     $t = $r->_normalize_same_heading_tuples_arg( 'insertion', '$t', $t );
+    if (@{$t} == 0) {
+        return $r;
+    }
     return $r->clone()->_insert( $t );
 }
 
 sub deletion {
     my ($r, $t) = @_;
     $t = $r->_normalize_same_heading_tuples_arg( 'deletion', '$t', $t );
+    if (@{$t} == 0) {
+        return $r;
+    }
     return $r->clone()->_delete( $t );
 }
 
@@ -1284,7 +1293,9 @@ sub is_identical {
 
 sub _is_identical {
     my ($topic, $other) = @_;
-    return ($topic->_is_identical_hkeys(
+    return ($topic->_degree() == $other->_degree()
+        and $topic->_cardinality() == $other->_cardinality()
+        and $topic->_is_identical_hkeys(
             $topic->_heading(), $other->_heading() )
         and $topic->_is_identical_hkeys(
             $topic->_body(), $other->_body() ));
@@ -2037,6 +2048,9 @@ sub _substitution {
     my ($topic, $rtn_nm, $arg_nm_attrs, $arg_nm_func, $attrs, $func,
         $subst_h) = @_;
 
+    if ($topic->is_empty()) {
+        return $topic;
+    }
     if (@{$attrs} == 0) {
         # Substitution in zero attrs of input yields the input.
         return $topic;
@@ -2098,6 +2112,9 @@ sub _assert_valid_static_subst_args {
 sub _static_substitution {
     my ($topic, $attrs) = @_;
 
+    if ($topic->is_empty()) {
+        return $topic;
+    }
     if ((scalar keys %{$attrs}) == 0) {
         # Substitution in zero attrs of input yields the input.
         return $topic;
@@ -2124,19 +2141,77 @@ sub _static_substitution {
 ###########################################################################
 
 sub subst_in_restr {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $restr_func, $subst_attrs, $subst_func) = @_;
+
+    $topic->_assert_valid_func_arg(
+        'subst_in_restr', '$restr_func', $restr_func );
+
+    (my $subst_h, $subst_attrs) = $topic
+        ->_attrs_hr_from_assert_valid_subst_args( 'subst_in_restr',
+            '$subst_attrs', '$subst_func', $subst_attrs, $subst_func );
+
+    my ($topic_to_subst, $topic_no_subst)
+        = @{$topic->_restriction_and_cmpl( $restr_func )};
+
+    return $topic_to_subst
+        ->_substitution( 'subst_in_restr', '$subst_attrs',
+            '$subst_func', $subst_attrs, $subst_func, $subst_h )
+        ->_union( $topic_no_subst );
 }
 
 sub static_subst_in_restr {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $restr_func, $subst) = @_;
+
+    $topic->_assert_valid_func_arg(
+        'static_subst_in_restr', '$restr_func', $restr_func );
+
+    $topic->_assert_valid_static_subst_args(
+        'static_subst_in_restr', '$subst', $subst );
+
+    my ($topic_to_subst, $topic_no_subst)
+        = @{$topic->_restriction_and_cmpl( $restr_func )};
+
+    return $topic_to_subst
+        ->_static_substitution( $subst )
+        ->_union( $topic_no_subst );
 }
 
 sub subst_in_semijoin {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $restr, $subst_attrs, $subst_func) = @_;
+
+    confess q{subst_in_semijoin(): Bad $restr arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $restr or !$restr->isa( __PACKAGE__ );
+
+    (my $subst_h, $subst_attrs) = $topic
+        ->_attrs_hr_from_assert_valid_subst_args( 'subst_in_semijoin',
+            '$subst_attrs', '$subst_func', $subst_attrs, $subst_func );
+
+    my ($topic_to_subst, $topic_no_subst)
+        = @{$topic->_semijoin_and_diff( $restr )};
+
+    return $topic_to_subst
+        ->_substitution( 'subst_in_semijoin', '$subst_attrs',
+            '$subst_func', $subst_attrs, $subst_func, $subst_h )
+        ->_union( $topic_no_subst );
 }
 
 sub static_subst_in_semijoin {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $restr, $subst) = @_;
+
+    confess q{static_subst_in_semijoin(): Bad $restr arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $restr or !$restr->isa( __PACKAGE__ );
+
+    $topic->_assert_valid_static_subst_args(
+        'static_subst_in_semijoin', '$subst', $subst );
+
+    my ($topic_to_subst, $topic_no_subst)
+        = @{$topic->_semijoin_and_diff( $restr )};
+
+    return $topic_to_subst
+        ->_static_substitution( $subst )
+        ->_union( $topic_no_subst );
 }
 
 ###########################################################################
@@ -3541,7 +3616,7 @@ in the typical scenario where every tuple of a relation, given in the
 C<$topic> invocant, is updated with identical values for the same
 attributes; the new attribute values are given in the C<$attrs> argument.
 
-=head2 TODO - subst_in_restr
+=head2 subst_in_restr
 
 C<method subst_in_restr of Set::Relation ($topic: Code $restr_func,
 Array|Str $subst_attrs, Code $subst_func)>
@@ -3556,7 +3631,7 @@ See also the C<subst_in_semijoin> method, which is a simpler-syntax
 alternative for C<subst_in_restr> in its typical usage where restrictions
 are composed simply of anded or ored tests for attribute value equality.
 
-=head2 TODO - static_subst_in_restr
+=head2 static_subst_in_restr
 
 C<method static_subst_in_restr of Set::Relation ($topic: Code $restr_func,
 Hash $subst)>
@@ -3564,7 +3639,7 @@ Hash $subst)>
 This functional method is to C<subst_in_restr> what C<static_substitution>
 is to C<substitution>.  See also the C<static_subst_in_semijoin> method.
 
-=head2 TODO - subst_in_semijoin
+=head2 subst_in_semijoin
 
 C<method subst_in_semijoin of Set::Relation ($topic: Set::Relation $restr,
 Array|Str $subst_attrs, Code $subst_func)>
@@ -3574,7 +3649,7 @@ the tuples of C<$topic> to be transformed is determined by those matched by
 a semijoin with C<$restr> rather than those that pass a generic relational
 restriction.
 
-=head2 TODO - static_subst_in_semijoin
+=head2 static_subst_in_semijoin
 
 C<method static_subst_in_semijoin of Set::Relation ($topic: Set::Relation
 $restr, Hash $subst)>
