@@ -1941,11 +1941,115 @@ sub limit {
 ###########################################################################
 
 sub substitution {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $attrs, $func) = @_;
+    (my $subst_h, $attrs) = $topic->_attrs_hr_from_assert_valid_subst_args(
+        'substitution', '$attrs', '$func', $attrs, $func );
+    return $topic->_substitution(
+        'substitution', '$attrs', '$func', $attrs, $func, $subst_h );
 }
 
+sub _attrs_hr_from_assert_valid_subst_args {
+    my ($topic, $rtn_nm, $arg_nm_attrs, $arg_nm_func, $attrs, $func) = @_;
+
+    (my $subst_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        $rtn_nm, $arg_nm_attrs, $attrs );
+    my (undef, undef, $subst_only)
+        = $topic->_ptn_conj_and_disj( $topic->_heading(), $subst_h );
+    confess qq{$rtn_nm(): Bad $arg_nm_attrs arg; that attr list}
+            . q{ isn't a subset of the invocant's heading.}
+        if @{$subst_only} > 0;
+
+    $topic->_assert_valid_func_arg( $rtn_nm, $arg_nm_func, $func );
+
+    return ($subst_h, $attrs);
+}
+
+sub _substitution {
+    my ($topic, $rtn_nm, $arg_nm_attrs, $arg_nm_func, $attrs, $func,
+        $subst_h) = @_;
+
+    if (@{$attrs} == 0) {
+        # Substitution in zero attrs of input yields the input.
+        return $topic;
+    }
+
+    my $result = $topic->empty();
+
+    my $result_b = $result->_body();
+
+    for my $topic_t (values %{$topic->_body()}) {
+        my $subst_t;
+        {
+            local $_ = $topic->_export_nfmt_tuple( $topic_t );
+            $subst_t = $func->();
+        }
+        $topic->_assert_valid_tuple_result_of_func_arg(
+            $rtn_nm, $arg_nm_func, $arg_nm_attrs, $subst_t, $subst_h );
+        $subst_t = $topic->_import_nfmt_tuple( $subst_t );
+        my $result_t = {%{$topic_t}, %{$subst_t}};
+        my $result_t_ident_str = $topic->_ident_str( $result_t );
+        if (!exists $result_b->{$result_t_ident_str}) {
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    $result->_cardinality( scalar keys %{$result_b} );
+
+    return $result;
+}
+
+###########################################################################
+
 sub static_substitution {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $attrs) = @_;
+    $topic->_assert_valid_static_subst_args(
+        'static_substitution', '$attrs', $attrs );
+    return $topic->_static_substitution( $attrs );
+}
+
+sub _assert_valid_static_subst_args {
+    my ($topic, $rtn_nm, $arg_nm_attrs, $attrs) = @_;
+
+    confess qq{$rtn_nm(): Bad $arg_nm_attrs arg; it isn't a hash-ref.}
+        if ref $attrs ne 'HASH';
+
+    my (undef, undef, $subst_only)
+        = $topic->_ptn_conj_and_disj( $topic->_heading(), $attrs );
+    confess qq{$rtn_nm(): Bad $arg_nm_attrs arg; that attr list}
+            . q{ isn't a subset of the invocant's heading.}
+        if @{$subst_only} > 0;
+
+    confess qq{$rtn_nm(): Bad $arg_nm_attrs arg;}
+            . q{ it is a hash-ref, and there exist circular refs}
+            . q{ between itself or its value-typed components.}
+        if $topic->_tuple_arg_has_circular_refs( $attrs );
+
+    return;
+}
+
+sub _static_substitution {
+    my ($topic, $attrs) = @_;
+
+    if ((scalar keys %{$attrs}) == 0) {
+        # Substitution in zero attrs of input yields the input.
+        return $topic;
+    }
+
+    $attrs = $topic->_import_nfmt_tuple( $attrs );
+
+    my $result = $topic->empty();
+
+    my $result_b = $result->_body();
+
+    for my $topic_t (values %{$topic->_body()}) {
+        my $result_t = {%{$topic_t}, %{$attrs}};
+        my $result_t_ident_str = $topic->_ident_str( $result_t );
+        if (!exists $result_b->{$result_t_ident_str}) {
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    $result->_cardinality( scalar keys %{$result_b} );
+
+    return $result;
 }
 
 ###########################################################################
@@ -3311,7 +3415,7 @@ BY" but that the result tuples of C<limit> do not remain ordered.
 These Set::Relation object methods are pure functional.  They are specific
 to supporting substitutions.
 
-=head2 TODO - substitution
+=head2 substitution
 
 C<method substitution of Set::Relation ($topic: Array|Str $attrs, Code
 $func)>
@@ -3339,7 +3443,7 @@ that C<$func> will update (possibly to itself).  This method will fail if
 C<$topic> has at least 1 tuple and the result of C<$func> does not have
 matching attribute names to those named by C<$attrs>.
 
-=head2 TODO - static_substitution
+=head2 static_substitution
 
 C<method static_substitution of Set::Relation ($topic: Hash $attrs)>
 

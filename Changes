@@ -6,6 +6,9 @@
     * Set::Relation version 0.5.0 for Perl 5 is released on CPAN as
     Set-Relation-0.5.0.tar.gz.
 
+    * (Relation.pm)  Added these 2 object methods (still 18 to go):
+    "substitution", "static_substitution".
+
     * (Relation.pm)  Other minor updates and fixes.
 
 2009-02-05   Darren Duncan <perl@DarrenDuncan.net>
