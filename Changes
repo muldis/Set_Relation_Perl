@@ -7,7 +7,7 @@
     Set-Relation-0.5.0.tar.gz.
 
     * (Relation.pm)  Added these 4 object methods (still 18 to go):
-    "restriction_and_cmpl", "semijoin_and_semidifference", "substitution",
+    "restriction_and_cmpl", "semijoin_and_diff", "substitution",
     "static_substitution".
 
     * (Relation.pm)  Other minor updates and fixes.

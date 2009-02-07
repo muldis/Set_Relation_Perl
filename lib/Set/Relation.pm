@@ -1563,15 +1563,15 @@ sub semidifference {
     return $source->_regular_difference( $source->_semijoin( $filter ) );
 }
 
-sub semijoin_and_semidifference {
+sub semijoin_and_diff {
     my ($source, $filter) = @_;
-    confess q{semijoin_and_semidifference(): Bad $filter arg;}
+    confess q{semijoin_and_diff(): Bad $filter arg;}
             . q{ it isn't a Set::Relation object.}
         if !blessed $filter or !$filter->isa( __PACKAGE__ );
-    return $source->_semijoin_and_semidifference( $filter );
+    return $source->_semijoin_and_diff( $filter );
 }
 
-sub _semijoin_and_semidifference {
+sub _semijoin_and_diff {
     my ($source, $filter) = @_;
     if ($source->is_empty()) {
         return [$source, $source];
@@ -2123,19 +2123,19 @@ sub _static_substitution {
 
 ###########################################################################
 
-sub substitution_in_restriction {
+sub subst_in_restr {
     confess q{this routine isn't implemented yet};
 }
 
-sub static_substitution_in_restriction {
+sub static_subst_in_restr {
     confess q{this routine isn't implemented yet};
 }
 
-sub substitution_in_semijoin {
+sub subst_in_semijoin {
     confess q{this routine isn't implemented yet};
 }
 
-sub static_substitution_in_semijoin {
+sub static_subst_in_semijoin {
     confess q{this routine isn't implemented yet};
 }
 
@@ -2149,11 +2149,11 @@ sub outer_join_with_undefs {
     confess q{this routine isn't implemented yet};
 }
 
-sub outer_join_with_static_extension {
+sub outer_join_with_static_exten {
     confess q{this routine isn't implemented yet};
 }
 
-sub outer_join_with_extension {
+sub outer_join_with_exten {
     confess q{this routine isn't implemented yet};
 }
 
@@ -3351,10 +3351,9 @@ the complementary subset of tuples of C<$source> when given the same
 arguments.  Note that this operation is also legitimately known as
 I<antijoin> or I<anti-semijoin>.
 
-=head2 semijoin_and_semidifference
+=head2 semijoin_and_diff
 
-C<method semijoin_and_semidifference of Array ($source: Set::Relation
-$filter)>
+C<method semijoin_and_diff of Array ($source: Set::Relation $filter)>
 
 This functional method performs a 2-way partitioning of all the tuples of
 C<$source> and results in a 2-element Perl Array whose 2 element values are
@@ -3542,10 +3541,10 @@ in the typical scenario where every tuple of a relation, given in the
 C<$topic> invocant, is updated with identical values for the same
 attributes; the new attribute values are given in the C<$attrs> argument.
 
-=head2 TODO - substitution_in_restriction
+=head2 TODO - subst_in_restr
 
-C<method substitution_in_restriction of Set::Relation ($topic: Code
-$restr_func, Array|Str $subst_attrs, Code $subst_func)>
+C<method subst_in_restr of Set::Relation ($topic: Code $restr_func,
+Array|Str $subst_attrs, Code $subst_func)>
 
 This functional method is like C<substitution> except that it only
 transforms a subset of the tuples of C<$topic> rather than all of them.  It
@@ -3553,36 +3552,34 @@ is a short-hand for first separating the tuples of C<$topic> into 2 groups
 where those passed by a relational restriction (defined by C<$restr_func>)
 are then transformed (defined by C<$subst_attrs> and C<$subst_func>), then
 the result of the substitution is unioned with the un-transformed group.
-See also the C<substitution_in_semijoin> method, which is a simpler-syntax
-alternative for C<substitution_in_restriction> in its typical usage where
-restrictions are composed simply of anded or ored tests for attribute value
-equality.
+See also the C<subst_in_semijoin> method, which is a simpler-syntax
+alternative for C<subst_in_restr> in its typical usage where restrictions
+are composed simply of anded or ored tests for attribute value equality.
 
-=head2 TODO - static_substitution_in_restriction
+=head2 TODO - static_subst_in_restr
 
-C<method static_substitution_in_restriction of Set::Relation ($topic: Code
-$restr_func, Hash $subst)>
+C<method static_subst_in_restr of Set::Relation ($topic: Code $restr_func,
+Hash $subst)>
 
-This functional method is to C<substitution_in_restriction> what
-C<static_substitution> is to C<substitution>.  See also the
-C<static_substitution_in_semijoin> method.
+This functional method is to C<subst_in_restr> what C<static_substitution>
+is to C<substitution>.  See also the C<static_subst_in_semijoin> method.
 
-=head2 TODO - substitution_in_semijoin
+=head2 TODO - subst_in_semijoin
 
-C<method substitution_in_semijoin of Set::Relation ($topic: Set::Relation
-$restr, Array|Str $subst_attrs, Code $subst_func)>
+C<method subst_in_semijoin of Set::Relation ($topic: Set::Relation $restr,
+Array|Str $subst_attrs, Code $subst_func)>
 
-This functional method is like C<substitution_in_restriction> except that
-the subset of the tuples of C<$topic> to be transformed is determined by
-those matched by a semijoin with C<$restr> rather than those that pass a
-generic relational restriction.
+This functional method is like C<subst_in_restr> except that the subset of
+the tuples of C<$topic> to be transformed is determined by those matched by
+a semijoin with C<$restr> rather than those that pass a generic relational
+restriction.
 
-=head2 TODO - static_substitution_in_semijoin
+=head2 TODO - static_subst_in_semijoin
 
-C<method static_substitution_in_semijoin of Set::Relation ($topic:
-Set::Relation $restr, Hash $subst)>
+C<method static_subst_in_semijoin of Set::Relation ($topic: Set::Relation
+$restr, Hash $subst)>
 
-This functional method is to C<substitution_in_semijoin> what
+This functional method is to C<subst_in_semijoin> what
 C<static_substitution> is to C<substitution>.
 
 =head1 Relational Outer-Join Functional Methods
@@ -3612,9 +3609,9 @@ tuples coming from a C<$primary> tuple that didn't match a C<$secondary>
 tuple, the result attributes coming from just C<$secondary> are filled with
 the Perl undef.
 
-=head2 TODO - outer_join_with_static_extension
+=head2 TODO - outer_join_with_static_exten
 
-C<method outer_join_with_static_extension of Set::Relation ($primary:
+C<method outer_join_with_static_exten of Set::Relation ($primary:
 Set::Relation $secondary, Hash $filler)>
 
 This functional method is the same as C<outer_join_with_undefs> but that
@@ -3625,13 +3622,13 @@ heading matches the projection of C<$secondary>'s attributes that aren't in
 common with C<$primary>, and whose body is the literal values to use for
 those missing attribute values.
 
-=head2 TODO - outer_join_with_extension
+=head2 TODO - outer_join_with_exten
 
-C<method outer_join_with_extension of Set::Relation ($primary:
-Set::Relation $secondary, Code $exten_func)>
+C<method outer_join_with_exten of Set::Relation ($primary: Set::Relation
+$secondary, Code $exten_func)>
 
-This functional method is the same as C<outer_join_with_static_extension>
-but that the result tuples from non-matches are the result of performing a
+This functional method is the same as C<outer_join_with_static_exten> but
+that the result tuples from non-matches are the result of performing a
 relational extension on the un-matched C<$primary> tuples such that each
 said result tuple is determined by applying the Perl subroutine given in
 C<$exten_func> to each said C<$primary> tuple.

@@ -4,12 +4,10 @@
 Following is a summary of things that still need doing.
 
 * Add these 18 relational operators: wrap, cmpl_wrap, unwrap, group,
-cmpl_group, ungroup, summary, join_with_group, rank, limit,
-substitution_in_restriction,
-static_substitution_in_restriction, substitution_in_semijoin,
-static_substitution_in_semijoin, outer_join_with_group,
-outer_join_with_undefs, outer_join_with_static_extension,
-outer_join_with_extension.
+cmpl_group, ungroup, summary, join_with_group, rank, limit, subst_in_restr,
+static_subst_in_restr, subst_in_semijoin, static_subst_in_semijoin,
+outer_join_with_group, outer_join_with_undefs,
+outer_join_with_static_exten, outer_join_with_exten.
 
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
