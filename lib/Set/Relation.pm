@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # class
-    use version 0.74; our $VERSION = qv('0.4.0');
+    use version 0.74; our $VERSION = qv('0.5.0');
 
     use Scalar::Util 'refaddr';
     use List::Util 'first';
@@ -2255,7 +2255,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.4.0 for Perl 5.
+This document describes Set::Relation version 0.5.0 for Perl 5.
 
 =head1 SYNOPSIS
 
