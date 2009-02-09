@@ -11,6 +11,7 @@ use warnings FATAL => 'all';
 
     use Scalar::Util 'refaddr';
     use List::Util 'first';
+    use List::MoreUtils 'any', 'notall';
 
     use Moose 0.68;
 
@@ -895,12 +896,102 @@ sub cmpl_projection {
 ###########################################################################
 
 sub wrap {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $inner, $outer) = @_;
+
+    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        'wrap', '$inner', $inner );
+    $topic->_assert_valid_atnm_arg( 'wrap', '$outer', $outer );
+
+    my (undef, $topic_attrs_no_wr, $inner_attrs_not_in_topic)
+        = $topic->_ptn_conj_and_disj( $topic->_heading(), $inner_h );
+    confess q{wrap(): Bad $inner arg; that list of attrs to be wrapped}
+            . q{ isn't a subset of the invocant's heading.}
+        if @{$inner_attrs_not_in_topic} > 0;
+    confess q{wrap(): Bad $outer arg; that name for a new attr to add}
+            . q{ to the invocant, consisting of wrapped invocant attrs,}
+            . q{ duplicates an attr of the invocant not being wrapped.}
+        if any { $_ eq $outer } @{$topic_attrs_no_wr};
+
+    return $topic->_wrap( $inner, $outer, $topic_attrs_no_wr );
+}
+
+sub _wrap {
+    my ($topic, $inner, $outer, $topic_attrs_no_wr) = @_;
+
+    my $result = __PACKAGE__->new();
+
+    $result->_heading(
+        {CORE::map { ($_ => undef) } @{$topic_attrs_no_wr}, $outer} );
+    $result->_degree( @{$topic_attrs_no_wr} + 1 );
+
+    my $topic_b = $topic->_body();
+    my $result_b = $result->_body();
+
+    if (@{$inner} == 0) {
+        # Wrap zero $topic attrs as new attr.
+        my $inner_t = {};
+        my $outer_atvl = [$inner_t, $topic->_ident_str( $inner_t )];
+        for my $topic_t (values %{$topic_b}) {
+            my $result_t = {$outer => $outer_atvl, {%{$topic_t}}};
+            my $result_t_ident_str = $topic->_ident_str( $result_t );
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    elsif (@{$topic_attrs_no_wr} == 0) {
+        # Wrap all $topic attrs as new attr.
+        for my $topic_t_ident_str (keys %{$topic_b}) {
+            my $result_t = {$outer => [$topic_b->{$topic_t_ident_str},
+                $topic_t_ident_str]};
+            my $result_t_ident_str = $topic->_ident_str( $result_t );
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    else {
+        # Wrap at least one but not all $topic attrs as new attr.
+        for my $topic_t (values %{$topic_b}) {
+            my $inner_t = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
+            my $outer_atvl = [$inner_t, $topic->_ident_str( $inner_t )];
+            my $result_t = {
+                $outer => $outer_atvl,
+                CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_wr}
+            };
+            my $result_t_ident_str = $topic->_ident_str( $result_t );
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    $result->_cardinality( $topic->cardinality() );
+
+    return $result;
 }
 
 sub cmpl_wrap {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $cmpl_inner, $outer) = @_;
+
+    (my $cmpl_inner_h, $cmpl_inner)
+        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+            'cmpl_wrap', '$cmpl_inner', $cmpl_inner );
+    $topic->_assert_valid_atnm_arg( 'cmpl_wrap', '$outer', $outer );
+
+    my $topic_h = $topic->_heading();
+
+    confess q{cmpl_wrap(): Bad $cmpl_inner arg; that attr list}
+            . q{ isn't a subset of the invocant's heading.}
+        if notall { exists $topic_h->{$_} } @{$cmpl_inner};
+
+    my $inner = [grep { !$cmpl_inner_h->{$_} } keys %{$topic_h}];
+    my $inner_h = {CORE::map { $_ => undef } @{$inner}};
+
+    my (undef, $topic_attrs_no_wr, undef)
+        = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
+    confess q{cmpl_wrap(): Bad $outer arg; that name for a new attr to add}
+            . q{ to the invocant, consisting of wrapped invocant attrs,}
+            . q{ duplicates an attr of the invocant not being wrapped.}
+        if any { $_ eq $outer } @{$topic_attrs_no_wr};
+
+    return $topic->_wrap( $inner, $outer, $topic_attrs_no_wr );
 }
+
+###########################################################################
 
 sub unwrap {
     confess q{this routine isn't implemented yet};
@@ -915,6 +1006,8 @@ sub group {
 sub cmpl_group {
     confess q{this routine isn't implemented yet};
 }
+
+###########################################################################
 
 sub ungroup {
     confess q{this routine isn't implemented yet};
@@ -1090,11 +1183,6 @@ sub extension {
         'extension', '$attrs', $attrs );
     $topic->_assert_valid_func_arg( 'extension', '$func', $func );
 
-    if (@{$attrs} == 0) {
-        # Extension of input by zero attrs yields the input.
-        return $topic;
-    }
-
     my $topic_h = $topic->_heading();
 
     my ($both, undef, undef)
@@ -1102,6 +1190,11 @@ sub extension {
     confess q{extension(): Bad $attrs arg; that attr list}
             . q{ isn't disjoint with the invocant's heading.}
         if @{$both} > 0;
+
+    if (@{$attrs} == 0) {
+        # Extension of input by zero attrs yields the input.
+        return $topic;
+    }
 
     my $result = __PACKAGE__->new();
 
@@ -1134,11 +1227,6 @@ sub static_extension {
     confess q{static_extension(): Bad $attrs arg; it isn't a hash-ref.}
         if ref $attrs ne 'HASH';
 
-    if ((scalar keys %{$attrs}) == 0) {
-        # Extension of input by zero attrs yields the input.
-        return $topic;
-    }
-
     my $topic_h = $topic->_heading();
 
     my ($both, undef, undef)
@@ -1151,6 +1239,11 @@ sub static_extension {
             . q{ it is a hash-ref, and there exist circular refs}
             . q{ between itself or its value-typed components.}
         if $topic->_tuple_arg_has_circular_refs( $attrs );
+
+    if ((scalar keys %{$attrs}) == 0) {
+        # Extension of input by zero attrs yields the input.
+        return $topic;
+    }
 
     $attrs = $topic->_import_nfmt_tuple( $attrs );
 
@@ -3050,7 +3143,7 @@ This functional method is the same as C<projection> but that it results in
 the complementary subset of attributes of its invocant when given the same
 argument.
 
-=head2 TODO - wrap
+=head2 wrap
 
 C<method wrap of Set::Relation ($topic: Array|Str $inner, Str $outer)>
 
@@ -3070,7 +3163,7 @@ as an old one being wrapped into it.  This method will fail if C<$inner>
 specifies any attribute names that C<$topic> doesn't have, or if C<$outer>
 is the same as a C<$topic> attribute that isn't being wrapped.
 
-=head2 TODO - cmpl_wrap
+=head2 cmpl_wrap
 
 C<method cmpl_wrap of Set::Relation ($topic: Array|Str $cmpl_inner, Str
 $outer)>
@@ -3728,6 +3821,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.09..*)|namespace::clean>,
+L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
 L<Moose-ver(0.68..*)|Moose>.
 
 =head1 INCOMPATIBILITIES

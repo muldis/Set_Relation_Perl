@@ -1,6 +1,22 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-02-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.6.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.6.0.tar.gz.
+
+    * As of this release, Set::Relation for Perl 5 directly uses the
+    List::MoreUtils module to handle some of its detail work; this
+    distribution has now gained a direct external dependency on the Perl 5
+    module 'List::MoreUtils', which is not bundled with any version of Perl
+    and will need to be installed from CPAN.  That said, List::MoreUtils
+    was already a dependency of Set::Relation's existing Moose dependency,
+    so the whole dependency tree has not enlarged.
+
+    * (Relation.pm)  Added these 2 object methods (still 12 to go):
+    "wrap", "cmpl_wrap".
+
 2009-02-06   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.5.0 for Perl 5 is released on CPAN as

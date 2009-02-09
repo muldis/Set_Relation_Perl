@@ -3,7 +3,7 @@
 
 Following is a summary of things that still need doing.
 
-* Add these 14 relational operators: wrap, cmpl_wrap, unwrap, group,
+* Add these 12 relational operators: unwrap, group,
 cmpl_group, ungroup, summary, join_with_group, rank, limit,
 outer_join_with_group, outer_join_with_undefs,
 outer_join_with_static_exten, outer_join_with_exten.
@@ -20,8 +20,13 @@ implement more operators?
 * Consider adding disjoint insertion, union operators (same as normal but
 fails on a duplicate).
 
-* Consider adding support for explicit keys / unique key constraints on
-Set::Relation objects.
+* Consider adding support for explicit keys / unique key constraints /
+automatic key detection on Set::Relation objects.  If properly exploited
+this may lead to improved performance by letting one hash each
+Set::Relation's member tuples just on the subtuple that is a key rather
+than on the whole tuple.  But doing this properly will probably make the
+module about 20-50% more complicated.  This would certainly be much simpler
+if the objects did not mutate.
 
 * Consider adding more mutator methods.
 
