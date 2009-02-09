@@ -1585,7 +1585,89 @@ sub map {
 ###########################################################################
 
 sub summary {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $group_per, $result_attrs, $summ_func) = @_;
+
+    (my $group_per_h, $group_per)
+        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+            'summary', '$group_per', $group_per );
+    (my $result_h, $result_attrs)
+        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+            'summary', '$result_attrs', $result_attrs );
+    $topic->_assert_valid_func_arg( 'summary', '$summ_func', $summ_func );
+
+    my $topic_h = $topic->_heading();
+
+    confess q{summary(): Bad $group_per arg; that attr list}
+            . q{ isn't a subset of the invocant's heading.}
+        if notall { exists $topic_h->{$_} } @{$group_per};
+
+    my $inner = [grep { !$group_per_h->{$_} } keys %{$topic_h}];
+    my $inner_h = {CORE::map { $_ => undef } @{$inner}};
+
+    my (undef, $topic_attrs_no_gr, undef)
+        = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
+
+    if (@{$result_attrs} == 0) {
+        # Map to zero attrs yields identity relation zero or one.
+        if ($topic->is_empty()) {
+            return $topic->new();
+        }
+        else {
+            return $topic->new( [ {} ] );
+        }
+    }
+
+    my $result = $topic->new();
+
+    $result->_heading( $result_h );
+    $result->_degree( scalar @{$result_attrs} );
+
+    if ($topic->is_empty()) {
+        # An empty $topic means an empty result.
+        return $result;
+    }
+
+    # Note: We skipped a number of shortcuts that _group() has for
+    # brevity, leaving just the general case; they might come back later.
+
+    my $result_b = $result->_body();
+    my $topic_index = $topic->_want_index( $topic_attrs_no_gr );
+    for my $matched_topic_b (values %{$topic_index}) {
+
+        my $inner_r = $topic->new();
+        $inner_r->_heading( $inner_h );
+        $inner_r->_degree( @{$inner} );
+        my $inner_b = $inner_r->_body();
+        for my $topic_t (values %{$matched_topic_b}) {
+            my $inner_t = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
+            $inner_b->{$topic->_ident_str( $inner_t )} = $inner_t;
+        }
+        $inner_r->_cardinality( scalar keys %{$matched_topic_b} );
+
+        my $any_mtpt = first { 1 } values %{$matched_topic_b};
+        my $group_per_t = {CORE::map { ($_ => $any_mtpt->{$_}) }
+            @{$topic_attrs_no_gr}};
+
+        my $result_t;
+        {
+            local $_ = {
+                'summarize' => $inner_r,
+                'per' => $topic->_export_nfmt_tuple( $group_per_t ),
+            };
+            $result_t = $summ_func->();
+        }
+        $topic->_assert_valid_tuple_result_of_func_arg( 'summary',
+            '$summ_func', '$result_attrs', $result_t, $result_h );
+        $result_t = $topic->_import_nfmt_tuple( $result_t );
+
+        my $result_t_ident_str = $topic->_ident_str( $result_t );
+        if (!exists $result_b->{$result_t_ident_str}) {
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    $result->_cardinality( scalar keys %{$result_b} );
+
+    return $result;
 }
 
 ###########################################################################
@@ -3637,7 +3719,7 @@ to see what attributes it would have resulted in).  This method will fail
 if C<$topic> has at least 1 tuple and the result of C<$func> does not have
 matching attribute names to those named by C<$result_attrs>.
 
-=head2 TODO - summary
+=head2 summary
 
 C<method summary of Set::Relation ($topic: Array|Str $group_per, Array|Str
 $result_attrs, Code $summ_func)>

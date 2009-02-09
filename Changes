@@ -14,8 +14,8 @@
     was already a dependency of Set::Relation's existing Moose dependency,
     so the whole dependency tree has not enlarged.
 
-    * (Relation.pm)  Added these 6 object methods (still 8 to go):
-    "wrap", "cmpl_wrap", "unwrap", "group", "cmpl_group", "ungroup".
+    * (Relation.pm)  Added these 7 object methods (still 7 to go): "wrap",
+    "cmpl_wrap", "unwrap", "group", "cmpl_group", "ungroup", "summary".
 
     * (Relation.pm)  Replaced all instances of "__PACKAGE__->new(...)" with
     "$self->new(...)" etc, to help avoid potential future problems when
