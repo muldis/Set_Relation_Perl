@@ -1454,13 +1454,17 @@ sub extension {
         'extension', '$attrs', $attrs );
     $topic->_assert_valid_func_arg( 'extension', '$func', $func );
 
-    my $topic_h = $topic->_heading();
-
     my ($both, undef, undef)
-        = $topic->_ptn_conj_and_disj( $topic_h, $exten_h );
+        = $topic->_ptn_conj_and_disj( $topic->_heading(), $exten_h );
     confess q{extension(): Bad $attrs arg; that attr list}
             . q{ isn't disjoint with the invocant's heading.}
         if @{$both} > 0;
+
+    return $topic->_extension( $attrs, $func, $exten_h );
+}
+
+sub _extension {
+    my ($topic, $attrs, $func, $exten_h) = @_;
 
     if (@{$attrs} == 0) {
         # Extension of input by zero attrs yields the input.
@@ -1469,7 +1473,7 @@ sub extension {
 
     my $result = $topic->new();
 
-    $result->_heading( {%{$topic_h}, %{$exten_h}} );
+    $result->_heading( {%{$topic->_heading()}, %{$exten_h}} );
     $result->_degree( $topic->degree() + scalar @{$attrs} );
 
     my $result_b = $result->_body();
@@ -1498,10 +1502,8 @@ sub static_extension {
     confess q{static_extension(): Bad $attrs arg; it isn't a hash-ref.}
         if ref $attrs ne 'HASH';
 
-    my $topic_h = $topic->_heading();
-
     my ($both, undef, undef)
-        = $topic->_ptn_conj_and_disj( $topic_h, $attrs );
+        = $topic->_ptn_conj_and_disj( $topic->_heading(), $attrs );
     confess q{static_extension(): Bad $attrs arg; that attr list}
             . q{ isn't disjoint with the invocant's heading.}
         if @{$both} > 0;
@@ -1510,6 +1512,12 @@ sub static_extension {
             . q{ it is a hash-ref, and there exist circular refs}
             . q{ between itself or its value-typed components.}
         if $topic->_tuple_arg_has_circular_refs( $attrs );
+
+    return $topic->_static_extension( $attrs );
+}
+
+sub _static_extension {
+    my ($topic, $attrs) = @_;
 
     if ((scalar keys %{$attrs}) == 0) {
         # Extension of input by zero attrs yields the input.
@@ -1520,8 +1528,8 @@ sub static_extension {
 
     my $result = $topic->new();
 
-    $result->_heading(
-        {%{$topic_h}, CORE::map { ($_ => undef) } keys %{$attrs}} );
+    $result->_heading( {%{$topic->_heading()},
+        CORE::map { ($_ => undef) } keys %{$attrs}} );
     $result->_degree( $topic->degree() + (scalar keys %{$attrs}) );
 
     my $result_b = $result->_body();
@@ -2348,7 +2356,7 @@ sub quotient {
 
     return $proj_of_dividend_only
         ->_difference( $proj_of_dividend_only
-            ->_product( $divisor )
+            ->_regular_product( $divisor )
             ->_difference( $dividend )
             ->_projection( $dividend_only )
         );
@@ -2451,7 +2459,30 @@ sub _want_index {
 ###########################################################################
 
 sub join_with_group {
-    confess q{this routine isn't implemented yet};
+    my ($primary, $secondary, $group_attr) = @_;
+
+    confess q{join_with_group(): Bad $secondary arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+    $primary->_assert_valid_atnm_arg(
+        'join_with_group', '$group_attr', $group_attr );
+
+    my $primary_h = $primary->_heading();
+
+    confess q{join_with_group(): Bad $group_attr arg;}
+            . q{ that name for a new attr to add}
+            . q{ to $primary, consisting of grouped $secondary-only attrs,}
+            . q{ duplicates an attr of $primary (not being grouped).}
+        if exists $primary_h->{$group_attr};
+
+    # TODO: inline+merge what join/group do for better performance.
+
+    my ($both, $primary_only, $inner) = $primary->_ptn_conj_and_disj(
+            $primary_h, $secondary->_heading() );
+    my $inner_h = {CORE::map { $_ => undef } @{$inner}};
+
+    return $primary->_join( [$secondary] )
+        ->_group( $inner, $group_attr, [keys %{$primary_h}], $inner_h );
 }
 
 ###########################################################################
@@ -2602,7 +2633,7 @@ sub subst_in_restr {
     return $topic_to_subst
         ->_substitution( 'subst_in_restr', '$subst_attrs',
             '$subst_func', $subst_attrs, $subst_func, $subst_h )
-        ->_union( $topic_no_subst );
+        ->_union( [$topic_no_subst] );
 }
 
 sub static_subst_in_restr {
@@ -2619,7 +2650,7 @@ sub static_subst_in_restr {
 
     return $topic_to_subst
         ->_static_substitution( $subst )
-        ->_union( $topic_no_subst );
+        ->_union( [$topic_no_subst] );
 }
 
 sub subst_in_semijoin {
@@ -2639,7 +2670,7 @@ sub subst_in_semijoin {
     return $topic_to_subst
         ->_substitution( 'subst_in_semijoin', '$subst_attrs',
             '$subst_func', $subst_attrs, $subst_func, $subst_h )
-        ->_union( $topic_no_subst );
+        ->_union( [$topic_no_subst] );
 }
 
 sub static_subst_in_semijoin {
@@ -2657,13 +2688,45 @@ sub static_subst_in_semijoin {
 
     return $topic_to_subst
         ->_static_substitution( $subst )
-        ->_union( $topic_no_subst );
+        ->_union( [$topic_no_subst] );
 }
 
 ###########################################################################
 
 sub outer_join_with_group {
-    confess q{this routine isn't implemented yet};
+    my ($primary, $secondary, $group_attr) = @_;
+
+    confess q{outer_join_with_group(): Bad $secondary arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+    $primary->_assert_valid_atnm_arg(
+        'outer_join_with_group', '$group_attr', $group_attr );
+
+    my $primary_h = $primary->_heading();
+
+    confess q{outer_join_with_group(): Bad $group_attr arg;}
+            . q{ that name for a new attr to add}
+            . q{ to $primary, consisting of grouped $secondary-only attrs,}
+            . q{ duplicates an attr of $primary (not being grouped).}
+        if exists $primary_h->{$group_attr};
+
+    # TODO: inline+merge what join/group/etc do for better performance.
+
+    my ($both, $primary_only, $inner) = $primary->_ptn_conj_and_disj(
+            $primary_h, $secondary->_heading() );
+    my $inner_h = {CORE::map { $_ => undef } @{$inner}};
+
+    my ($pri_matched, $pri_nonmatched)
+        = @{$primary->_semijoin_and_diff( $secondary )};
+
+    my $result_matched = $pri_matched
+        ->_join( [$secondary] )
+        ->_group( $inner, $group_attr, [keys %{$primary_h}], $inner_h );
+
+    my $result_nonmatched = $pri_nonmatched
+        ->_static_extension( {$group_attr => $primary->new( $inner )} );
+
+    return $result_matched->_union( [$result_nonmatched] );
 }
 
 sub outer_join_with_undefs {
@@ -3958,7 +4021,7 @@ attributes that only one of the arguments has; that is, the result has all
 of and just the attributes that were not involved in matching the tuples of
 the inputs.
 
-=head2 TODO - join_with_group
+=head2 join_with_group
 
 C<method join_with_group of Set::Relation ($primary: Set::Relation
 $secondary, Str $group_attr)>
@@ -4108,7 +4171,7 @@ C<static_substitution> is to C<substitution>.
 These Set::Relation object methods are pure functional.  They are specific
 to supporting outer-joins.
 
-=head2 TODO - outer_join_with_group
+=head2 outer_join_with_group
 
 C<method outer_join_with_group of Set::Relation ($primary: Set::Relation
 $secondary, Str $group_attr)>
