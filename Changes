@@ -14,8 +14,8 @@
     was already a dependency of Set::Relation's existing Moose dependency,
     so the whole dependency tree has not enlarged.
 
-    * (Relation.pm)  Added these 2 object methods (still 12 to go):
-    "wrap", "cmpl_wrap".
+    * (Relation.pm)  Added these 3 object methods (still 11 to go):
+    "wrap", "cmpl_wrap", "unwrap".
 
 2009-02-06   Darren Duncan <perl@DarrenDuncan.net>
 

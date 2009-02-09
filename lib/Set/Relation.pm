@@ -929,6 +929,7 @@ sub _wrap {
 
     if (@{$inner} == 0) {
         # Wrap zero $topic attrs as new attr.
+        # So this is a simple static extension of $topic w static $outer.
         my $inner_t = {};
         my $outer_atvl = [$inner_t, $topic->_ident_str( $inner_t )];
         for my $topic_t (values %{$topic_b}) {
@@ -994,7 +995,79 @@ sub cmpl_wrap {
 ###########################################################################
 
 sub unwrap {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $outer, $inner) = @_;
+
+    $topic->_assert_valid_atnm_arg( 'unwrap', '$outer', $outer );
+    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        'unwrap', '$inner', $inner );
+
+    my $topic_h = $topic->_heading();
+
+    confess q{unwrap(): Bad $outer arg; that attr name}
+            . q{ doesn't match an attr of the invocant's heading.}
+        if !exists $topic_h->{$outer};
+
+    my $topic_h_except_outer = {%{$topic_h}};
+    CORE::delete $topic_h_except_outer->{$outer};
+
+    my ($inner_attrs_dupl_topic, $topic_attrs_no_uwr, undef)
+        = $topic->_ptn_conj_and_disj( $topic_h_except_outer, $inner_h );
+    confess q{unwrap(): Bad $inner arg; at least one name in that attr}
+            . q{ list, which the invocant would be extended with when}
+            . q{ unwrapping $topic{$outer}, duplicates an attr of the}
+            . q{ invocant not being unwrapped.}
+        if @{$inner_attrs_dupl_topic} > 0;
+
+    my $topic_b = $topic->_body();
+
+    for my $topic_t (values %{$topic_b}) {
+        my $inner_t = $topic_t->{$outer}->[0];
+        confess q{unwrap(): Can't unwrap $topic{$outer} because there is}
+                . q{ not a same-heading tuple value for the $outer attr of}
+                . q{ every tuple of $topic whose heading matches $inner.}
+            if ref $inner_t ne 'HASH'
+                or !$topic->_is_identical_hkeys( $inner_h, $inner_t );
+    }
+
+    my $result = __PACKAGE__->new();
+
+    $result->_heading( {%{$topic_h_except_outer}, %{$inner_h}} );
+    $result->_degree( @{$topic_attrs_no_uwr} + @{$inner} );
+
+    my $result_b = $result->_body();
+
+    if (@{$topic_attrs_no_uwr} == 0) {
+        # Only $topic attr is $outer, all result attrs from $outer unwrap.
+        for my $topic_t (values %{$topic_b}) {
+            my $outer_atvl = $topic_t->{$outer};
+            $result_b->{$outer_atvl->[1]} = $outer_atvl->[0];
+        }
+    }
+    elsif (@{$inner} == 0) {
+        # Unwrap of $outer adds zero attrs to $topic.
+        # So this is a simple projection of $topic excising $outer.
+        for my $topic_t (values %{$topic_b}) {
+            my $result_t = {
+                CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_uwr}
+            };
+            my $result_t_ident_str = $topic->_ident_str( $result_t );
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    else {
+        # Result has at least 1 attr from $outer, at least 1 not from it.
+        for my $topic_t (values %{$topic_b}) {
+            my $result_t = {
+                %{$topic_t->{$outer}->[0]},
+                CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_uwr}
+            };
+            my $result_t_ident_str = $topic->_ident_str( $result_t );
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    $result->_cardinality( $topic->cardinality() );
+
+    return $result;
 }
 
 ###########################################################################
@@ -3172,7 +3245,7 @@ This functional method is the same as C<wrap> but that it wraps the
 complementary subset of attributes of C<$topic> to those specified by
 C<$cmpl_inner>.
 
-=head2 TODO - unwrap
+=head2 unwrap
 
 C<method unwrap of Set::Relation ($topic: Str $outer, Array|Str $inner)>
 
