@@ -927,7 +927,11 @@ sub _wrap {
     my $topic_b = $topic->_body();
     my $result_b = $result->_body();
 
-    if (@{$inner} == 0) {
+    if ($topic->is_empty()) {
+        # An empty $topic means an empty result.
+        # So $result_b is already correct.
+    }
+    elsif (@{$inner} == 0) {
         # Wrap zero $topic attrs as new attr.
         # So this is a simple static extension of $topic w static $outer.
         my $inner_t = {};
@@ -1036,7 +1040,11 @@ sub unwrap {
 
     my $result_b = $result->_body();
 
-    if (@{$topic_attrs_no_uwr} == 0) {
+    if ($topic->is_empty()) {
+        # An empty $topic means an empty result.
+        # So $result_b is already correct.
+    }
+    elsif (@{$topic_attrs_no_uwr} == 0) {
         # Only $topic attr is $outer, all result attrs from $outer unwrap.
         for my $topic_t (values %{$topic_b}) {
             my $outer_atvl = $topic_t->{$outer};
@@ -1073,17 +1081,207 @@ sub unwrap {
 ###########################################################################
 
 sub group {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $inner, $outer) = @_;
+
+    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        'group', '$inner', $inner );
+    $topic->_assert_valid_atnm_arg( 'group', '$outer', $outer );
+
+    my (undef, $topic_attrs_no_gr, $inner_attrs_not_in_topic)
+        = $topic->_ptn_conj_and_disj( $topic->_heading(), $inner_h );
+    confess q{group(): Bad $inner arg; that list of attrs to be grouped}
+            . q{ isn't a subset of the invocant's heading.}
+        if @{$inner_attrs_not_in_topic} > 0;
+    confess q{group(): Bad $outer arg; that name for a new attr to add}
+            . q{ to the invocant, consisting of grouped invocant attrs,}
+            . q{ duplicates an attr of the invocant not being grouped.}
+        if any { $_ eq $outer } @{$topic_attrs_no_gr};
+
+    return $topic->_group( $inner, $outer, $topic_attrs_no_gr, $inner_h );
+}
+
+sub _group {
+    my ($topic, $inner, $outer, $topic_attrs_no_gr, $inner_h) = @_;
+
+    my $result = __PACKAGE__->new();
+
+    $result->_heading(
+        {CORE::map { ($_ => undef) } @{$topic_attrs_no_gr}, $outer} );
+    $result->_degree( @{$topic_attrs_no_gr} + 1 );
+
+    if ($topic->is_empty()) {
+        # An empty $topic means an empty result.
+        # So result body is already correct.
+    }
+    elsif (@{$inner} == 0) {
+        # Group zero $topic attrs as new attr.
+        # So this is a simple static extension of $topic w static $outer.
+        my $result_b = $result->_body();
+        my $inner_r = __PACKAGE__->new( [ {} ] );
+        my $outer_atvl = [$inner_r, $inner_r->which()];
+        for my $topic_t (values %{$topic->_body()}) {
+            my $result_t = {$outer => $outer_atvl, {%{$topic_t}}};
+            my $result_t_ident_str = $topic->_ident_str( $result_t );
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+        $result->_cardinality( $topic->cardinality() );
+    }
+    elsif (@{$topic_attrs_no_gr} == 0) {
+        # Group all $topic attrs as new attr.
+        # So $topic is just used as sole attr of sole tuple of result.
+        my $result_t = {$outer => [$topic, $topic->which()]};
+        my $result_t_ident_str = $topic->_ident_str( $result_t );
+        $result->_body( {$result_t_ident_str => $result_t} );
+        $result->_cardinality( 1 );
+    }
+    else {
+        # Group at least one but not all $topic attrs as new attr.
+        my $result_b = $result->_body();
+        my $topic_index = $topic->_want_index( $topic_attrs_no_gr );
+        for my $matched_topic_b (values %{$topic_index}) {
+
+            my $inner_r = __PACKAGE__->new();
+            $inner_r->_heading( $inner_h );
+            $inner_r->_degree( @{$inner} );
+            my $inner_b = $inner_r->_body();
+            for my $topic_t (values %{$matched_topic_b}) {
+                my $inner_t
+                    = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
+                $inner_b->{$topic->_ident_str( $inner_t )} = $inner_t;
+            }
+            $inner_r->_cardinality( scalar keys %{$matched_topic_b} );
+            my $outer_atvl = [$inner_r, $inner_r->which()];
+
+            my $any_mtpt = first { 1 } values %{$matched_topic_b};
+
+            my $result_t = {
+                $outer => $outer_atvl,
+                CORE::map { ($_ => $any_mtpt->{$_}) } @{$topic_attrs_no_gr}
+            };
+            my $result_t_ident_str = $topic->_ident_str( $result_t );
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+        $result->_cardinality( scalar keys %{$topic_index} );
+    }
+
+    return $result;
 }
 
 sub cmpl_group {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $group_per, $outer) = @_;
+
+    (my $group_per_h, $group_per)
+        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+            'cmpl_group', '$group_per', $group_per );
+    $topic->_assert_valid_atnm_arg( 'cmpl_group', '$outer', $outer );
+
+    my $topic_h = $topic->_heading();
+
+    confess q{cmpl_group(): Bad $group_per arg; that attr list}
+            . q{ isn't a subset of the invocant's heading.}
+        if notall { exists $topic_h->{$_} } @{$group_per};
+
+    my $inner = [grep { !$group_per_h->{$_} } keys %{$topic_h}];
+    my $inner_h = {CORE::map { $_ => undef } @{$inner}};
+
+    my (undef, $topic_attrs_no_gr, undef)
+        = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
+    confess q{cmpl_group(): Bad $outer arg; that name for a new attr to add}
+            . q{ to the invocant, consisting of grouped invocant attrs,}
+            . q{ duplicates an attr of the invocant not being grouped.}
+        if any { $_ eq $outer } @{$topic_attrs_no_gr};
+
+    return $topic->_group( $inner, $outer, $topic_attrs_no_gr, $inner_h );
 }
 
 ###########################################################################
 
 sub ungroup {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $outer, $inner) = @_;
+
+    $topic->_assert_valid_atnm_arg( 'ungroup', '$outer', $outer );
+    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        'ungroup', '$inner', $inner );
+
+    my $topic_h = $topic->_heading();
+
+    confess q{ungroup(): Bad $outer arg; that attr name}
+            . q{ doesn't match an attr of the invocant's heading.}
+        if !exists $topic_h->{$outer};
+
+    my $topic_h_except_outer = {%{$topic_h}};
+    CORE::delete $topic_h_except_outer->{$outer};
+
+    my ($inner_attrs_dupl_topic, $topic_attrs_no_ugr, undef)
+        = $topic->_ptn_conj_and_disj( $topic_h_except_outer, $inner_h );
+    confess q{ungroup(): Bad $inner arg; at least one name in that attr}
+            . q{ list, which the invocant would be extended with when}
+            . q{ ungrouping $topic{$outer}, duplicates an attr of the}
+            . q{ invocant not being ungrouped.}
+        if @{$inner_attrs_dupl_topic} > 0;
+
+    my $topic_b = $topic->_body();
+
+    for my $topic_t (values %{$topic_b}) {
+        my $inner_r = $topic_t->{$outer}->[0];
+        confess q{ungroup(): Can't ungroup $topic{$outer} because there is}
+                . q{ not a same-heading relation val for the $outer attr}
+                . q{ of every tuple of $topic whose head matches $inner.}
+            if !blessed $inner_r or !$inner_r->isa( __PACKAGE__ )
+                or !$topic->_is_identical_hkeys(
+                    $inner_h, $inner_r->_heading() );
+    }
+
+    if ($topic->degree() == 1) {
+        # Ungroup of a unary relation is the N-adic union of its sole
+        # attribute's value across all tuples.
+        return __PACKAGE__->new( $inner )
+            ->_union( [map { $_->{$outer} } values %{$topic_b}] );
+    }
+
+    # If we get here, the input relation is not unary.
+
+    my $result = __PACKAGE__->new();
+
+    $result->_heading( {%{$topic_h_except_outer}, %{$inner_h}} );
+    $result->_degree( @{$topic_attrs_no_ugr} + @{$inner} );
+
+    my $topic_tuples_w_nonemp_inn
+        = [grep { !$_->{$outer}->is_empty() } values %{$topic_b}];
+
+    if (@{$topic_tuples_w_nonemp_inn} == 0) {
+        # An empty post-basic-filtering $topic means an empty result.
+        # So result body is already correct.
+    }
+    elsif (@{$inner} == 0) {
+        # Ungroup of $outer adds zero attrs to $topic.
+        # So this is a simple proj of post-basic-filt $topic excis $outer.
+        my $result_b = $result->_body();
+        for my $topic_t (@{$topic_tuples_w_nonemp_inn}) {
+            my $result_t = {
+                CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_ugr}
+            };
+            my $result_t_ident_str = $topic->_ident_str( $result_t );
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+        $result->_cardinality( scalar @{$topic_tuples_w_nonemp_inn} );
+    }
+    else {
+        # Result has at least 1 attr from $outer, at least 1 not from it.
+        my $result_b = $result->_body();
+        for my $topic_t (@{$topic_tuples_w_nonemp_inn}) {
+            my $no_ugr_t = {CORE::map { ($_ => $topic_t->{$_}) }
+                @{$topic_attrs_no_ugr}};
+            my $inner_r = $topic_t->{$outer}->[0];
+            for my $inner_t (values %{$inner_r->_body()}) {
+                my $result_t = {%{$inner_t}, %{$no_ugr_t}};
+                $result_b->{$topic->_ident_str( $result_t )} = $result_t;
+            }
+        }
+        $result->_cardinality( scalar keys %{$result_b} );
+    }
+
+    return $result;
 }
 
 ###########################################################################
@@ -3264,7 +3462,7 @@ method will fail if C<$topic> has at least 1 tuple and C<$inner> does not
 match the names of the attributes of C<$topic{$outer}> for every tuple of
 C<$topic>.
 
-=head2 TODO - group
+=head2 group
 
 C<method group of Set::Relation ($topic: Array|Str $inner, Str $outer)>
 
@@ -3287,13 +3485,13 @@ C<$inner> is empty, then the result has all the same tuples and attributes
 as before plus a new relation-typed attribute of degree zero whose value
 per tuple is of cardinality one; or, if C<$inner> lists all attributes of
 C<$topic>, then the result has a single tuple of a single attribute whose
-value is the same as C<$topic>.  This method supports the new attribute
-having the same name as an old one being grouped into it.  This method
-will fail if C<$inner> specifies any attribute names that C<$topic> doesn't
-have, or if C<$outer> is the same as C<$topic> attributes that aren't being
-grouped.
+value is the same as C<$topic> (except that the result has zero tuples when
+C<$topic> does).  This method supports the new attribute having the same
+name as an old one being grouped into it.  This method will fail if
+C<$inner> specifies any attribute names that C<$topic> doesn't have, or if
+C<$outer> is the same as C<$topic> attributes that aren't being grouped.
 
-=head2 TODO - cmpl_group
+=head2 cmpl_group
 
 C<method cmpl_group of Set::Relation ($topic: Array|Str $group_per, Str
 $outer)>
@@ -3302,7 +3500,7 @@ This functional method is the same as C<group> but that it groups the
 complementary subset of attributes of C<$topic> to those specified by
 C<$group_per>.
 
-=head2 TODO - ungroup
+=head2 ungroup
 
 C<method ungroup of Set::Relation ($topic: Str $outer, Array|Str $inner)>
 
