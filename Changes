@@ -17,6 +17,10 @@
     * (Relation.pm)  Added these 6 object methods (still 8 to go):
     "wrap", "cmpl_wrap", "unwrap", "group", "cmpl_group", "ungroup".
 
+    * (Relation.pm)  Replaced all instances of "__PACKAGE__->new(...)" with
+    "$self->new(...)" etc, to help avoid potential future problems when
+    someone tries to subclass the module.
+
 2009-02-06   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.5.0 for Perl 5 is released on CPAN as

@@ -234,7 +234,7 @@ sub BUILD {
 
 sub clone {
     my ($self) = @_;
-    return __PACKAGE__->new( $self );
+    return $self->new( $self );
 }
 
 ###########################################################################
@@ -730,7 +730,7 @@ sub empty {
     if ($topic->is_empty()) {
         return $topic;
     }
-    return __PACKAGE__->new( $topic->heading() );
+    return $topic->new( $topic->heading() );
 }
 
 sub insertion {
@@ -805,7 +805,7 @@ sub _rename {
             exists $map->{$_} ? $map->{$_} : $_
         )) } keys %{$topic->_heading()}};
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading( {CORE::map { ($_ => undef) } values %{$map}} );
     $result->_degree( $topic->degree() );
@@ -846,10 +846,10 @@ sub _projection {
     if (@{$attrs} == 0) {
         # Projection of zero attrs yields identity relation zero or one.
         if ($topic->is_empty()) {
-            return __PACKAGE__->new();
+            return $topic->new();
         }
         else {
-            return __PACKAGE__->new( [ {} ] );
+            return $topic->new( [ {} ] );
         }
     }
     if (@{$attrs} == $topic->degree()) {
@@ -857,7 +857,7 @@ sub _projection {
         return $topic;
     }
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading( {CORE::map { ($_ => undef) } @{$attrs}} );
     $result->_degree( scalar @{$attrs} );
@@ -918,7 +918,7 @@ sub wrap {
 sub _wrap {
     my ($topic, $inner, $outer, $topic_attrs_no_wr) = @_;
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading(
         {CORE::map { ($_ => undef) } @{$topic_attrs_no_wr}, $outer} );
@@ -1033,7 +1033,7 @@ sub unwrap {
                 or !$topic->_is_identical_hkeys( $inner_h, $inner_t );
     }
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading( {%{$topic_h_except_outer}, %{$inner_h}} );
     $result->_degree( @{$topic_attrs_no_uwr} + @{$inner} );
@@ -1103,7 +1103,7 @@ sub group {
 sub _group {
     my ($topic, $inner, $outer, $topic_attrs_no_gr, $inner_h) = @_;
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading(
         {CORE::map { ($_ => undef) } @{$topic_attrs_no_gr}, $outer} );
@@ -1117,7 +1117,7 @@ sub _group {
         # Group zero $topic attrs as new attr.
         # So this is a simple static extension of $topic w static $outer.
         my $result_b = $result->_body();
-        my $inner_r = __PACKAGE__->new( [ {} ] );
+        my $inner_r = $topic->new( [ {} ] );
         my $outer_atvl = [$inner_r, $inner_r->which()];
         for my $topic_t (values %{$topic->_body()}) {
             my $result_t = {$outer => $outer_atvl, {%{$topic_t}}};
@@ -1140,7 +1140,7 @@ sub _group {
         my $topic_index = $topic->_want_index( $topic_attrs_no_gr );
         for my $matched_topic_b (values %{$topic_index}) {
 
-            my $inner_r = __PACKAGE__->new();
+            my $inner_r = $topic->new();
             $inner_r->_heading( $inner_h );
             $inner_r->_degree( @{$inner} );
             my $inner_b = $inner_r->_body();
@@ -1235,13 +1235,13 @@ sub ungroup {
     if ($topic->degree() == 1) {
         # Ungroup of a unary relation is the N-adic union of its sole
         # attribute's value across all tuples.
-        return __PACKAGE__->new( $inner )
+        return $topic->new( $inner )
             ->_union( [map { $_->{$outer} } values %{$topic_b}] );
     }
 
     # If we get here, the input relation is not unary.
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading( {%{$topic_h_except_outer}, %{$inner_h}} );
     $result->_degree( @{$topic_attrs_no_ugr} + @{$inner} );
@@ -1467,7 +1467,7 @@ sub extension {
         return $topic;
     }
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading( {%{$topic_h}, %{$exten_h}} );
     $result->_degree( $topic->degree() + scalar @{$attrs} );
@@ -1518,7 +1518,7 @@ sub static_extension {
 
     $attrs = $topic->_import_nfmt_tuple( $attrs );
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading(
         {%{$topic_h}, CORE::map { ($_ => undef) } keys %{$attrs}} );
@@ -1549,14 +1549,14 @@ sub map {
     if (@{$result_attrs} == 0) {
         # Map to zero attrs yields identity relation zero or one.
         if ($topic->is_empty()) {
-            return __PACKAGE__->new();
+            return $topic->new();
         }
         else {
-            return __PACKAGE__->new( [ {} ] );
+            return $topic->new( [ {} ] );
         }
     }
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading( $result_h );
     $result->_degree( scalar @{$result_attrs} );
@@ -2047,7 +2047,7 @@ sub _join {
     if (first { $_->is_empty() } $topic, @{$others}) {
         # At least one input has zero tuples; so does result.
         my $rslt_h = {CORE::map { %{$_->_heading()} } $topic, @{$others}};
-        return __PACKAGE__->new( [keys %{$rslt_h}] );
+        return $topic->new( [keys %{$rslt_h}] );
     }
 
     # If we get here, all inputs have at least one tuple.
@@ -2117,7 +2117,7 @@ sub _join {
 sub _regular_join {
     my ($topic, $other, $both, $topic_only, $other_only) = @_;
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading( {CORE::map { ($_ => undef) }
         @{$both}, @{$topic_only}, @{$other_only}} );
@@ -2175,7 +2175,7 @@ sub product {
     if (first { $_->is_empty() } $topic, @{$others}) {
         # At least one input has zero tuples; so does result.
         my $rslt_h = {CORE::map { %{$_->_heading()} } $topic, @{$others}};
-        return __PACKAGE__->new( [keys %{$rslt_h}] );
+        return $topic->new( [keys %{$rslt_h}] );
     }
 
     # If we get here, all inputs have at least one tuple.
@@ -2206,7 +2206,7 @@ sub product {
 sub _regular_product {
     my ($topic, $other) = @_;
 
-    my $result = __PACKAGE__->new();
+    my $result = $topic->new();
 
     $result->_heading( {%{$topic->_heading()}, %{$other->_heading()}} );
     $result->_degree( $topic->degree() + $other->degree() );
@@ -2286,7 +2286,7 @@ sub composition {
 
     if ($topic->is_empty() or $other->is_empty()) {
         # At least one input has zero tuples; so does result.
-        return __PACKAGE__->new( [@{$topic_only}, @{$other_only}] );
+        return $topic->new( [@{$topic_only}, @{$other_only}] );
     }
 
     # If we get here, both inputs have at least one tuple.
@@ -2308,7 +2308,7 @@ sub composition {
     }
     if (@{$topic_only} == 0 and @{$other_only} == 0) {
         # The inputs have identical headings; result is ident-one relation.
-        return __PACKAGE__->new( [ {} ] );
+        return $topic->new( [ {} ] );
     }
 
     # If we get here, the inputs also have overlapping non-ident headings.
