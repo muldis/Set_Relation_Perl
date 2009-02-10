@@ -3019,14 +3019,11 @@ object class that represents a L<Muldis D|Muldis::D> quasi-relation value,
 and its methods implement all the Muldis D relational operators.
 
 B<WARNING:  This module is still experimental and may change in
-incompatible ways between releases.  It is also under construction and
-about a third of the planned short term features are yet missing.  However,
-those features that are present have complete code and documentation.
-While the existing features should be fully useable now and a review of
-their code makes them look correct, most features have in fact not yet been
-tested in running code and so might actually be broken.  This module might
-in fact work for you now, but it is officially pre-alpha quality.  Please
-treat it mainly as a developer preview, to experiment possible future use.>
+incompatible ways between releases.  While the module is considered feature
+complete, and is fully documented, and a review of its code makes it look
+correct, most features have in fact not yet been tested in running code and
+so might actually be broken.  This module might in fact work for you now,
+but it is officially alpha quality.  Please use it with caution.>
 
 B<If you want to help out with this module's development, generally the
 most helpful thing you can do to start out is to flesh out the test suite.
@@ -3060,7 +3057,8 @@ I<This documentation is pending.>
 
 =head2 Appropriate Uses For Set::Relation
 
-Set::Relation I<is> intended to be used in production environments.  It has
+Set::Relation I<is> intended to be used in production environments
+I<(except for the fact it is mostly untested at the moment)>.  It has
 been developed according to a rigorously thought out API and behaviour
 specification, and it should be easy to learn, to install and use, and to
 extend.  It is expected to be maintained and supported by the original

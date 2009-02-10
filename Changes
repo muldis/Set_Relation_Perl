@@ -27,6 +27,29 @@
 
     * (Relation.pm)  Various bug fixes and other small changes.
 
+    * As of this release, Set::Relation is officially in alpha development
+    status (was pre-alpha).  All of the initially planned functionality is
+    now implemented, so it is feature complete, which is why it was moved
+    out of pre-alpha status.  However most of the functionality has not
+    been tested and so is not proven to actually work without error.  Once
+    the module has a thorough test suite which passes, Set::Relation can be
+    moved to beta or released status.
+
+2009-02-09   Darren Duncan <perl@DarrenDuncan.net>
+
+    Record update in the PAUSE modules database:
+
+           modid: [Set::Relation]
+           statd: [a] was [c]
+           stats: [m]
+           statl: [p]
+           stati: [O]
+           statp: [l]
+     description: [Relation data type for Perl]
+          userid: [DUNCAND]
+       chapterid: [6]
+        mlstatus: [list]
+
 2009-02-06   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.5.0 for Perl 5 is released on CPAN as
