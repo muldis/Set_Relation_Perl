@@ -315,10 +315,14 @@ sub _members {
     return $members;
 }
 
+###########################################################################
+
 sub heading {
     my ($self) = @_;
     return [sort keys %{$self->_heading()}];
 }
+
+###########################################################################
 
 sub body {
     my ($self, $want_ord_attrs) = @_;
@@ -338,6 +342,8 @@ sub body {
 
     return $body;
 }
+
+###########################################################################
 
 sub _normalize_true_want_ord_attrs_arg {
     my ($self, $rtn_nm, $arg_nm, $want_ord_attrs) = @_;
@@ -391,6 +397,8 @@ sub slice {
     return $body;
 }
 
+###########################################################################
+
 sub attr {
     my ($self, $name) = @_;
 
@@ -418,6 +426,8 @@ sub evacuate {
     $topic->_cardinality( 0 );
     return $topic;
 }
+
+###########################################################################
 
 sub insert {
     my ($r, $t) = @_;
@@ -461,6 +471,8 @@ sub _insert {
 
     return $r;
 }
+
+###########################################################################
 
 sub delete {
     my ($r, $t) = @_;
@@ -508,6 +520,8 @@ sub _delete {
     return $r;
 }
 
+###########################################################################
+
 sub _normalize_same_heading_tuples_arg {
     my ($r, $rtn_nm, $arg_nm, $t) = @_;
 
@@ -534,6 +548,8 @@ sub _normalize_same_heading_tuples_arg {
     return $t;
 }
 
+###########################################################################
+
 sub _tuple_arg_has_circular_refs {
     # This routine just checks that no Hash which would be treated as
     # being of a value type contains itself as a component, where the
@@ -554,6 +570,8 @@ sub _tuple_arg_has_circular_refs {
     }
     return 0;
 }
+
+###########################################################################
 
 sub _self_is_component_of_tuple_arg {
     my ($self, $tuple) = @_;
@@ -1496,6 +1514,8 @@ sub _extension {
     return $result;
 }
 
+###########################################################################
+
 sub static_extension {
     my ($topic, $attrs) = @_;
 
@@ -1735,6 +1755,17 @@ sub _assert_valid_tuple_result_of_func_arg {
         if $self->_tuple_arg_has_circular_refs( $result_t );
 }
 
+sub _assert_same_heading_relation_arg {
+    my ($self, $rtn_nm, $arg_nm, $other) = @_;
+    confess qq{$rtn_nm(): Bad $arg_nm arg; it isn't a Set::Relation}
+            . q{ object, or it doesn't have exactly the}
+            . q{ same set of attr names as the invocant.}
+        if !blessed $other or !$other->isa( __PACKAGE__ )
+            or !$self->_is_identical_hkeys(
+                $self->_heading(), $other->_heading() );
+    return;
+}
+
 ###########################################################################
 
 sub is_identical {
@@ -1763,17 +1794,6 @@ sub is_subset {
         'is_subset', '$look_for', $look_for );
     my $look_in_b = $look_in->_body();
     return !first { !exists $look_in_b->{$_} } keys %{$look_for->_body()};
-}
-
-sub _assert_same_heading_relation_arg {
-    my ($self, $rtn_nm, $arg_nm, $other) = @_;
-    confess qq{$rtn_nm(): Bad $arg_nm arg; it isn't a Set::Relation}
-            . q{ object, or it doesn't have exactly the}
-            . q{ same set of attr names as the invocant.}
-        if !blessed $other or !$other->isa( __PACKAGE__ )
-            or !$self->_is_identical_hkeys(
-                $self->_heading(), $other->_heading() );
-    return;
 }
 
 sub is_proper_subset {
@@ -2435,6 +2455,8 @@ sub _ptn_conj_and_disj {
     return ($both, $only1, $only2);
 }
 
+###########################################################################
+
 sub _want_index {
     my ($self, $atnms) = @_;
     my $subheading = {CORE::map { ($_ => undef) } @{$atnms}};
@@ -2636,6 +2658,8 @@ sub subst_in_restr {
         ->_union( [$topic_no_subst] );
 }
 
+###########################################################################
+
 sub static_subst_in_restr {
     my ($topic, $restr_func, $subst) = @_;
 
@@ -2652,6 +2676,8 @@ sub static_subst_in_restr {
         ->_static_substitution( $subst )
         ->_union( [$topic_no_subst] );
 }
+
+###########################################################################
 
 sub subst_in_semijoin {
     my ($topic, $restr, $subst_attrs, $subst_func) = @_;
@@ -2672,6 +2698,8 @@ sub subst_in_semijoin {
             '$subst_func', $subst_attrs, $subst_func, $subst_h )
         ->_union( [$topic_no_subst] );
 }
+
+###########################################################################
 
 sub static_subst_in_semijoin {
     my ($topic, $restr, $subst) = @_;
@@ -2729,16 +2757,93 @@ sub outer_join_with_group {
     return $result_matched->_union( [$result_nonmatched] );
 }
 
+###########################################################################
+
 sub outer_join_with_undefs {
-    confess q{this routine isn't implemented yet};
+    my ($primary, $secondary) = @_;
+
+    confess q{outer_join_with_group(): Bad $secondary arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+
+    my (undef, undef, $exten_attrs) = $primary->_ptn_conj_and_disj(
+        $primary->_heading(), $secondary->_heading() );
+    my $filler = {CORE::map { $_ => undef } @{$exten_attrs}};
+
+    my ($pri_matched, $pri_nonmatched)
+        = @{$primary->_semijoin_and_diff( $secondary )};
+
+    my $result_matched = $pri_matched->_join( [$secondary] );
+
+    my $result_nonmatched = $pri_nonmatched->_static_extension( $filler );
+
+    return $result_matched->_union( [$result_nonmatched] );
 }
+
+###########################################################################
 
 sub outer_join_with_static_exten {
-    confess q{this routine isn't implemented yet};
+    my ($primary, $secondary, $filler) = @_;
+
+    confess q{outer_join_with_static_exten(): Bad $secondary arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+
+    confess q{outer_join_with_static_exten(): Bad $filler arg;}
+            . q{ it isn't a hash-ref.}
+        if ref $filler ne 'HASH';
+    confess q{outer_join_with_static_exten(): Bad $filler arg;}
+            . q{ it is a hash-ref, and there exist circular refs}
+            . q{ between itself or its value-typed components.}
+        if $primary->_tuple_arg_has_circular_refs( $filler );
+
+    my (undef, undef, $exten_attrs) = $primary->_ptn_conj_and_disj(
+        $primary->_heading(), $secondary->_heading() );
+    my $exten_h = {CORE::map { $_ => undef } @{$exten_attrs}};
+
+    confess q{outer_join_with_static_exten(): Bad $filler arg elem;}
+            . q{ it doesn't have exactly the}
+            . q{ same set of attr names as the sub-heading of $secondary}
+            . q{ that doesn't overlap with the heading of $primary.}
+        if !$primary->_is_identical_hkeys( $exten_h, $filler );
+
+    my ($pri_matched, $pri_nonmatched)
+        = @{$primary->_semijoin_and_diff( $secondary )};
+
+    my $result_matched = $pri_matched->_join( [$secondary] );
+
+    my $result_nonmatched = $pri_nonmatched->_static_extension( $filler );
+
+    return $result_matched->_union( [$result_nonmatched] );
 }
 
+###########################################################################
+
 sub outer_join_with_exten {
-    confess q{this routine isn't implemented yet};
+    my ($primary, $secondary, $exten_func) = @_;
+
+    confess q{outer_join_with_exten(): Bad $secondary arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+    $primary->_assert_valid_func_arg(
+        'outer_join_with_exten', '$exten_func', $exten_func );
+
+    my (undef, undef, $exten_attrs) = $primary->_ptn_conj_and_disj(
+        $primary->_heading(), $secondary->_heading() );
+    my $exten_h = {CORE::map { $_ => undef } @{$exten_attrs}};
+
+    my ($pri_matched, $pri_nonmatched)
+        = @{$primary->_semijoin_and_diff( $secondary )};
+
+    my $result_matched = $pri_matched->_join( [$secondary] );
+
+    # Note: if '_extension' dies due to what $exten_func did it would
+    # state the error is reported by 'extension' and with some wrong
+    # details; todo fix later; on correct it won't affect users though.
+    my $result_nonmatched = $pri_nonmatched
+        ->_extension( $exten_attrs, $exten_func, $exten_h );
+
+    return $result_matched->_union( [$result_nonmatched] );
 }
 
 ###########################################################################
@@ -4182,7 +4287,7 @@ every tuple of C<$primary> has exactly 1 corresponding tuple in the result,
 but where there were no matching C<$secondary> tuples, the result attribute
 named by C<$group_attr> contains zero tuples rather than 1+.
 
-=head2 TODO - outer_join_with_undefs
+=head2 outer_join_with_undefs
 
 C<method outer_join_with_undefs of Set::Relation ($primary: Set::Relation
 $secondary)>
@@ -4193,7 +4298,7 @@ tuples coming from a C<$primary> tuple that didn't match a C<$secondary>
 tuple, the result attributes coming from just C<$secondary> are filled with
 the Perl undef.
 
-=head2 TODO - outer_join_with_static_exten
+=head2 outer_join_with_static_exten
 
 C<method outer_join_with_static_exten of Set::Relation ($primary:
 Set::Relation $secondary, Hash $filler)>
@@ -4206,7 +4311,7 @@ heading matches the projection of C<$secondary>'s attributes that aren't in
 common with C<$primary>, and whose body is the literal values to use for
 those missing attribute values.
 
-=head2 TODO - outer_join_with_exten
+=head2 outer_join_with_exten
 
 C<method outer_join_with_exten of Set::Relation ($primary: Set::Relation
 $secondary, Code $exten_func)>
