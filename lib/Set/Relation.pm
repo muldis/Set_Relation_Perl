@@ -1732,6 +1732,14 @@ sub _assert_valid_atnm_arg {
         if !defined $atnm or ref $atnm;
 }
 
+sub _assert_valid_nnint_arg {
+    my ($self, $rtn_nm, $arg_nm, $atnm) = @_;
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ it should be just be a non-negative integer,}
+            . q{ but it is undefined or is a ref or is some other scalar.}
+        if !defined $atnm or ref $atnm or not $atnm =~ /^[0-9]+$/;
+}
+
 sub _assert_valid_func_arg {
     my ($self, $rtn_nm, $arg_nm, $func) = @_;
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
@@ -2503,18 +2511,112 @@ sub join_with_group {
             $primary_h, $secondary->_heading() );
     my $inner_h = {CORE::map { $_ => undef } @{$inner}};
 
-    return $primary->_join( [$secondary] )
+    return $primary
+        ->_join( [$secondary] )
         ->_group( $inner, $group_attr, [keys %{$primary_h}], $inner_h );
 }
 
 ###########################################################################
 
 sub rank {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $name, $ord_func) = @_;
+
+    my $topic_h = $topic->_heading();
+
+    $topic->_assert_valid_atnm_arg( 'rank', '$name', $name );
+    confess q{rank(): Bad $name arg; that name for a new attr to add}
+            . q{ to the invocant, consisting of each tuple's numeric rank,}
+            . q{ duplicates an existing attr of the invocant.}
+        if exists $topic_h->{$name};
+
+    $topic->_assert_valid_func_arg( 'rank', '$ord_func', $ord_func );
+
+    my $result = $topic->new();
+
+    $result->_heading( {%{$topic_h}, $name => undef} );
+    $result->_degree( $topic->degree() + 1 );
+
+    if ($topic->is_empty()) {
+        return $result;
+    }
+
+    my $ext_topic_tuples = [];
+    my $topic_tuples_by_ext_tt_ref = {};
+
+    for my $topic_t (values %{$topic->_body()}) {
+        my $ext_topic_t = $topic->_export_nfmt_tuple( $topic_t );
+        push @{$ext_topic_tuples}, $ext_topic_t;
+        $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t} = $topic_t;
+    }
+
+    my $sorted_ext_topic_tuples = [sort {
+        local $_ = { 'a' => $a, 'b' => $b };
+        $ord_func->();
+    } @{$ext_topic_tuples}];
+
+    my $result_b = $result->_body();
+
+    my $rank = -1;
+    for my $ext_topic_t (@{$sorted_ext_topic_tuples}) {
+        my $topic_t = $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t};
+        $rank ++;
+        my $rank_atvl = [$rank, $topic->_ident_str( $rank )];
+        my $result_t = {$name => $rank_atvl, %{$topic_t}};
+        my $result_t_ident_str = $topic->_ident_str( $result_t );
+        $result_b->{$result_t_ident_str} = $result_t;
+    }
+    $result->_cardinality( $topic->cardinality() );
+
+    return $result;
 }
 
+###########################################################################
+
 sub limit {
-    confess q{this routine isn't implemented yet};
+    my ($topic, $ord_func, $min_rank, $max_rank) = @_;
+
+    $topic->_assert_valid_func_arg( 'limit', '$ord_func', $ord_func );
+
+    $topic->_assert_valid_nnint_arg( 'limit', '$min_rank', $min_rank );
+    $topic->_assert_valid_nnint_arg( 'limit', '$max_rank', $max_rank );
+    confess q{limit(): The $max_rank arg can't be less than the $min_rank.}
+        if $max_rank < $min_rank;
+
+    if ($topic->is_empty()) {
+        return $topic;
+    }
+
+    my $topic_b = $topic->_body();
+
+    my $ext_topic_tuples = [];
+    my $topic_tuples_by_ext_tt_ref = {};
+
+    for my $topic_t_ident_str (keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_ident_str};
+        my $ext_topic_t = $topic->_export_nfmt_tuple( $topic_t );
+        push @{$ext_topic_tuples}, $ext_topic_t;
+        $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t}
+            = $topic_t_ident_str;
+    }
+
+    my $sorted_ext_topic_tuples = [sort {
+        local $_ = { 'a' => $a, 'b' => $b };
+        $ord_func->();
+    } @{$ext_topic_tuples}];
+
+    my $result = $topic->empty();
+
+    my $result_b = $result->_body();
+
+    for my $ext_topic_t
+            (@{$sorted_ext_topic_tuples}[$min_rank..$max_rank]) {
+        my $topic_t_ident_str
+            = $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t};
+        $result_b->{$topic_t_ident_str} = $topic_b->{$topic_t_ident_str};
+    }
+    $result->_cardinality( scalar keys %{$result_b} );
+
+    return $result;
 }
 
 ###########################################################################
@@ -4147,7 +4249,7 @@ duplication of the parent record values.
 These Set::Relation object methods are pure functional.  They are specific
 to supporting ranking and quotas.
 
-=head2 TODO - rank
+=head2 rank
 
 C<method rank of Set::Relation ($topic: Str $name, Code $ord_func)>
 
@@ -4167,7 +4269,7 @@ the result of C<rank> is always a total ordering and so there is no "dense"
 / "not dense" distinction (however a partial ordering can be implemented
 over it).
 
-=head2 TODO - limit
+=head2 limit
 
 C<method limit of Set::Relation ($topic: Code $ord_func, UInt $min_rank,
 UInt $max_rank)>

@@ -3,8 +3,6 @@
 
 Following is a summary of things that still need doing.
 
-* Add these 2 relational operators: rank, limit.
-
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
 * Make the test suite actually run the code, not just compile it; maybe
