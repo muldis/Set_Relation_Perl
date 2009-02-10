@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # class
-    use version 0.74; our $VERSION = qv('0.5.0');
+    use version 0.74; our $VERSION = qv('0.6.0');
 
     use Scalar::Util 'refaddr';
     use List::Util 'first';
@@ -1204,8 +1204,8 @@ sub cmpl_group {
 
     my (undef, $topic_attrs_no_gr, undef)
         = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
-    confess q{cmpl_group(): Bad $outer arg; that name for a new attr to add}
-            . q{ to the invocant, consisting of grouped invocant attrs,}
+    confess q{cmpl_group(): Bad $outer arg; that name for a new attr to}
+            . q{ add to th invocant, consisting of grouped invocant attrs,}
             . q{ duplicates an attr of the invocant not being grouped.}
         if any { $_ eq $outer } @{$topic_attrs_no_gr};
 
@@ -2971,7 +2971,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.5.0 for Perl 5.
+This document describes Set::Relation version 0.6.0 for Perl 5.
 
 =head1 SYNOPSIS
 
