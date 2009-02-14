@@ -3,6 +3,29 @@
 
 Following is a summary of things that still need doing.
 
+* Add new class Set::Relation::V2 which is like ::V1 but for certain
+primary internals changes:  1. The relation body is represented as a set of
+Perl Array, one Array representing one tuple; the relation heading is still
+a Perl Hash with attr names for keys, but now the attr values are array
+indicies into each body tuple rather than being unused/undefined; or
+alternately the heading could also be an Array of attr names, with the
+heading and body corresponding on common indices.  This change should both
+make 'rename' a very cheap operation (only heading is updated); while that
+wasn't a prerequisite, tuple/relation serialization can also be made more
+memory-preserving by not repeating attr names per tuple.  2. The relation
+body is still represented by a main Perl Hash, but the hash keys are now
+the Array refaddr numbers of the hash values.  3. Add support for explicit
+key definitions in the API, and use that to just hash subtuples rather than
+whole tuples.  4. We would distinguish between candidate keys and unique
+key constraints.  5. Add a few public methods like is-key(attr-list) and
+add/remove-key-constraint(attr-list); the constructor would also gain
+corresponding parameters.  6. Don't generate and cache serializations of
+every tuple attribute individually; no more binary array refs; while
+sometimes this may mean that work has to be repeated later, we hope over
+all that time will be saved thanks to never needing those hashed values
+often times.  Note, it is possible the older V1 may never gain the API
+additions like keys as it is deprecated assum V2 is better, but who knows.
+
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
 * Make the test suite actually run the code, not just compile it; maybe
@@ -14,14 +37,6 @@ implement more operators?
 
 * Consider adding disjoint insertion, union operators (same as normal but
 fails on a duplicate).
-
-* Consider adding support for explicit keys / unique key constraints /
-automatic key detection on Set::Relation objects.  If properly exploited
-this may lead to improved performance by letting one hash each
-Set::Relation's member tuples just on the subtuple that is a key rather
-than on the whole tuple.  But doing this properly will probably make the
-module about 20-50% more complicated.  This would certainly be much simpler
-if the objects did not mutate.
 
 * Consider adding more mutator methods.
 

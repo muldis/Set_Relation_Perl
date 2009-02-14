@@ -26,6 +26,9 @@
     shorter package name that is now a role.  The new class has exactly the
     same API as the old class.
 
+    * Updated the TODO file to outline plans for a near future ::V2 class
+    which represents tuples using Perl Array rather than Perl Hash.
+
 2009-02-09   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.6.0 for Perl 5 is released on CPAN as
