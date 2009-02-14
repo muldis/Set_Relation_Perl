@@ -1,3 +1,116 @@
+use 5.008001;
+use utf8;
+use strict;
+use warnings FATAL => 'all';
+
+###########################################################################
+###########################################################################
+
+{ package Set::Relation; # role
+    use version 0.74; our $VERSION = qv('0.6.0');
+    # Note: This given version applies to all of this file's packages.
+
+    use Moose::Role 0.69;
+
+    use namespace::clean -except => 'meta';
+
+    requires 'export_for_new';
+    requires 'which';
+    requires 'members';
+    requires 'heading';
+    requires 'body';
+    requires 'slice';
+    requires 'attr';
+
+    requires 'degree';
+    requires 'is_nullary';
+    requires 'has_attrs';
+    requires 'attr_names';
+    requires 'cardinality';
+    requires 'is_empty';
+    requires 'is_member';
+    requires 'empty';
+    requires 'insertion';
+    requires 'deletion';
+    requires 'rename';
+    requires 'projection';
+    requires 'cmpl_projection';
+    requires 'wrap';
+    requires 'cmpl_wrap';
+    requires 'unwrap';
+    requires 'group';
+    requires 'cmpl_group';
+    requires 'ungroup';
+    requires 'transitive_closure';
+    requires 'restriction';
+    requires 'restriction_and_cmpl';
+    requires 'cmpl_restriction';
+    requires 'extension';
+    requires 'static_extension';
+    requires 'map';
+    requires 'summary';
+
+    requires 'is_identical';
+    requires 'is_subset';
+    requires 'is_proper_subset';
+    requires 'is_disjoint';
+    requires 'union';
+    requires 'exclusion';
+    requires 'intersection';
+    requires 'difference';
+    requires 'semidifference';
+    requires 'semijoin_and_diff';
+    requires 'semijoin';
+    requires 'join';
+    requires 'product';
+    requires 'quotient';
+    requires 'composition';
+    requires 'join_with_group';
+
+    requires 'rank';
+    requires 'limit';
+
+    requires 'substitution';
+    requires 'static_substitution';
+    requires 'subst_in_restr';
+    requires 'static_subst_in_restr';
+    requires 'subst_in_semijoin';
+    requires 'static_subst_in_semijoin';
+
+    requires 'outer_join_with_group';
+    requires 'outer_join_with_undefs';
+    requires 'outer_join_with_static_exten';
+    requires 'outer_join_with_exten';
+
+} # role Set::Relation
+
+###########################################################################
+###########################################################################
+
+{ package Set::Relation::Mutable; # role
+
+    use Moose::Role 0.69;
+
+    use namespace::clean -except => 'meta';
+
+    with 'Set::Relation';
+
+    requires 'clone';
+    requires 'has_frozen_identity';
+    requires 'freeze_identity';
+
+    requires 'evacuate';
+    requires 'insert';
+    requires 'delete';
+
+} # role Set::Relation::Mutable
+
+###########################################################################
+###########################################################################
+
+1; # Magic true value required at end of a reusable file's code.
+__END__
+
 =pod
 
 =encoding utf8
@@ -13,14 +126,14 @@ This document describes Set::Relation version 0.6.0 for Perl 5.
 
 =head1 SYNOPSIS
 
-    use Set::Relation;
+    use Set::Relation::V1;
 
-    my $r1 = Set::Relation->new( [ [ 'x', 'y' ], [
+    my $r1 = Set::Relation::V1->new( [ [ 'x', 'y' ], [
         [ 4, 7 ],
         [ 3, 2 ],
     ] ] );
 
-    my $r2 = Set::Relation->new( [
+    my $r2 = Set::Relation::V1->new( [
         { 'y' => 5, 'z' => 6 },
         { 'y' => 2, 'z' => 1 },
         { 'y' => 2, 'z' => 4 },
@@ -52,9 +165,11 @@ without having to employ a separate DBMS, and without having to employ a
 whole separate sub-language (such as L<Muldis Rosetta|Muldis::Rosetta>
 does).  Rather, it is integrated a lot more into the Perl way of doing
 things, and you use it much like a Perl array or hash, or like some other
-third-party Set:: modules available for Perl.  This is a standalone Perl 5
-object class that represents a L<Muldis D|Muldis::D> quasi-relation value,
-and its methods implement all the Muldis D relational operators.
+third-party Set:: modules available for Perl.  This module defines a Perl 5
+object role that represents a L<Muldis D|Muldis::D> quasi-relation value,
+whose methods implement all the Muldis D relational operators.  Or more
+specifically, it defines several such roles (immutable and mutable
+variants) and there are several bundled implementing Perl 5 classes.
 
 B<WARNING:  This module is still experimental and may change in
 incompatible ways between releases.  While the module is considered feature
@@ -257,9 +372,10 @@ value is part of its identity.
 The relational model has 3 kinds of types and values, called scalar
 types/values, tuple types/values, and relation types/values; the 3 are all
 mutually disjoint and no value in one kind can be identical to a value in
-another.  This Set::Relation module treats its own objects as relation
-values, it treats ordinary un-blessed Perl hash-refs as tuple values, and
-it treats all other Perl values (and Perl undef) as scalar values.
+another.  A Set::Relation-doing class treats the objects of all
+Set::Relation-doing classes as relation values, it treats ordinary
+un-blessed Perl hash-refs as tuple values, and it treats all other Perl
+values (and Perl undef) as scalar values.
 
 Or strictly speaking, a Set::Relation object doesn't just represent a
 relation as its allowed structure is more liberal than a true relation;
@@ -317,149 +433,77 @@ class overloads stringification (in which case we treat their class as a
 value type); either is distinct from any non-blessed Perl value or
 Set::Relation object.
 
-Loosely speaking, Set::Relation treats its own objects and Perl Hash-refs
-and non-reference or undefined Perl values as being of value types, that
-compare on their actual values, while treating all other Perl reference or
-blessed values as being reference types, that compare on their memory
-addresses.  Value types can't be mutated while the containers that the
-reference values point to can be mutated.  If you want some other class'
-object treated as a value type, make it overload stringification I<(or an
-alternate/additional convention can be devised like Set::Relation's own
-'which' convention)>.  If you want a Hash-ref/tuple or Set::Relation object
-to be treated as a reference type, then pass it around using another layer
-of reference indirection, such as by adding a scalar-ref up front.
+Loosely speaking, a Set::Relation-doing class treats the objects of all
+Set::Relation-doing classes, and Perl Hash-refs and non-reference or
+undefined Perl values, as being of value types, that compare on their
+actual values, while treating all other Perl reference or blessed values as
+being reference types, that compare on their memory addresses.  Value types
+can't be mutated while the containers that the reference values point to
+can be mutated.  If you want some other class' object treated as a value
+type, make it overload stringification I<(or an alternate/additional
+convention can be devised like Set::Relation's own 'which' convention)>. 
+If you want a Hash-ref/tuple or Set::Relation object to be treated as a
+reference type, then pass it around using another layer of reference
+indirection, such as by adding a scalar-ref up front.
 
 I<Note: Were this Perl 6, we would basically just use the standard C<WHICH>
 method or C<===> comparison operator to determine identity; but Perl 5
 doesn't have that so we do the aforementioned instead.>
 
-Now, while a relation value is conceptually immutable, the Set::Relation
-class allows you to mutate a Set::Relation object under some circumstances
-as a convenience to users, in a similar manner to how you can mutate a Perl
-Hash or Array by inserting or deleting its elements.  By default, a newly
-created Set::Relation object is mutable, that is its identity is said to
-not be frozen; but when you perform certain operations with one, it will
-become immutable, gaining a frozen identity, and this change can not be
-reversed, though you can clone said object to get an un-frozen duplicate.
+=head2 Matters of Mutability
 
-There are 3 main ways to make a Set::Relation object immutable.  The first
-is explicitly, by invoking its C<freeze_identity> method.  The second is
-implicitly, by invoking its C<which> method I<(this one may be reconsidered
-on users' request)>; this also happens to be done indirectly any time a
-tuple-representing Hash is given to a Set::Relation routine.  The third is
-if another Set::Relation object is constructed that is given the first
-object as a tuple attribute value; this was done rather than cloning the
-input object under the assumption that most of the time you wouldn't want
-to mutate the input object afterwards, for efficiency.
+This module defines both the Set::Relation role and the
+Set::Relation::Mutable role, the latter of which composes the former;
+objects of a class composing just Set::Relation are guaranteed to never
+mutate; objects also/instead composing the latter may some times mutate.
+
+Now, while a relation value is conceptually immutable, the
+Set::Relation::Mutable role allows you to mutate a Set::Relation::Mutable
+object under some circumstances as a convenience to users, in a similar
+manner to how you can mutate a Perl Hash or Array by inserting or deleting
+its elements.  By default, a newly created Set::Relation::Mutable object is
+mutable, that is its identity is said to not be frozen; but when you
+perform certain operations with one, it will become immutable, gaining a
+frozen identity, and this change can not be reversed, though you can clone
+said object to get an un-frozen duplicate.
+
+You can make a Set::Relation::Mutable object immutable explicitly by
+invoking its C<freeze_identity> method.  This change may also happen
+implicitly, with those happenings being implementation-dependent.  For
+example, invoking an object's C<which> method may freeze the object.  Or
+for another example, if another Set::Relation::Mutable object is
+constructed that is given the first object as a tuple attribute value; this
+could be done rather than cloning the input object under the assumption
+that most of the time you wouldn't want to mutate the input object
+afterwards, for efficiency.  These details are subject to change.
 
 =head2 Matters of Performance
 
 Note:  See also the L</Appropriate Uses For Set::Relation> section above.
 
-Set::Relation by itself is strictly an in-memory data structure, same as
-Perl's built-in arrays and hashes.  Its design focuses on providing
-correct-behaving features in a relatively simple manner.
-
-Performance is made as good as possible, using multiple design techniques,
-while not becoming too complicated.  Set::Relation keeps a variety of
-indexes automatically and makes a trade-off of being willing to use more
-RAM (by storing multiple copies of data in hashed form, at least 3 copies
-total) in order to get better CPU performance.
-
-Loosely speaking, each Set::Relation object is a Perl hash-ref with one
-element per tuple, where the hash value is the tuple itself as a Perl
-hash-ref and the key is a unique hash / serialization of the entire deep
-value of said tuple.
-
-This basic structure means that fundamental operations of taking a whole
-arbitrary tuple and querying whether or not it is in the relation is an
-O(1) / constant-time operation, same as testing the existence of a key in a
-Perl hash; likewise, inserting a tuple into or deleting a tuple from a
-relation is also an O(1) / constant-time operation.
-
-All basic set operations, like relational union or difference, are all O(N)
-/ linear-time due to that basic structure alone.  When comparing 2 input
-relations for a set operation, only the smaller one needs to be fully (at
-the worst) or partially scanned, and the other does not; the scan produces
-a list of tuples to search for, and each search for a tuple in the second
-relation is O(1).  Similarly, many basic relational operations like
-projection and extension are 0(N).  No such operations are in
-polynomial-time such as O(N^2); that would simply be unacceptable.
-
-Set::Relation also automatically generates more indexes to help with the
-general cases of relational joins or semijoins where the arguments have
-some but not all attributes in common (the common ones only providing the
-join criteria).  Without the extra indexes, a generic join would be in
-polynomial time since it would have to pair up every tuple of one argument
-with every one of another to see if parts of each tuple match.  However,
-this is changed to linear time by first creating (or reusing) an index on
-each argument that is a hash of just the portion of the tuple attributes
-that overlap with the other argument.  Creating each index is also linear
-time.  So then using those indexes, doing an ordinary join or semijoin then
-has the same performance characteristics as relational union or difference.
-
-Now to be more accurate concerning relational join operations, finding out
-what set of tuples in each input match each other is always a linear time
-operation like relational intersection (what is actually happening on the
-indexes), but producing the result set of tuples is an O(N*M) operation.
-Now if the attributes overlapped between both inputs are superkeys of each
-input, then producing the result set reduces to linear / O(N) time;
-otherwise it is appropriately slower since the then multiple tuples on
-each side of a match are then cartesian joined.  If the main operation is a
-semijoin, that is always O(N) since we are actually just filtering one
-input by the other, not joining them for a result.
-
-Of course, a regular cartesian product, a join between 2 relations having
-no attributes in common, can't be helped by an index (and generates none),
-and so does have O(N*M) performance all the time.  This can't be helped
-since we know that the result will always have a cardinality that is the
-multiplication of input relations' cardinalities.
-
-For the various few more complicated operators provided by Set::Relation,
-which are conceptually defined in terms of simpler operators, their
-performance is generally based on what they are defined in terms of.
-
-To keep things simple, creation of indexes (besides the single fundemental
-one) is strictly automatic and you can not explicitly add or remove an
-index on a Set::Relation object.  Creation is just done the first time the
-indexes would be I<used>, so they only happen say if you do a regular join
-or such operation.  Once an index is created, it is automatically kept up
-to date by any Set::Relation mutator methods; the design of said indexes
-also makes it such that keeping them up to date during tuple inserts or
-deletes is also O(1) per index.
-
-To keep things simple, when new Set::Relation objects are generated from
-relational operations, that new object starts out with no indexes (other
-than the fundamental), even if conceivably the parent's could be copied.
-
-The various Set::Relation operators know about and look for certain special
-cases of inputs which allow them to short-circuit the operation.  In some
-cases they may return certain constant values, or they may just return one
-of their input objects directly.  They may also use a cheaper operation
-than you requested which for example doesn't involve creating or using
-indexes.  For example, if you use C<join> on 2 input relations that have
-all the same attributes, it will short circuit to C<intersection>.  Or for
-example if you do C<union> and one input relation has zero tuples, it will
-simply return the other input object.
-
-Now in the general relational model where relations are immutable, that
-makes no semantical difference, but it is important to know if you plan to
-mutate the result object of a relational operation, as you might then be
-mutating an argument too.  So take appropriate precautions and do
-appropriate tests where necessary so that you don't have undesired
-side-effects in your program.
+The matters of performance can differ significantly depending on the
+implementation class, so see each of their corresponding documentation
+sections for details: L<Set::Relation::V1>.
 
 =head1 INTERFACE
 
 The interface of Set::Relation is entirely object-oriented; you use it by
-creating Set::Relation objects by invoking the C<new()> submethod on the
-Set::Relation class name, and then invoking methods on those objects.  All
-of their attributes are private, so you must use accessor methods.
+creating objects from its member classes (or more specifically, of
+implementing classes that compose its member roles) and then invoking
+methods on those objects.  All of their attributes are private, so you must
+use accessor methods.
 
 The usual way that Set::Relation indicates a failure is to throw an
 exception; most often this is due to invalid input.  If an invoked routine
 simply returns, you can assume that it has succeeded, even if the return
 value is undefined.
+
+=head1 THE Set::Relation ROLE
+
+A C<Set::Relation> object represents a single relation value.  For any
+class composing this role, its objects guarantee that their value will
+never mutate following object construction, unless that class also composes
+the C<Set::Relation::Mutable> role.
 
 =head1 Constructor Submethods
 
@@ -469,8 +513,7 @@ of a Set::Relation object.
 
 =head2 new
 
-C<multi submethod new of Set::Relation (Array|Set::Relation|Str :$members,
-Bool :$has_frozen_identity?)>
+C<multi submethod new of Set::Relation (Array|Set::Relation|Str :$members)>
 
 C<multi submethod new of Set::Relation (Array|Set::Relation|Str $members)>
 
@@ -522,26 +565,10 @@ C<$members>, as illustrated here:
     # Abbreviated way to specify 1 attr + zero tuples.
     my $r8 = Set::Relation->new( 'value' );
 
-If the optional argument C<$has_frozen_identity> is true, then the new
-Set::Relation object is made value-immutable once initialized (its identity
-is frozen); otherwise, if that argument is false or not provided, then the
-new object is initially mutable (its identity is not frozen).
-
 =head1 Accessor Methods
 
 These Set::Relation object methods are mainly about extracting object
-attributes, essentially the reverse process of an object constructor; but
-some of these will mutate aspects of objects besides what relation
-attributes and tuples they have, and some do other misc things.
-
-=head2 clone
-
-C<method clone of Set::Relation ($self:)>
-
-This method results in a new Set::Relation object that has an exact clone
-of its invocant's attributes and tuples.  The new Set::Relation is
-initially a mutable object; its value identity is not frozen, regardless of
-whether the invocant is frozen or not.
+attributes, essentially the reverse process of an object constructor.
 
 =head2 export_for_new
 
@@ -561,36 +588,23 @@ C<$want_ord_attrs> is the Perl string value C<1>, then the result will have
 its attributes ordered alphabetically by attribute name (see the C<heading>
 method docs for why that is the case).
 
-=head2 has_frozen_identity
-
-C<method has_frozen_identity of Bool ($self:)>
-
-This method results in true if the invocant is currently value-immutable,
-and it results in false otherwise.
-
-=head2 freeze_identity
-
-C<method freeze_identity ($self:)>
-
-This method causes the invocant to become value-immutable when invoked;
-it freezes the invocant's value identity.  This change is not reversible
-(an immutable Set::Relation object can't be made mutable again), however
-invoking C<clone> on said object will give you a mutable duplicate.
-
 =head2 which
 
 C<method which of Str ($self:)>
 
 This method results in a character string representation of the invocant's
-value identity, and when invoked it has the side-effect of making the
-invocant value-immutable (as per C<freeze_identity>) if it isn't already.
-The identity value result of this method is essentially a serialization of
-all the invocant's attribute names and tuple values, all of which are
-encoded and sorted in such a way that any 2 Set::Relation values having the
-same attributes and tuples are guaranteed to have the same value identity,
-and any 2 with different attributes or tuples are guaranteed to have
-different ones.  This method is analagous to the special C<WHICH> method of
-Perl 6 and lets you treat Set::Relation as a "value type".
+value identity.  The identity value result of this method is essentially a
+serialization of all the invocant's attribute names and tuple values, all
+of which are encoded and sorted in such a way that any 2 Set::Relation
+values having the same attributes and tuples are guaranteed to have the
+same value identity, and any 2 with different attributes or tuples are
+guaranteed to have different ones.  This method is analagous to the special
+C<WHICH> method of Perl 6 and lets you treat Set::Relation as a "value
+type".  That all being said, currently the details of the serialization
+format are implementation dependent, and it is assumed that an application
+will exclusively use a single Set::Relation implementation in any
+situations where code external to a Set::Relation-doing class is invoking
+C<which> (code inside said classes will do conversions as needed).
 
 =head2 members
 
@@ -644,34 +658,6 @@ invocant's attributes, the one named by C<$name>, and each result element
 is that attribute value directly, not a single-element tuple.  This method
 is expected to see a lot of use in relation summarizing operations, for
 extracting the input values for reduction or aggregate operators.
-
-=head1 Mutator Methods
-
-Invocations of these Set::Relation object methods will cause their
-invocants to mutate.  But they do not mutate any of their non-invocant
-arguments.  These methods also result in their invocants post-mutation, for
-the convenience of users that like to chain method calls.
-
-=head2 evacuate
-
-C<method evacuate of Set::Relation ($topic:)>
-
-This mutator method deletes all of the tuples in its invocant relation.
-For a non-mutating equivalent, see the C<empty> functional method.
-
-=head2 insert
-
-C<method insert of Set::Relation ($r: Array|Hash $t)>
-
-This mutator method inserts its tuples argument into its invocant relation.
-For a non-mutating equivalent, see the C<insertion> functional method.
-
-=head2 delete
-
-C<method delete of Set::Relation ($r: Array|Hash $t)>
-
-This mutator method deletes its tuples argument from its invocant relation.
-For a non-mutating equivalent, see the C<deletion> functional method.
 
 =head1 Single Input Relation Functional Methods
 
@@ -1460,6 +1446,80 @@ relational extension on the un-matched C<$primary> tuples such that each
 said result tuple is determined by applying the Perl subroutine given in
 C<$exten_func> to each said C<$primary> tuple.
 
+=head1 THE Set::Relation::Mutable ROLE
+
+A C<Set::Relation::Mutable> object is a C<Set::Relation> object that is
+also allowed to have its value mutate at some times.
+
+=head1 Constructor Submethods
+
+=head2 new
+
+C<multi submethod new of Set::Relation::Mutable (Array|Set::Relation|Str
+:$members, Bool :$has_frozen_identity?)>
+
+The Set::Relation::Mutable role extends the C<new> constructor submethod of
+the Set::Relation role to add the optional named-only parameter
+C<$has_frozen_identity>; if its argument is true, then the new
+Set::Relation::Mutable object is made value-immutable once initialized (its
+identity is frozen); otherwise, if that argument is false or not provided,
+then the new object is initially mutable (its identity is not frozen).
+
+=head1 Accessor Methods
+
+=head2 clone
+
+C<method clone of Set::Relation::Mutable ($self:)>
+
+This method results in a new Set::Relation::Mutable object that has an
+exact clone of its invocant's attributes and tuples.  The new
+Set::Relation::Mutable is initially a mutable object; its value identity is
+not frozen, regardless of whether the invocant is frozen or not.
+
+=head2 has_frozen_identity
+
+C<method has_frozen_identity of Bool ($self:)>
+
+This method results in true if the invocant is currently value-immutable,
+and it results in false otherwise.
+
+=head2 freeze_identity
+
+C<method freeze_identity ($self:)>
+
+This method causes the invocant to become value-immutable when invoked; it
+freezes the invocant's value identity.  This change is not reversible (an
+immutable Set::Relation::Mutable object can't be made mutable again),
+however invoking C<clone> on said object will give you a mutable duplicate.
+
+=head1 Mutator Methods
+
+Invocations of these Set::Relation::Mutable object methods will cause their
+invocants to mutate.  But they do not mutate any of their non-invocant
+arguments.  These methods also result in their invocants post-mutation, for
+the convenience of users that like to chain method calls.
+
+=head2 evacuate
+
+C<method evacuate of Set::Relation::Mutable ($topic:)>
+
+This mutator method deletes all of the tuples in its invocant relation.
+For a non-mutating equivalent, see the C<empty> functional method.
+
+=head2 insert
+
+C<method insert of Set::Relation::Mutable ($r: Array|Hash $t)>
+
+This mutator method inserts its tuples argument into its invocant relation.
+For a non-mutating equivalent, see the C<insertion> functional method.
+
+=head2 delete
+
+C<method delete of Set::Relation::Mutable ($r: Array|Hash $t)>
+
+This mutator method deletes its tuples argument from its invocant relation.
+For a non-mutating equivalent, see the C<deletion> functional method.
+
 =head1 DIAGNOSTICS
 
 I<This documentation is pending.>
@@ -1480,8 +1540,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.09..*)|namespace::clean>,
-L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.68..*)|Moose>.
+L<Moose::Role-ver(0.69..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 

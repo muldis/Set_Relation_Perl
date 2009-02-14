@@ -6,7 +6,25 @@
     * Set::Relation version 0.7.0 for Perl 5 is released on CPAN as
     Set-Relation-0.7.0.tar.gz.
 
-    * IN PROGRESS ... SPLIT RELATION.PM INTO 2 FILES, ROLE+CLASS.
+    * Updated external dependencies: Moose/etc to version 0.69.
+
+    * Split up Relation.pm into itself and the new file
+    lib/Set/Relation/V1.pm; Relation.pm now declares a role rather than a
+    class, and V1.pm is a class doing that role.  Relation.pm now declares
+    the Set::Relation API and keeps nearly all the old module
+    documentation, and V1.pm has nearly all of the old code.  Moreover,
+    Relation.pm now declares not one but 2 roles, Set::Relation and
+    Set::Relation::Mutable, where the latter consumes the former and
+    Set::Relation::V1 consumes the latter; the former role promises that
+    its composing class' objects are immutable unless they also compose the
+    latter.  The ::Mutable role got the 6 public methods ['clone',
+    'has_frozen_identity', 'freeze_identity', 'evacuate', 'insert',
+    'delete'] plus the 'has_frozen_identity' optional parameter of the
+    'new' constructor, and the parent role got all the other public things.
+    Also updated the test suite, and the SYNOPSIS pod, to account for this
+    split, and they now invoke the ::V1 class directly rather than the
+    shorter package name that is now a role.  The new class has exactly the
+    same API as the old class.
 
 2009-02-09   Darren Duncan <perl@DarrenDuncan.net>
 

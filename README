@@ -38,7 +38,8 @@ this distribution, I recommend doing so in this order:
    1.       README
    2. (opt) Changes
    3.       lib/Set/Relation.pm
-   4. (opt) TODO
+   4.       lib/Set/Relation/V1.pm
+   5. (opt) TODO
 
 Then you can carry on with anything else.
 

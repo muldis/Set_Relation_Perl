@@ -1,6 +1,7 @@
 Changes
 INSTALL
 lib/Set/Relation.pm
+lib/Set/Relation/V1.pm
 LICENSE/GPL
 LICENSE/LGPL
 Makefile.PL
