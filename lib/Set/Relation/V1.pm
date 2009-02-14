@@ -15,7 +15,7 @@ use Set::Relation 0.007000;
     use List::Util 'first';
     use List::MoreUtils 'any', 'notall';
 
-    use Moose 0.69;
+    use Moose 0.70;
 
     use namespace::clean -except => 'meta';
 
@@ -3183,7 +3183,7 @@ L<version-ver(0.74..*)|version>.
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.09..*)|namespace::clean>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.69..*)|Moose>.
+L<Moose-ver(0.70..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.7.0..*)|Set::Relation>.
@@ -3207,7 +3207,7 @@ Darren Duncan (C<perl@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2002-2009, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2009, Muldis Data Systems, Inc.
 
 See the LICENSE AND COPYRIGHT of L<Set::Relation> for details.
 

@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
     use version 0.74; our $VERSION = qv('0.7.0');
     # Note: This given version applies to all of this file's packages.
 
-    use Moose::Role 0.69;
+    use Moose::Role 0.70;
 
     use namespace::clean -except => 'meta';
 
@@ -89,7 +89,7 @@ use warnings FATAL => 'all';
 
 { package Set::Relation::Mutable; # role
 
-    use Moose::Role 0.69;
+    use Moose::Role 0.70;
 
     use namespace::clean -except => 'meta';
 
@@ -1540,7 +1540,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.09..*)|namespace::clean>,
-L<Moose::Role-ver(0.69..*)|Moose::Role>.
+L<Moose::Role-ver(0.70..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 
@@ -1553,6 +1553,9 @@ definition of the Muldis D language, a portion of which Set::Relation is
 mainly based on.  The Muldis D language in turn has as a primary influence
 the work of Christopher J. Date and Hugh Darwen whose home website is
 L<http://www.thethirdmanifesto.com/>.
+
+These Perl 5 packages that are in the current distribution are classes that
+implement the Set::Relation roles: L<Set::Relation::V1>.
 
 These other Perl 6 packages: L<Muldis::Rosetta>, L<Set>.
 
