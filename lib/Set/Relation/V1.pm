@@ -121,6 +121,13 @@ sub BUILD {
         # Extra option 2.
         $members = [$members];
     }
+    elsif (blessed $members and $members->isa( 'Moose::Object' )
+            and $members->does( 'Set::Relation' )
+            and !$members->isa( __PACKAGE__ )) {
+        # We got a $members that is a Set::Relation-doing class where that
+        # class isn't us; so dump it for a clone using public interface.
+        $members = $members->members();
+    }
     confess q{new(): Bad :$members arg; it must be either undefined}
             . q{ or an array-ref or a non-ref or a Set::Relation object.}
         if ref $members ne 'ARRAY'
@@ -554,6 +561,11 @@ sub _import_nfmt_tuple {
         if (ref $atvl eq 'HASH') {
             $atvl = $self->_import_nfmt_tuple( $atvl );
         }
+        elsif (blessed $atvl and $atvl->isa( 'Moose::Object' )
+                and $atvl->does( 'Set::Relation' )
+                and !$atvl->isa( __PACKAGE__ )) {
+            $atvl = $self->new( $atvl );
+        }
         ($atnm => [$atvl, $self->_ident_str( $atvl )]);
     } keys %{$tuple}};
 }
@@ -577,6 +589,11 @@ sub _import_ofmt_tuple {
         my $atvl = $atvls->[$_];
         if (ref $atvl eq 'HASH') {
             $atvl = $self->_import_nfmt_tuple( $atvl );
+        }
+        elsif (blessed $atvl and $atvl->isa( 'Moose::Object' )
+                and $atvl->does( 'Set::Relation' )
+                and !$atvl->isa( __PACKAGE__ )) {
+            $atvl = $self->new( $atvl );
         }
         ($atnm => [$atvl, $self->_ident_str( $atvl )]);
     } 0..$#{$atnms}};
@@ -1652,24 +1669,41 @@ sub _assert_valid_tuple_result_of_func_arg {
         if $self->_tuple_arg_has_circular_refs( $result_t );
 }
 
-sub _assert_same_heading_relation_arg {
+sub _normalize_same_heading_relation_arg {
     my ($self, $rtn_nm, $arg_nm, $other) = @_;
+    if (blessed $other and $other->isa( 'Moose::Object' )
+            and $other->does( 'Set::Relation' )
+            and !$other->isa( __PACKAGE__ )) {
+        $other = $self->new( $other );
+    }
     confess qq{$rtn_nm(): Bad $arg_nm arg; it isn't a Set::Relation}
             . q{ object, or it doesn't have exactly the}
             . q{ same set of attr names as the invocant.}
         if !blessed $other or !$other->isa( __PACKAGE__ )
             or !$self->_is_identical_hkeys(
                 $self->_heading(), $other->_heading() );
-    return;
+    return $other;
+}
+
+sub _normalize_relation_arg {
+    my ($self, $rtn_nm, $arg_nm, $other) = @_;
+    if (blessed $other and $other->isa( 'Moose::Object' )
+            and $other->does( 'Set::Relation' )
+            and !$other->isa( __PACKAGE__ )) {
+        $other = $self->new( $other );
+    }
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ it isn't a Set::Relation object.}
+        if !blessed $other or !$other->isa( __PACKAGE__ );
+    return $other;
 }
 
 ###########################################################################
 
 sub is_identical {
     my ($topic, $other) = @_;
-    confess q{is_identical(): Bad $other arg;}
-            . q{ it must be a Set::Relation object.}
-        if !blessed $other or !$other->isa( __PACKAGE__ );
+    $other = $topic->_normalize_relation_arg(
+        'is_identical', '$other', $other );
     return $topic->_is_identical( $other );
 }
 
@@ -1687,7 +1721,7 @@ sub _is_identical {
 
 sub is_subset {
     my ($look_in, $look_for) = @_;
-    $look_in->_assert_same_heading_relation_arg(
+    $look_for = $look_in->_normalize_same_heading_relation_arg(
         'is_subset', '$look_for', $look_for );
     my $look_in_b = $look_in->_body();
     return !first { !exists $look_in_b->{$_} } keys %{$look_for->_body()};
@@ -1695,7 +1729,7 @@ sub is_subset {
 
 sub is_proper_subset {
     my ($look_in, $look_for) = @_;
-    $look_in->_assert_same_heading_relation_arg(
+    $look_for = $look_in->_normalize_same_heading_relation_arg(
         'is_proper_subset', '$look_for', $look_for );
     my $look_in_b = $look_in->_body();
     return ($look_for->cardinality() < $look_in->cardinality()
@@ -1705,7 +1739,7 @@ sub is_proper_subset {
 
 sub is_disjoint {
     my ($topic, $other) = @_;
-    $topic->_assert_same_heading_relation_arg(
+    $other = $topic->_normalize_same_heading_relation_arg(
         'is_disjoint', '$other', $other );
     return $topic->_intersection( [$other] )->is_empty();
 }
@@ -1860,20 +1894,28 @@ sub _normalize_same_heading_relations_arg {
 
     my $self_h = $self->_heading();
 
-    if (blessed $others and $others->isa( __PACKAGE__ )) {
+    if (blessed $others and $others->isa( 'Moose::Object' )
+            and $others->does( 'Set::Relation' )) {
         $others = [$others];
     }
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it must be an array-ref or a Set::Relation object.}
         if ref $others ne 'ARRAY';
-    for my $other (@{$others}) {
+    $others = [CORE::map {
+        my $other = $_;
+        if (blessed $other and $other->isa( 'Moose::Object' )
+                and $other->does( 'Set::Relation' )
+                and !$other->isa( __PACKAGE__ )) {
+            $other = $self->new( $other );
+        }
         confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
                 . q{ it isn't a Set::Relation object, or it doesn't have}
                 . q{ exactly the same set of attr names as the invocant.}
             if !blessed $other or !$other->isa( __PACKAGE__ )
                 or !$self->_is_identical_hkeys(
                     $self_h, $other->_heading() );
-    }
+        $other;
+    } @{$others}];
 
     return $others;
 }
@@ -1881,17 +1923,25 @@ sub _normalize_same_heading_relations_arg {
 sub _normalize_relations_arg {
     my ($self, $rtn_nm, $arg_nm, $others) = @_;
 
-    if (blessed $others and $others->isa( __PACKAGE__ )) {
+    if (blessed $others and $others->isa( 'Moose::Object' )
+            and $others->does( 'Set::Relation' )) {
         $others = [$others];
     }
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it must be an array-ref or a Set::Relation object.}
         if ref $others ne 'ARRAY';
-    for my $other (@{$others}) {
+    $others = [CORE::map {
+        my $other = $_;
+        if (blessed $other and $other->isa( 'Moose::Object' )
+                and $other->does( 'Set::Relation' )
+                and !$other->isa( __PACKAGE__ )) {
+            $other = $self->new( $other );
+        }
         confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
                 . q{ it isn't a Set::Relation object.}
             if !blessed $other or !$other->isa( __PACKAGE__ );
-    }
+        $other;
+    } @{$others}];
 
     return $others;
 }
@@ -1900,7 +1950,7 @@ sub _normalize_relations_arg {
 
 sub difference {
     my ($source, $filter) = @_;
-    $source->_assert_same_heading_relation_arg(
+    $filter = $source->_normalize_same_heading_relation_arg(
         'difference', '$other', $filter );
     return $source->_difference( $filter );
 }
@@ -1936,9 +1986,8 @@ sub _regular_difference {
 
 sub semidifference {
     my ($source, $filter) = @_;
-    confess q{semidifference(): Bad $filter arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $filter or !$filter->isa( __PACKAGE__ );
+    $filter = $source->_normalize_relation_arg(
+        'semidifference', '$filter', $filter );
     if ($source->is_empty() or $filter->is_empty()) {
         return $source;
     }
@@ -1947,9 +1996,8 @@ sub semidifference {
 
 sub semijoin_and_diff {
     my ($source, $filter) = @_;
-    confess q{semijoin_and_diff(): Bad $filter arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $filter or !$filter->isa( __PACKAGE__ );
+    $filter = $source->_normalize_relation_arg(
+        'semijoin_and_diff', '$filter', $filter );
     return $source->_semijoin_and_diff( $filter );
 }
 
@@ -1967,9 +2015,8 @@ sub _semijoin_and_diff {
 
 sub semijoin {
     my ($source, $filter) = @_;
-    confess q{semijoin(): Bad $filter arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $filter or !$filter->isa( __PACKAGE__ );
+    $filter = $source->_normalize_relation_arg(
+        'semijoin', '$filter', $filter );
     return $source->_semijoin( $filter );
 }
 
@@ -2242,9 +2289,8 @@ sub _regular_product {
 sub quotient {
     my ($dividend, $divisor) = @_;
 
-    confess q{quotient(): Bad $divisor arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $divisor or !$divisor->isa( __PACKAGE__ );
+    $divisor = $dividend->_normalize_relation_arg(
+        'quotient', '$divisor', $divisor );
 
     my (undef, $dividend_only, $divisor_only)
         = $dividend->_ptn_conj_and_disj(
@@ -2284,9 +2330,8 @@ sub quotient {
 sub composition {
     my ($topic, $other) = @_;
 
-    confess q{composition(): Bad $other arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $other or !$other->isa( __PACKAGE__ );
+    $other = $topic->_normalize_relation_arg(
+        'composition', '$other', $other );
 
     my ($both, $topic_only, $other_only) = $topic->_ptn_conj_and_disj(
         $topic->_heading(), $other->_heading() );
@@ -2380,9 +2425,8 @@ sub _want_index {
 sub join_with_group {
     my ($primary, $secondary, $group_attr) = @_;
 
-    confess q{join_with_group(): Bad $secondary arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+    $secondary = $primary->_normalize_relation_arg(
+        'join_with_group', '$secondary', $secondary );
     $primary->_assert_valid_atnm_arg(
         'join_with_group', '$group_attr', $group_attr );
 
@@ -2673,9 +2717,8 @@ sub static_subst_in_restr {
 sub subst_in_semijoin {
     my ($topic, $restr, $subst_attrs, $subst_func) = @_;
 
-    confess q{subst_in_semijoin(): Bad $restr arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $restr or !$restr->isa( __PACKAGE__ );
+    $restr = $topic->_normalize_relation_arg(
+        'subst_in_semijoin', '$restr', $restr );
 
     (my $subst_h, $subst_attrs) = $topic
         ->_attrs_hr_from_assert_valid_subst_args( 'subst_in_semijoin',
@@ -2695,9 +2738,8 @@ sub subst_in_semijoin {
 sub static_subst_in_semijoin {
     my ($topic, $restr, $subst) = @_;
 
-    confess q{static_subst_in_semijoin(): Bad $restr arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $restr or !$restr->isa( __PACKAGE__ );
+    $restr = $topic->_normalize_relation_arg(
+        'static_subst_in_semijoin', '$restr', $restr );
 
     $topic->_assert_valid_static_subst_args(
         'static_subst_in_semijoin', '$subst', $subst );
@@ -2715,9 +2757,8 @@ sub static_subst_in_semijoin {
 sub outer_join_with_group {
     my ($primary, $secondary, $group_attr) = @_;
 
-    confess q{outer_join_with_group(): Bad $secondary arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+    $secondary = $primary->_normalize_relation_arg(
+        'outer_join_with_group', '$secondary', $secondary );
     $primary->_assert_valid_atnm_arg(
         'outer_join_with_group', '$group_attr', $group_attr );
 
@@ -2753,9 +2794,8 @@ sub outer_join_with_group {
 sub outer_join_with_undefs {
     my ($primary, $secondary) = @_;
 
-    confess q{outer_join_with_group(): Bad $secondary arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+    $secondary = $primary->_normalize_relation_arg(
+        'outer_join_with_undefs', '$secondary', $secondary );
 
     my (undef, undef, $exten_attrs) = $primary->_ptn_conj_and_disj(
         $primary->_heading(), $secondary->_heading() );
@@ -2776,9 +2816,8 @@ sub outer_join_with_undefs {
 sub outer_join_with_static_exten {
     my ($primary, $secondary, $filler) = @_;
 
-    confess q{outer_join_with_static_exten(): Bad $secondary arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+    $secondary = $primary->_normalize_relation_arg(
+        'outer_join_with_static_exten', '$secondary', $secondary );
 
     confess q{outer_join_with_static_exten(): Bad $filler arg;}
             . q{ it isn't a hash-ref.}
@@ -2813,9 +2852,8 @@ sub outer_join_with_static_exten {
 sub outer_join_with_exten {
     my ($primary, $secondary, $exten_func) = @_;
 
-    confess q{outer_join_with_exten(): Bad $secondary arg;}
-            . q{ it isn't a Set::Relation object.}
-        if !blessed $secondary or !$secondary->isa( __PACKAGE__ );
+    $secondary = $primary->_normalize_relation_arg(
+        'outer_join_with_exten', '$secondary', $secondary );
     $primary->_assert_valid_func_arg(
         'outer_join_with_exten', '$exten_func', $exten_func );
 
