@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
     use version 0.74; our $VERSION = qv('0.7.0');
     # Note: This given version applies to all of this file's packages.
 
-    use Moose::Role 0.70;
+    use Moose::Role 0.72;
 
     use namespace::clean -except => 'meta';
 
@@ -21,6 +21,7 @@ use warnings FATAL => 'all';
     requires 'body';
     requires 'slice';
     requires 'attr';
+    requires 'keys';
 
     requires 'degree';
     requires 'is_nullary';
@@ -29,6 +30,7 @@ use warnings FATAL => 'all';
     requires 'cardinality';
     requires 'is_empty';
     requires 'is_member';
+    requires 'has_key';
     requires 'empty';
     requires 'insertion';
     requires 'deletion';
@@ -89,7 +91,7 @@ use warnings FATAL => 'all';
 
 { package Set::Relation::Mutable; # role
 
-    use Moose::Role 0.70;
+    use Moose::Role 0.72;
 
     use namespace::clean -except => 'meta';
 
@@ -513,7 +515,8 @@ of a Set::Relation object.
 
 =head2 new
 
-C<multi submethod new of Set::Relation (Array|Set::Relation|Str :$members)>
+C<multi submethod new of Set::Relation (Array|Set::Relation|Str :$members,
+Array|Str :$keys?)>
 
 C<multi submethod new of Set::Relation (Array|Set::Relation|Str $members)>
 
@@ -564,6 +567,72 @@ C<$members>, as illustrated here:
 
     # Abbreviated way to specify 1 attr + zero tuples.
     my $r8 = Set::Relation->new( 'value' );
+
+If the optional argument C<$keys> is defined, then it defines one or more
+explicit candidate keys (or unique key constraints) for the relation value,
+all of which C<$members> must satisfy or else C<new> will fail; if C<$keys>
+is not defined, then by default the new relation has a single implicit
+candidate key ranging over all of its attributes.  The canonical format of
+a C<$keys> argument is a Perl Array of 0..N Perl Array of 0..N Perl Str,
+where each inner Array defines a single key and each Str defines one of the
+relation's attributes that the key ranges over.  Examples are:
+
+    # No explicit keys (just an implicit key over all attributes).
+    my $rI = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => [] );
+
+    # Explicit nullary key (over 0 attrs; rel may have just 0..1 tuples).
+    my $rN = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => [ [] ] );
+
+    # Explicit unary key (over 1 attribute).
+    my $rU = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => [ [ 'z' ] ] );
+
+    # Explicit binary key (over 2 attributes).
+    my $rB = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => [ [ 'x', 'z' ] ] );
+
+    # Explicit ternary key (over 3 attributes).
+    my $rT = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => [ [ 'x', 'y', 'z' ] ] );
+
+    # Explicit unary key plus explicit binary key.
+    my $rUB = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => [ [ 'x' ], [ 'y', 'z' ] ] );
+
+    # Pair of explicit binary keys.
+    my $rBB = Set::Relation->new( members => [ 'x', 'y', 'z' ],
+        keys => [ [ 'x', 'y' ], [ 'y', 'z' ] ] );
+
+Alternately, C<$keys> may be either a Perl Array of 1..N Perl Str, that
+defines a single key over N attributes, or C<$keys> may be a Perl Str, that
+defines a single key over a single attribute.  Examples are:
+
+    # Explicit unary key (over 1 attribute).
+    my $rU2 = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => 'x' );
+    my $rU3 = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => [ 'y' ] );
+
+    # Explicit binary key (over 2 attributes).
+    my $rB2 = Set::Relation->new(
+        members => [ 'x', 'y', 'z' ], keys => [ 'x', 'y' ] );
+
+Note that if any explicit key is a superkey of another, that is, the set of
+attributes that the former ranges over is a proper superset of those that
+the latter ranges over, then the superkey will be silently eliminated since
+it is completely redundant; similarly, if any explicit key is the nullary
+key, then it is the only key.
+
+Note that any explicit key given to C<new> is only a constraint as far as
+the initial value of the new Set::Relation object is concerned.  Any
+subsequent mutation of the object by C<insert>, if the object is mutable,
+is allowed to invalidate any prior-existing keys.  So 'keys' is simply a
+reflection of explicitly tested for candidate keys that are still known to
+be valid.  I<Note: it is possible in the future that subsequent feature
+additions can permit these keys to also act as constraints against future
+mutations.>
 
 =head1 Accessor Methods
 
@@ -659,6 +728,14 @@ is that attribute value directly, not a single-element tuple.  This method
 is expected to see a lot of use in relation summarizing operations, for
 extracting the input values for reduction or aggregate operators.
 
+=head2 keys
+
+C<method keys of Array ($self:)>
+
+This method results in a Perl Array value as per the 'keys' element of the
+Hash that C<export_for_new> would result in with the same invocant; the
+result format is the canonical one for the C<$keys> parameter of C<new>.
+
 =head1 Single Input Relation Functional Methods
 
 These Set::Relation object methods are pure functional, each one whose
@@ -693,7 +770,10 @@ C<method has_attrs of Bool ($topic: Array|Str $attrs)>
 This functional method results in true iff, for every one of the attribute
 names specified by its argument, its invocant has an attribute with that
 name; otherwise it results in false.  As a trivial case, this method's
-result is true if its argument is empty.
+result is true if its argument is empty.  Note that C<has_attrs> has a
+side-effect in that subsequent calls to C<keys> will include the key tested
+for with C<has_attrs> if the latter had returned true, assuming an
+intermediate call to C<insert> hadn't invalidated that.
 
 =head2 attr_names
 
@@ -726,6 +806,16 @@ argument match tuples of its invocant (that is, iff conceptually C<$t> is a
 member of C<$r>), and false otherwise.  This method is like C<is_subset>
 except that the tuples being looked for don't have to be wrapped in a
 relation.
+
+=head2 has_key
+
+C<method has_key of Bool ($topic: Array|Str $attrs)>
+
+This functional method results in true iff its invocant has a (unique) key
+over the subset of its attributes whose names are specified by its
+argument; otherwise it results in false.  This function will fail if its
+invocant does not have all of the attributes named by its argument.  As a
+trivial case, this function's result is true if its invocant is empty.
 
 =head2 empty
 
@@ -1456,7 +1546,7 @@ also allowed to have its value mutate at some times.
 =head2 new
 
 C<multi submethod new of Set::Relation::Mutable (Array|Set::Relation|Str
-:$members, Bool :$has_frozen_identity?)>
+:$members, Array|Str :$keys?, Bool :$has_frozen_identity?)>
 
 The Set::Relation::Mutable role extends the C<new> constructor submethod of
 the Set::Relation role to add the optional named-only parameter
@@ -1512,6 +1602,9 @@ C<method insert of Set::Relation::Mutable ($r: Array|Hash $t)>
 
 This mutator method inserts its tuples argument into its invocant relation.
 For a non-mutating equivalent, see the C<insertion> functional method.
+Note that C<insert> is allowed to invalidate any currently existing
+candidate keys of the invocant, in which case, the C<keys> method would no
+longer list them; those keys are not constraints on future mutations.
 
 =head2 delete
 
@@ -1540,7 +1633,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.09..*)|namespace::clean>,
-L<Moose::Role-ver(0.70..*)|Moose::Role>.
+L<Moose::Role-ver(0.72..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 

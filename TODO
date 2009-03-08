@@ -14,22 +14,23 @@ make 'rename' a very cheap operation (only heading is updated); while that
 wasn't a prerequisite, tuple/relation serialization can also be made more
 memory-preserving by not repeating attr names per tuple.  2. The relation
 body is still represented by a main Perl Hash, but the hash keys are now
-the Array refaddr numbers of the hash values.  3. Add support for explicit
-key definitions in the API, and use that to just hash subtuples rather than
-whole tuples.  4. We would distinguish between candidate keys and unique
-key constraints.  5. Add a few public methods like is-key(attr-list) and
-add/remove-key-constraint(attr-list); the constructor would also gain
-corresponding parameters.  6. Don't generate and cache serializations of
+the Array refaddr numbers of the hash values.  3. Use the API's support for
+explicit key definitions to just hash subtuples rather than
+whole tuples.  4. Don't generate and cache serializations of
 every tuple attribute individually; no more binary array refs; while
 sometimes this may mean that work has to be repeated later, we hope over
 all that time will be saved thanks to never needing those hashed values
-often times.  Note, it is possible the older V1 may never gain the API
-additions like keys as it is deprecated assum V2 is better, but who knows.
+often times.  5. For all that matter, V2 will be immutable period, not
+consuming ::Mutable, and also lazy to insertion() etc could reasonably be
+used with almost the performance of insert(), etc.
 
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
 * Make the test suite actually run the code, not just compile it; maybe
 start off with running same code examples in documentation, tutorial, etc.
+
+* Consider adding support for unique key constraints, and not just
+the introspection of existing candidate keys that the API has now.
 
 * Consider adding public operators such as for comparing headings eg for
 disjointness etc, mirroring some set operators, perhaps to help users
