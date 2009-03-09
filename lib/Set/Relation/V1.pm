@@ -135,8 +135,8 @@ sub BUILD {
             and $members->does( 'Set::Relation' )
             and !$members->isa( __PACKAGE__ )) {
         # We got a $members that is a Set::Relation-doing class where that
-        # class isn't us; so dump it for a clone using public interface.
-        $members = $members->members();
+        # class isn't us; so clone it from a dump using public interface.
+        $members = $self->new( $members->export_for_new() );
     }
     confess q{new(): Bad :$members arg; it must be either undefined}
             . q{ or an array-ref or a non-ref or a Set::Relation object.}
@@ -145,12 +145,30 @@ sub BUILD {
 
     # If we get here, $members is either a Set::Relation::V1 or an ary-ref.
 
+    if (!defined $keys) {
+        $keys = [];
+    }
+    elsif (ref $keys ne 'ARRAY') {
+        $keys = [$keys];
+    }
+    if (any { ref $_ ne 'ARRAY' } @{$keys}) {
+        $keys = [$keys];
+    }
+    for my $key (@{$keys}) {
+        confess q{new(): Bad $keys arg; it is not correctly formatted.}
+            if ref $key ne 'ARRAY'
+                or notall { defined $_ and !ref $_ } @{$key};
+    }
+
+    # If we get here, $keys is an Array of Array of Str.
+
     my ($heading, $body);
 
     if (blessed $members and $members->isa( __PACKAGE__ )) {
         # We will just copy another Set::Relation::V1 object's member-set.
         $heading = {%{$members->_heading()}};
         $body = {%{$members->_body()}};
+        $self->_keys( {%{$members->_keys()}} );
     }
     elsif (@{$members} == 0) {
         # Input specifies zero attrs + zero tuples.
@@ -195,7 +213,7 @@ sub BUILD {
                 confess q{new(): Bad :$members arg;}
                         . q{ at least one of its hash-ref elems}
                         . q{ is such that there exists circular refs}
-                        . q{ between itself or its value-typed components.}
+                        . q{ between itself or its tuple-valued components.}
                     if $self->_tuple_arg_has_circular_refs( $tuple );
                 $tuple = $self->_import_nfmt_tuple( $tuple );
                 $body->{$self->_ident_str( $tuple )} = $tuple;
@@ -232,7 +250,7 @@ sub BUILD {
                     confess q{new(): Bad :$members arg;}
                             . q{ at least one of its array-ref elems}
                             . q{ is such that there exists circular refs}
-                            . q{ between its value-typed components.}
+                            . q{ between its tuple-valued components.}
                         if ref $atvl eq 'HASH'
                             and $self->_tuple_arg_has_circular_refs(
                                 $atvl );
@@ -253,19 +271,7 @@ sub BUILD {
     $self->_body( $body );
     $self->_cardinality( scalar CORE::keys %{$body} );
 
-    if (!defined $keys) {
-        $keys = [];
-    }
-    elsif (ref $keys ne 'ARRAY') {
-        $keys = [$keys];
-    }
-    if (any { ref $_ ne 'ARRAY' } @{$keys}) {
-        $keys = [$keys];
-    }
     for my $key (@{$keys}) {
-        confess q{new(): Bad $keys arg; it is not correctly formatted.}
-            if ref $key ne 'ARRAY'
-                or notall { defined $_ and !ref $_ } @{$key};
         confess q{new(): At least one of the relation keys defined by the}
                 . q{ $keys arg isn't a subset of the heading of the}
                 . q{ relation defined by the $members arg.}
@@ -286,6 +292,7 @@ sub export_for_new {
     return {
         'members' => $self->_members(
             'export_for_new', '$want_ord_attrs', $want_ord_attrs ),
+        'keys' => $self->keys(),
         # Note, we make an exception by not exporting the
         # 'has_frozen_identity' object attribute even though the 'new'
         # constructor can take an argument to user-initialize it;
@@ -454,7 +461,7 @@ sub attr {
 
 sub keys {
     my ($self) = @_;
-    return [CORE::map { [sort @{$_}] } @{$self->_keys()}];
+    return [CORE::map { [sort @{$_}] } values %{$self->_keys()}];
 }
 
 ###########################################################################
@@ -478,7 +485,7 @@ sub _normalize_same_heading_tuples_arg {
                 or !$r->_is_identical_hkeys( $r_h, $tuple );
         confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
                 . q{ it is a hash-ref, and there exist circular refs}
-                . q{ between itself or its value-typed components.}
+                . q{ between itself or its tuple-valued components.}
             if $r->_tuple_arg_has_circular_refs( $tuple );
     }
 
@@ -1510,7 +1517,7 @@ sub static_extension {
 
     confess q{static_extension(): Bad $attrs arg;}
             . q{ it is a hash-ref, and there exist circular refs}
-            . q{ between itself or its value-typed components.}
+            . q{ between itself or its tuple-valued components.}
         if $topic->_tuple_arg_has_circular_refs( $attrs );
 
     return $topic->_static_extension( $attrs );
@@ -1739,7 +1746,7 @@ sub _assert_valid_tuple_result_of_func_arg {
     confess qq{$rtn_nm(): Bad $arg_nm_func arg;}
             . q{ at least one result of executing that Perl subroutine}
             . q{ reference was a hash-ref, and there exist circular refs}
-            . q{ between itself or its value-typed components.}
+            . q{ between itself or its tuple-valued components.}
         if $self->_tuple_arg_has_circular_refs( $result_t );
 }
 
@@ -1783,8 +1790,8 @@ sub is_identical {
 
 sub _is_identical {
     my ($topic, $other) = @_;
-    return ($topic->_degree() == $other->_degree()
-        and $topic->_cardinality() == $other->_cardinality()
+    return ($topic->degree() == $other->degree()
+        and $topic->cardinality() == $other->cardinality()
         and $topic->_is_identical_hkeys(
             $topic->_heading(), $other->_heading() )
         and $topic->_is_identical_hkeys(
@@ -2713,7 +2720,7 @@ sub _assert_valid_static_subst_args {
 
     confess qq{$rtn_nm(): Bad $arg_nm_attrs arg;}
             . q{ it is a hash-ref, and there exist circular refs}
-            . q{ between itself or its value-typed components.}
+            . q{ between itself or its tuple-valued components.}
         if $topic->_tuple_arg_has_circular_refs( $attrs );
 
     return;
@@ -2901,7 +2908,7 @@ sub outer_join_with_static_exten {
         if ref $filler ne 'HASH';
     confess q{outer_join_with_static_exten(): Bad $filler arg;}
             . q{ it is a hash-ref, and there exist circular refs}
-            . q{ between itself or its value-typed components.}
+            . q{ between itself or its tuple-valued components.}
         if $primary->_tuple_arg_has_circular_refs( $filler );
 
     my (undef, undef, $exten_attrs) = $primary->_ptn_conj_and_disj(
@@ -2987,7 +2994,7 @@ sub insert {
     $t = $r->_normalize_same_heading_tuples_arg( 'insert', '$t', $t );
     for my $tuple (@{$t}) {
         confess q{insert(): Bad $t arg; it contains the invocant}
-                . q{ Set::Relation object as a value-typed component,}
+                . q{ Set::Relation object as a tuple-valued component,}
                 . q{ so the invocant would be frozen as a side-effect.}
             if $r->_self_is_component_of_tuple_arg( $tuple );
     }
@@ -3045,7 +3052,7 @@ sub delete {
     $t = $r->_normalize_same_heading_tuples_arg( 'delete', '$t', $t );
     for my $tuple (@{$t}) {
         confess q{delete(): Bad $t arg; it contains the invocant}
-                . q{ Set::Relation object as a value-typed component,}
+                . q{ Set::Relation object as a tuple-valued component,}
                 . q{ so the invocant would be frozen as a side-effect.}
             if $r->_self_is_component_of_tuple_arg( $tuple );
     }
