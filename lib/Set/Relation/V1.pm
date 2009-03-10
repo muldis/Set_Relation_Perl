@@ -411,7 +411,7 @@ sub slice {
     my ($self, $attr_names, $want_ord_attrs) = @_;
 
     (my $proj_h, $attr_names)
-        = $self->_attrs_hr_from_assert_valid_atnms_arg(
+        = $self->_atnms_hr_from_assert_valid_atnms_arg(
         'slice', '$attr_names', $attr_names );
     my (undef, undef, $proj_only)
         = $self->_ptn_conj_and_disj( $self->_heading(), $proj_h );
@@ -669,7 +669,7 @@ sub is_nullary {
 sub has_attrs {
     my ($topic, $attr_names) = @_;
     (my $proj_h, $attr_names)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'has_attrs', '$attr_names', $attr_names );
     my (undef, undef, $proj_only)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $proj_h );
@@ -701,7 +701,7 @@ sub is_member {
 
 sub has_key {
     my ($topic, $attr_names) = @_;
-    (undef, $attr_names) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+    (undef, $attr_names) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'has_key', '$attr_names', $attr_names );
     my $topic_h = $topic->_heading();
     confess q{has_key(): Bad $attr_names arg; that attr list}
@@ -836,7 +836,7 @@ sub projection {
     my ($topic, $attr_names) = @_;
 
     (my $proj_h, $attr_names)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'projection', '$attr_names', $attr_names );
     my (undef, undef, $proj_only)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $proj_h );
@@ -890,7 +890,7 @@ sub cmpl_projection {
     my $topic_h = $topic->_heading();
 
     (my $cproj_h, $attr_names)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'cmpl_projection', '$attr_names', $attr_names );
     my (undef, undef, $cproj_only)
         = $topic->_ptn_conj_and_disj( $topic_h, $cproj_h );
@@ -907,7 +907,7 @@ sub cmpl_projection {
 sub wrap {
     my ($topic, $inner, $outer) = @_;
 
-    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+    (my $inner_h, $inner) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'wrap', '$inner', $inner );
     $topic->_assert_valid_atnm_arg( 'wrap', '$outer', $outer );
 
@@ -982,7 +982,7 @@ sub cmpl_wrap {
     my ($topic, $cmpl_inner, $outer) = @_;
 
     (my $cmpl_inner_h, $cmpl_inner)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'cmpl_wrap', '$cmpl_inner', $cmpl_inner );
     $topic->_assert_valid_atnm_arg( 'cmpl_wrap', '$outer', $outer );
 
@@ -1011,7 +1011,7 @@ sub unwrap {
     my ($topic, $outer, $inner) = @_;
 
     $topic->_assert_valid_atnm_arg( 'unwrap', '$outer', $outer );
-    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+    (my $inner_h, $inner) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'unwrap', '$inner', $inner );
 
     my $topic_h = $topic->_heading();
@@ -1092,7 +1092,7 @@ sub unwrap {
 sub group {
     my ($topic, $inner, $outer) = @_;
 
-    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+    (my $inner_h, $inner) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'group', '$inner', $inner );
     $topic->_assert_valid_atnm_arg( 'group', '$outer', $outer );
 
@@ -1181,7 +1181,7 @@ sub cmpl_group {
     my ($topic, $group_per, $outer) = @_;
 
     (my $group_per_h, $group_per)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'cmpl_group', '$group_per', $group_per );
     $topic->_assert_valid_atnm_arg( 'cmpl_group', '$outer', $outer );
 
@@ -1210,7 +1210,7 @@ sub ungroup {
     my ($topic, $outer, $inner) = @_;
 
     $topic->_assert_valid_atnm_arg( 'ungroup', '$outer', $outer );
-    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+    (my $inner_h, $inner) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'ungroup', '$inner', $inner );
 
     my $topic_h = $topic->_heading();
@@ -1461,7 +1461,7 @@ sub extension {
     my ($topic, $attr_names, $func) = @_;
 
     (my $exten_h, $attr_names)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'extension', '$attr_names', $attr_names );
     $topic->_assert_valid_func_arg( 'extension', '$func', $func );
 
@@ -1563,7 +1563,7 @@ sub map {
     my ($topic, $result_attr_names, $func) = @_;
 
     (my $result_h, $result_attr_names)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'map', '$result_attr_names', $result_attr_names );
     $topic->_assert_valid_func_arg( 'map', '$func', $func );
 
@@ -1609,10 +1609,10 @@ sub summary {
     my ($topic, $group_per, $result_attr_names, $summ_func) = @_;
 
     (my $group_per_h, $group_per)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'summary', '$group_per', $group_per );
     (my $result_h, $result_attr_names)
-        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'summary', '$result_attr_names', $result_attr_names );
     $topic->_assert_valid_func_arg( 'summary', '$summ_func', $summ_func );
 
@@ -1693,7 +1693,7 @@ sub summary {
 
 ###########################################################################
 
-sub _attrs_hr_from_assert_valid_atnms_arg {
+sub _atnms_hr_from_assert_valid_atnms_arg {
     my ($self, $rtn_nm, $arg_nm, $atnms) = @_;
 
     if (defined $atnms and !ref $atnms) {
@@ -2646,27 +2646,27 @@ sub limit {
 sub substitution {
     my ($topic, $attr_names, $func) = @_;
     (my $subst_h, $attr_names)
-        = $topic->_attrs_hr_from_assert_valid_subst_args(
+        = $topic->_atnms_hr_from_assert_valid_subst_args(
         'substitution', '$attr_names', '$func', $attr_names, $func );
     return $topic->_substitution(
         'substitution', '$attr_names', '$func',
         $attr_names, $func, $subst_h );
 }
 
-sub _attrs_hr_from_assert_valid_subst_args {
-    my ($topic, $rtn_nm, $arg_nm_attrs, $arg_nm_func, $attrs, $func) = @_;
+sub _atnms_hr_from_assert_valid_subst_args {
+    my ($topic, $rtn_nm, $arg_nm_atnms, $arg_nm_func, $atnms, $func) = @_;
 
-    (my $subst_h, $attrs) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
-        $rtn_nm, $arg_nm_attrs, $attrs );
+    (my $subst_h, $atnms) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
+        $rtn_nm, $arg_nm_atnms, $atnms );
     my (undef, undef, $subst_only)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $subst_h );
-    confess qq{$rtn_nm(): Bad $arg_nm_attrs arg; that attr list}
+    confess qq{$rtn_nm(): Bad $arg_nm_atnms arg; that attr list}
             . q{ isn't a subset of the invocant's heading.}
         if @{$subst_only} > 0;
 
     $topic->_assert_valid_func_arg( $rtn_nm, $arg_nm_func, $func );
 
-    return ($subst_h, $attrs);
+    return ($subst_h, $atnms);
 }
 
 sub _substitution {
@@ -2772,7 +2772,7 @@ sub subst_in_restr {
         'subst_in_restr', '$restr_func', $restr_func );
 
     (my $subst_h, $subst_attr_names) = $topic
-        ->_attrs_hr_from_assert_valid_subst_args( 'subst_in_restr',
+        ->_atnms_hr_from_assert_valid_subst_args( 'subst_in_restr',
             '$subst_attr_names', '$subst_func',
             $subst_attr_names, $subst_func );
 
@@ -2813,7 +2813,7 @@ sub subst_in_semijoin {
         'subst_in_semijoin', '$restr', $restr );
 
     (my $subst_h, $subst_attr_names) = $topic
-        ->_attrs_hr_from_assert_valid_subst_args( 'subst_in_semijoin',
+        ->_atnms_hr_from_assert_valid_subst_args( 'subst_in_semijoin',
             '$subst_attr_names', '$subst_func',
             $subst_attr_names, $subst_func );
 
