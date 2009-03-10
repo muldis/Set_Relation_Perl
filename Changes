@@ -9,6 +9,21 @@
     * Updated external dependencies: Moose/etc to version 0.72, Class::MOP
     to version 0.78.
 
+    * (Relation.pm)  Updated all 10 methods of the Set::Relation role that
+    had a "Array|Str"-typed parameter named "(|\w+_)attrs" and renamed said
+    parameter to "(|\w+_)attr_names"; any similarly named parameters that
+    were of some other type, such as "Hash", kept their old names.  This
+    change should make the parameters more self-documenting, since "attrs"
+    names now tend to have both attribute names and values, where as
+    "attr_names" have just names.  The changed 10 methods were: "slice",
+    "has_attrs", "(|cmpl_)projection", "extension", "map", "summary",
+    "substitution", "subst_in_(restr|semijoin)".  Note that, since all of
+    the methods' parameters are positional (rather than named), the change
+    is completely backwards compatible.
+
+    * (V1.pm)  Updated the Set::Relation::V1 class to rename some of its
+    public method parameters as per the previous change item.
+
     * (Relation.pm)  Updated the Set::Relation role in several closely
     related ways.  Added new named parameter to 'new' named 'keys' which
     lets one define candidate keys for the new relation which the 'members'

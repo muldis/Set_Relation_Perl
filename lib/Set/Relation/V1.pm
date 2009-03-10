@@ -211,9 +211,9 @@ sub BUILD {
                     if ref $tuple ne 'HASH'
                         or !$self->_is_identical_hkeys( $heading, $tuple );
                 confess q{new(): Bad :$members arg;}
-                        . q{ at least one of its hash-ref elems}
-                        . q{ is such that there exists circular refs}
-                        . q{ between itself or its tuple-valued components.}
+                        . q{ at least one of its hash-ref elems is such}
+                        . q{ that there exists circular refs between}
+                        . q{ itself or its tuple-valued components.}
                     if $self->_tuple_arg_has_circular_refs( $tuple );
                 $tuple = $self->_import_nfmt_tuple( $tuple );
                 $body->{$self->_ident_str( $tuple )} = $tuple;
@@ -408,13 +408,14 @@ sub _normalize_true_want_ord_attrs_arg {
 ###########################################################################
 
 sub slice {
-    my ($self, $attrs, $want_ord_attrs) = @_;
+    my ($self, $attr_names, $want_ord_attrs) = @_;
 
-    (my $proj_h, $attrs) = $self->_attrs_hr_from_assert_valid_attrs_arg(
-        'slice', '$attrs', $attrs );
+    (my $proj_h, $attr_names)
+        = $self->_attrs_hr_from_assert_valid_atnms_arg(
+        'slice', '$attr_names', $attr_names );
     my (undef, undef, $proj_only)
         = $self->_ptn_conj_and_disj( $self->_heading(), $proj_h );
-    confess q{slice(): Bad $attrs arg; that attr list}
+    confess q{slice(): Bad $attr_names arg; that attr list}
             . q{ isn't a subset of the invocant's heading.}
         if @{$proj_only} > 0;
 
@@ -425,12 +426,12 @@ sub slice {
                 . q{ either undefined|false or the scalar value '1'.}
             if $want_ord_attrs ne '1';
         $body = [CORE::map { $self->_export_ofmt_tuple(
-            $attrs, $_ ) } values %{$body}];
+            $attr_names, $_ ) } values %{$body}];
     }
     else {
         $body = [CORE::map {
             my $t = $_;
-            $t = {CORE::map { ($_ => $t->{$_}) } @{$attrs}};
+            $t = {CORE::map { ($_ => $t->{$_}) } @{$attr_names}};
             $self->_export_nfmt_tuple( $t );
         } values %{$body}];
     }
@@ -666,9 +667,10 @@ sub is_nullary {
 }
 
 sub has_attrs {
-    my ($topic, $attrs) = @_;
-    (my $proj_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'has_attrs', '$attrs', $attrs );
+    my ($topic, $attr_names) = @_;
+    (my $proj_h, $attr_names)
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        'has_attrs', '$attr_names', $attr_names );
     my (undef, undef, $proj_only)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $proj_h );
     return @{$proj_only} == 0;
@@ -698,27 +700,27 @@ sub is_member {
 ###########################################################################
 
 sub has_key {
-    my ($topic, $attrs) = @_;
-    (undef, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'has_key', '$attrs', $attrs );
+    my ($topic, $attr_names) = @_;
+    (undef, $attr_names) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        'has_key', '$attr_names', $attr_names );
     my $topic_h = $topic->_heading();
-    confess q{has_key(): Bad $attrs arg; that attr list}
+    confess q{has_key(): Bad $attr_names arg; that attr list}
             . q{ isn't a subset of the invocant's heading.}
-        if notall { exists $topic_h->{$_} } @{$attrs};
-    return $topic->_has_key( $attrs );
+        if notall { exists $topic_h->{$_} } @{$attr_names};
+    return $topic->_has_key( $attr_names );
 }
 
 sub _has_key {
-    my ($topic, $attrs) = @_;
+    my ($topic, $attr_names) = @_;
 
-    my $subheading = {CORE::map { ($_ => undef) } @{$attrs}};
+    my $subheading = {CORE::map { ($_ => undef) } @{$attr_names}};
     my $subheading_ident_str = $topic->_heading_ident_str( $subheading );
     my $keys = $topic->_keys();
 
     return 1
         if exists $keys->{$subheading_ident_str};
 
-    my $index = $topic->_want_index( $attrs );
+    my $index = $topic->_want_index( $attr_names );
 
     return 0
         if notall { (CORE::keys %{$_}) == 1 } values %{$index};
@@ -831,23 +833,24 @@ sub _rename {
 ###########################################################################
 
 sub projection {
-    my ($topic, $attrs) = @_;
+    my ($topic, $attr_names) = @_;
 
-    (my $proj_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'projection', '$attrs', $attrs );
+    (my $proj_h, $attr_names)
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        'projection', '$attr_names', $attr_names );
     my (undef, undef, $proj_only)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $proj_h );
-    confess q{projection(): Bad $attrs arg; that attr list}
+    confess q{projection(): Bad $attr_names arg; that attr list}
             . q{ isn't a subset of the invocant's heading.}
         if @{$proj_only} > 0;
 
-    return $topic->_projection( $attrs );
+    return $topic->_projection( $attr_names );
 }
 
 sub _projection {
-    my ($topic, $attrs) = @_;
+    my ($topic, $attr_names) = @_;
 
-    if (@{$attrs} == 0) {
+    if (@{$attr_names} == 0) {
         # Projection of zero attrs yields identity relation zero or one.
         if ($topic->is_empty()) {
             return $topic->new();
@@ -856,20 +859,21 @@ sub _projection {
             return $topic->new( [ {} ] );
         }
     }
-    if (@{$attrs} == $topic->degree()) {
+    if (@{$attr_names} == $topic->degree()) {
         # Projection of all attrs of input yields the input.
         return $topic;
     }
 
     my $result = $topic->new();
 
-    $result->_heading( {CORE::map { ($_ => undef) } @{$attrs}} );
-    $result->_degree( scalar @{$attrs} );
+    $result->_heading( {CORE::map { ($_ => undef) } @{$attr_names}} );
+    $result->_degree( scalar @{$attr_names} );
 
     my $result_b = $result->_body();
 
     for my $topic_t (values %{$topic->_body()}) {
-        my $result_t = {CORE::map { ($_ => $topic_t->{$_}) } @{$attrs}};
+        my $result_t
+            = {CORE::map { ($_ => $topic_t->{$_}) } @{$attr_names}};
         my $result_t_ident_str = $topic->_ident_str( $result_t );
         if (!exists $result_b->{$result_t_ident_str}) {
             $result_b->{$result_t_ident_str} = $result_t;
@@ -881,15 +885,16 @@ sub _projection {
 }
 
 sub cmpl_projection {
-    my ($topic, $attrs) = @_;
+    my ($topic, $attr_names) = @_;
 
     my $topic_h = $topic->_heading();
 
-    (my $cproj_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'cmpl_projection', '$attrs', $attrs );
+    (my $cproj_h, $attr_names)
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        'cmpl_projection', '$attr_names', $attr_names );
     my (undef, undef, $cproj_only)
         = $topic->_ptn_conj_and_disj( $topic_h, $cproj_h );
-    confess q{cmpl_projection(): Bad $attrs arg; that attr list}
+    confess q{cmpl_projection(): Bad $attr_names arg; that attr list}
             . q{ isn't a subset of the invocant's heading.}
         if @{$cproj_only} > 0;
 
@@ -902,7 +907,7 @@ sub cmpl_projection {
 sub wrap {
     my ($topic, $inner, $outer) = @_;
 
-    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
         'wrap', '$inner', $inner );
     $topic->_assert_valid_atnm_arg( 'wrap', '$outer', $outer );
 
@@ -977,7 +982,7 @@ sub cmpl_wrap {
     my ($topic, $cmpl_inner, $outer) = @_;
 
     (my $cmpl_inner_h, $cmpl_inner)
-        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
             'cmpl_wrap', '$cmpl_inner', $cmpl_inner );
     $topic->_assert_valid_atnm_arg( 'cmpl_wrap', '$outer', $outer );
 
@@ -1006,7 +1011,7 @@ sub unwrap {
     my ($topic, $outer, $inner) = @_;
 
     $topic->_assert_valid_atnm_arg( 'unwrap', '$outer', $outer );
-    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
         'unwrap', '$inner', $inner );
 
     my $topic_h = $topic->_heading();
@@ -1087,7 +1092,7 @@ sub unwrap {
 sub group {
     my ($topic, $inner, $outer) = @_;
 
-    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
         'group', '$inner', $inner );
     $topic->_assert_valid_atnm_arg( 'group', '$outer', $outer );
 
@@ -1176,7 +1181,7 @@ sub cmpl_group {
     my ($topic, $group_per, $outer) = @_;
 
     (my $group_per_h, $group_per)
-        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
             'cmpl_group', '$group_per', $group_per );
     $topic->_assert_valid_atnm_arg( 'cmpl_group', '$outer', $outer );
 
@@ -1205,7 +1210,7 @@ sub ungroup {
     my ($topic, $outer, $inner) = @_;
 
     $topic->_assert_valid_atnm_arg( 'ungroup', '$outer', $outer );
-    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+    (my $inner_h, $inner) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
         'ungroup', '$inner', $inner );
 
     my $topic_h = $topic->_heading();
@@ -1453,25 +1458,26 @@ sub cmpl_restriction {
 ###########################################################################
 
 sub extension {
-    my ($topic, $attrs, $func) = @_;
+    my ($topic, $attr_names, $func) = @_;
 
-    (my $exten_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-        'extension', '$attrs', $attrs );
+    (my $exten_h, $attr_names)
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+        'extension', '$attr_names', $attr_names );
     $topic->_assert_valid_func_arg( 'extension', '$func', $func );
 
     my ($both, undef, undef)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $exten_h );
-    confess q{extension(): Bad $attrs arg; that attr list}
+    confess q{extension(): Bad $attr_names arg; that attr list}
             . q{ isn't disjoint with the invocant's heading.}
         if @{$both} > 0;
 
-    return $topic->_extension( $attrs, $func, $exten_h );
+    return $topic->_extension( $attr_names, $func, $exten_h );
 }
 
 sub _extension {
-    my ($topic, $attrs, $func, $exten_h) = @_;
+    my ($topic, $attr_names, $func, $exten_h) = @_;
 
-    if (@{$attrs} == 0) {
+    if (@{$attr_names} == 0) {
         # Extension of input by zero attrs yields the input.
         return $topic;
     }
@@ -1479,7 +1485,7 @@ sub _extension {
     my $result = $topic->new();
 
     $result->_heading( {%{$topic->_heading()}, %{$exten_h}} );
-    $result->_degree( $topic->degree() + scalar @{$attrs} );
+    $result->_degree( $topic->degree() + scalar @{$attr_names} );
 
     my $result_b = $result->_body();
 
@@ -1490,7 +1496,7 @@ sub _extension {
             $exten_t = $func->();
         }
         $topic->_assert_valid_tuple_result_of_func_arg(
-            'extension', '$func', '$attrs', $exten_t, $exten_h );
+            'extension', '$func', '$attr_names', $exten_t, $exten_h );
         $exten_t = $topic->_import_nfmt_tuple( $exten_t );
         my $result_t = {%{$topic_t}, %{$exten_t}};
         my $result_t_ident_str = $topic->_ident_str( $result_t );
@@ -1554,14 +1560,14 @@ sub _static_extension {
 ###########################################################################
 
 sub map {
-    my ($topic, $result_attrs, $func) = @_;
+    my ($topic, $result_attr_names, $func) = @_;
 
-    (my $result_h, $result_attrs)
-        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-            'map', '$result_attrs', $result_attrs );
+    (my $result_h, $result_attr_names)
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+            'map', '$result_attr_names', $result_attr_names );
     $topic->_assert_valid_func_arg( 'map', '$func', $func );
 
-    if (@{$result_attrs} == 0) {
+    if (@{$result_attr_names} == 0) {
         # Map to zero attrs yields identity relation zero or one.
         if ($topic->is_empty()) {
             return $topic->new();
@@ -1574,7 +1580,7 @@ sub map {
     my $result = $topic->new();
 
     $result->_heading( $result_h );
-    $result->_degree( scalar @{$result_attrs} );
+    $result->_degree( scalar @{$result_attr_names} );
 
     my $result_b = $result->_body();
 
@@ -1585,7 +1591,7 @@ sub map {
             $result_t = $func->();
         }
         $topic->_assert_valid_tuple_result_of_func_arg(
-            'map', '$func', '$result_attrs', $result_t, $result_h );
+            'map', '$func', '$result_attr_names', $result_t, $result_h );
         $result_t = $topic->_import_nfmt_tuple( $result_t );
         my $result_t_ident_str = $topic->_ident_str( $result_t );
         if (!exists $result_b->{$result_t_ident_str}) {
@@ -1600,14 +1606,14 @@ sub map {
 ###########################################################################
 
 sub summary {
-    my ($topic, $group_per, $result_attrs, $summ_func) = @_;
+    my ($topic, $group_per, $result_attr_names, $summ_func) = @_;
 
     (my $group_per_h, $group_per)
-        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
             'summary', '$group_per', $group_per );
-    (my $result_h, $result_attrs)
-        = $topic->_attrs_hr_from_assert_valid_attrs_arg(
-            'summary', '$result_attrs', $result_attrs );
+    (my $result_h, $result_attr_names)
+        = $topic->_attrs_hr_from_assert_valid_atnms_arg(
+            'summary', '$result_attr_names', $result_attr_names );
     $topic->_assert_valid_func_arg( 'summary', '$summ_func', $summ_func );
 
     my $topic_h = $topic->_heading();
@@ -1622,7 +1628,7 @@ sub summary {
     my (undef, $topic_attrs_no_gr, undef)
         = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
 
-    if (@{$result_attrs} == 0) {
+    if (@{$result_attr_names} == 0) {
         # Map to zero attrs yields identity relation zero or one.
         if ($topic->is_empty()) {
             return $topic->new();
@@ -1635,7 +1641,7 @@ sub summary {
     my $result = $topic->new();
 
     $result->_heading( $result_h );
-    $result->_degree( scalar @{$result_attrs} );
+    $result->_degree( scalar @{$result_attr_names} );
 
     if ($topic->is_empty()) {
         # An empty $topic means an empty result.
@@ -1672,7 +1678,7 @@ sub summary {
             $result_t = $summ_func->();
         }
         $topic->_assert_valid_tuple_result_of_func_arg( 'summary',
-            '$summ_func', '$result_attrs', $result_t, $result_h );
+            '$summ_func', '$result_attr_names', $result_t, $result_h );
         $result_t = $topic->_import_nfmt_tuple( $result_t );
 
         my $result_t_ident_str = $topic->_ident_str( $result_t );
@@ -1687,28 +1693,28 @@ sub summary {
 
 ###########################################################################
 
-sub _attrs_hr_from_assert_valid_attrs_arg {
-    my ($self, $rtn_nm, $arg_nm, $attrs) = @_;
+sub _attrs_hr_from_assert_valid_atnms_arg {
+    my ($self, $rtn_nm, $arg_nm, $atnms) = @_;
 
-    if (defined $attrs and !ref $attrs) {
-        $attrs = [$attrs];
+    if (defined $atnms and !ref $atnms) {
+        $atnms = [$atnms];
     }
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it must be an array-ref or a defined non-ref.}
-        if ref $attrs ne 'ARRAY';
-    for my $atnm (@{$attrs}) {
+        if ref $atnms ne 'ARRAY';
+    for my $atnm (@{$atnms}) {
         confess qq{$rtn_nm(): Bad $arg_nm arg;}
                 . q{ it should be just be a list of attr names,}
                 . q{ but at least one name is undefined or is a ref.}
             if !defined $atnm or ref $atnm;
     }
-    my $heading = {CORE::map { ($_ => undef) } @{$attrs}};
+    my $heading = {CORE::map { ($_ => undef) } @{$atnms}};
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it specifies a list of}
             . q{ attr names with at least one duplicated name.}
-        if (CORE::keys %{$heading}) != @{$attrs};
+        if (CORE::keys %{$heading}) != @{$atnms};
 
-    return ($heading, $attrs);
+    return ($heading, $atnms);
 }
 
 sub _assert_valid_atnm_arg {
@@ -2638,17 +2644,19 @@ sub limit {
 ###########################################################################
 
 sub substitution {
-    my ($topic, $attrs, $func) = @_;
-    (my $subst_h, $attrs) = $topic->_attrs_hr_from_assert_valid_subst_args(
-        'substitution', '$attrs', '$func', $attrs, $func );
+    my ($topic, $attr_names, $func) = @_;
+    (my $subst_h, $attr_names)
+        = $topic->_attrs_hr_from_assert_valid_subst_args(
+        'substitution', '$attr_names', '$func', $attr_names, $func );
     return $topic->_substitution(
-        'substitution', '$attrs', '$func', $attrs, $func, $subst_h );
+        'substitution', '$attr_names', '$func',
+        $attr_names, $func, $subst_h );
 }
 
 sub _attrs_hr_from_assert_valid_subst_args {
     my ($topic, $rtn_nm, $arg_nm_attrs, $arg_nm_func, $attrs, $func) = @_;
 
-    (my $subst_h, $attrs) = $topic->_attrs_hr_from_assert_valid_attrs_arg(
+    (my $subst_h, $attrs) = $topic->_attrs_hr_from_assert_valid_atnms_arg(
         $rtn_nm, $arg_nm_attrs, $attrs );
     my (undef, undef, $subst_only)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $subst_h );
@@ -2758,21 +2766,22 @@ sub _static_substitution {
 ###########################################################################
 
 sub subst_in_restr {
-    my ($topic, $restr_func, $subst_attrs, $subst_func) = @_;
+    my ($topic, $restr_func, $subst_attr_names, $subst_func) = @_;
 
     $topic->_assert_valid_func_arg(
         'subst_in_restr', '$restr_func', $restr_func );
 
-    (my $subst_h, $subst_attrs) = $topic
+    (my $subst_h, $subst_attr_names) = $topic
         ->_attrs_hr_from_assert_valid_subst_args( 'subst_in_restr',
-            '$subst_attrs', '$subst_func', $subst_attrs, $subst_func );
+            '$subst_attr_names', '$subst_func',
+            $subst_attr_names, $subst_func );
 
     my ($topic_to_subst, $topic_no_subst)
         = @{$topic->_restriction_and_cmpl( $restr_func )};
 
     return $topic_to_subst
-        ->_substitution( 'subst_in_restr', '$subst_attrs',
-            '$subst_func', $subst_attrs, $subst_func, $subst_h )
+        ->_substitution( 'subst_in_restr', '$subst_attr_names',
+            '$subst_func', $subst_attr_names, $subst_func, $subst_h )
         ->_union( [$topic_no_subst] );
 }
 
@@ -2798,21 +2807,22 @@ sub static_subst_in_restr {
 ###########################################################################
 
 sub subst_in_semijoin {
-    my ($topic, $restr, $subst_attrs, $subst_func) = @_;
+    my ($topic, $restr, $subst_attr_names, $subst_func) = @_;
 
     $restr = $topic->_normalize_relation_arg(
         'subst_in_semijoin', '$restr', $restr );
 
-    (my $subst_h, $subst_attrs) = $topic
+    (my $subst_h, $subst_attr_names) = $topic
         ->_attrs_hr_from_assert_valid_subst_args( 'subst_in_semijoin',
-            '$subst_attrs', '$subst_func', $subst_attrs, $subst_func );
+            '$subst_attr_names', '$subst_func',
+            $subst_attr_names, $subst_func );
 
     my ($topic_to_subst, $topic_no_subst)
         = @{$topic->_semijoin_and_diff( $restr )};
 
     return $topic_to_subst
-        ->_substitution( 'subst_in_semijoin', '$subst_attrs',
-            '$subst_func', $subst_attrs, $subst_func, $subst_h )
+        ->_substitution( 'subst_in_semijoin', '$subst_attr_names',
+            '$subst_func', $subst_attr_names, $subst_func, $subst_h )
         ->_union( [$topic_no_subst] );
 }
 
@@ -3148,7 +3158,7 @@ There are 3 main ways to make a Set::Relation::V1 object immutable. The
 first is explicitly, by invoking its C<freeze_identity> method.  The second
 is implicitly, by invoking its C<which> method I<(this one may be
 reconsidered on users' request)>; this also happens to be done indirectly
-any time a tuple-representing Hash is given to a Set::Relation routine. 
+any time a tuple-representing Hash is given to a Set::Relation routine.
 The third is if another Set::Relation::V1 object is constructed that is
 given the first object as a tuple attribute value; this was done rather
 than cloning the input object under the assumption that most of the time
@@ -3235,7 +3245,7 @@ from relational operations, that new object starts out with no indexes
 copied.
 
 The various Set::Relation::V1 operators know about and look for certain
-special cases of inputs which allow them to short-circuit the operation. 
+special cases of inputs which allow them to short-circuit the operation.
 In some cases they may return certain constant values, or they may just
 return one of their input objects directly.  They may also use a cheaper
 operation than you requested which for example doesn't involve creating or

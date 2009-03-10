@@ -443,7 +443,7 @@ being reference types, that compare on their memory addresses.  Value types
 can't be mutated while the containers that the reference values point to
 can be mutated.  If you want some other class' object treated as a value
 type, make it overload stringification I<(or an alternate/additional
-convention can be devised like Set::Relation's own 'which' convention)>. 
+convention can be devised like Set::Relation's own 'which' convention)>.
 If you want a Hash-ref/tuple or Set::Relation object to be treated as a
 reference type, then pass it around using another layer of reference
 indirection, such as by adding a scalar-ref up front.
@@ -707,16 +707,17 @@ on the value of the C<$want_ord_attrs>, like with the C<members> method.
 
 =head2 slice
 
-C<method slice of Array ($self: Array|Str $attrs, Bool $want_ord_attrs?)>
+C<method slice of Array ($self: Array|Str $attr_names, Bool
+$want_ord_attrs?)>
 
 This method is like C<body> except that the result has just a subset of the
-attributes of the invocant, those named by C<$attrs>.  Unlike using
+attributes of the invocant, those named by C<$attr_names>.  Unlike using
 C<projection> followed by C<body> to do this, any duplicate subtuples are
 retained in the result of C<slice>.  Each result subtuple is either a Perl
 Hash or a Perl Array depending on the value of the C<$want_ord_attrs>, like
 with C<body>, except that C<$want_ord_attrs> may only be a Bool here; when
 that argument is true, the exported attributes are in the same order as
-specified in C<$attrs>.
+specified in C<$attr_names>.
 
 =head2 attr
 
@@ -765,7 +766,7 @@ zero (that is, it has zero attributes), and false otherwise.
 
 =head2 has_attrs
 
-C<method has_attrs of Bool ($topic: Array|Str $attrs)>
+C<method has_attrs of Bool ($topic: Array|Str $attr_names)>
 
 This functional method results in true iff, for every one of the attribute
 names specified by its argument, its invocant has an attribute with that
@@ -809,7 +810,7 @@ relation.
 
 =head2 has_key
 
-C<method has_key of Bool ($topic: Array|Str $attrs)>
+C<method has_key of Bool ($topic: Array|Str $attr_names)>
 
 This functional method results in true iff its invocant has a (unique) key
 over the subset of its attributes whose names are specified by its
@@ -860,19 +861,19 @@ that aren't being renamed.
 
 =head2 projection
 
-C<method projection of Set::Relation ($topic: Array|Str $attrs)>
+C<method projection of Set::Relation ($topic: Array|Str $attr_names)>
 
 This functional method results in the relational projection of its
 C<$topic> invocant that has just the subset of attributes of C<$topic>
-which are named in its C<$attrs> argument.  As a trivial case, this
-method's result is C<$topic> if C<$attrs> lists all attributes of
-C<$topic>; or, it is a nullary relation if C<$attrs> is empty.  This method
-will fail if C<$attrs> specifies any attribute names that C<$topic> doesn't
-have.
+which are named in its C<$attr_names> argument.  As a trivial case, this
+method's result is C<$topic> if C<$attr_names> lists all attributes of
+C<$topic>; or, it is a nullary relation if C<$attr_names> is empty.  This
+method will fail if C<$attr_names> specifies any attribute names that
+C<$topic> doesn't have.
 
 =head2 cmpl_projection
 
-C<method cmpl_projection of Set::Relation ($topic: Array|Str $attrs)>
+C<method cmpl_projection of Set::Relation ($topic: Array|Str $attr_names)>
 
 This functional method is the same as C<projection> but that it results in
 the complementary subset of attributes of its invocant when given the same
@@ -1038,7 +1039,8 @@ arguments.  See also the C<semidifference> method.
 
 =head2 extension
 
-C<method extension of Set::Relation ($topic: Array|Str $attrs, Code $func)>
+C<method extension of Set::Relation ($topic: Array|Str $attr_names, Code
+$func)>
 
 This functional method results in the relational extension of its C<topic>
 invocant as determined by applying the tuple/Hash-resulting zero-parameter
@@ -1047,19 +1049,19 @@ relation has a heading that is a superset of that of C<$topic>, and its
 body contains the same number of tuples, with all attribute values of
 C<$topic> retained, and possibly extra present, determined as follows; for
 each C<$topic> tuple, the subroutine given in C<$func> results in a second
-tuple when the first tuple is its C<$_> topic; the
-first and second tuples must have no attribute names in common, and the
-result tuple is derived by joining (cross-product) the tuples together.  As
-a trivial case, if C<$func> is defined to unconditionally result in the
-degree-zero tuple, then this method results simply in C<$topic>.  Now,
-C<extension> requires the extra C<$attrs> argument to prevent ambiguity in
-the general case where C<$topic> might have zero tuples, because in that
-situation, C<$func> would never be invoked, and the names of the attributes
-to add to C<$topic> are not known (we don't generally assume that
-C<extension> can reverse-engineer C<$func> to see what attributes it would
-have resulted in).  This method will fail if C<$topic> has at least 1
-tuple and the result of C<$func> does not have matching attribute names to
-those named by C<$attrs>.
+tuple when the first tuple is its C<$_> topic; the first and second tuples
+must have no attribute names in common, and the result tuple is derived by
+joining (cross-product) the tuples together.  As a trivial case, if
+C<$func> is defined to unconditionally result in the degree-zero tuple,
+then this method results simply in C<$topic>.  Now, C<extension> requires
+the extra C<$attr_names> argument to prevent ambiguity in the general case
+where C<$topic> might have zero tuples, because in that situation, C<$func>
+would never be invoked, and the names of the attributes to add to C<$topic>
+are not known (we don't generally assume that C<extension> can
+reverse-engineer C<$func> to see what attributes it would have resulted
+in).  This method will fail if C<$topic> has at least 1 tuple and the
+result of C<$func> does not have matching attribute names to those named by
+C<$attr_names>.
 
 =head2 static_extension
 
@@ -1073,7 +1075,7 @@ are given in the C<$attrs> argument.
 
 =head2 map
 
-C<method map of Set::Relation ($topic: Array|Str $result_attrs, Code
+C<method map of Set::Relation ($topic: Array|Str $result_attr_names, Code
 $func)>
 
 This functional method provides a convenient one-place generalization of
@@ -1093,18 +1095,18 @@ C<$func> is defined to unconditionally result in the same tuple as its own
 C<$topic> argument, then this method results simply in C<$topic>; or, if
 C<$func> is defined to have a static result, then this method's result
 will have just 0..1 tuples.  Now, C<map> requires the extra
-C<$result_attrs> argument to prevent ambiguity in the general case where
-C<$topic> might have zero tuples, because in that situation, C<$func> would
-never be invoked, and the names of the attributes of the result are not
-known (we don't generally assume that C<map> can reverse-engineer C<$func>
-to see what attributes it would have resulted in).  This method will fail
-if C<$topic> has at least 1 tuple and the result of C<$func> does not have
-matching attribute names to those named by C<$result_attrs>.
+C<$result_attr_names> argument to prevent ambiguity in the general case
+where C<$topic> might have zero tuples, because in that situation, C<$func>
+would never be invoked, and the names of the attributes of the result are
+not known (we don't generally assume that C<map> can reverse-engineer
+C<$func> to see what attributes it would have resulted in).  This method
+will fail if C<$topic> has at least 1 tuple and the result of C<$func> does
+not have matching attribute names to those named by C<$result_attr_names>.
 
 =head2 summary
 
 C<method summary of Set::Relation ($topic: Array|Str $group_per, Array|Str
-$result_attrs, Code $summ_func)>
+$result_attr_names, Code $summ_func)>
 
 This functional method provides a convenient context for using aggregate
 functions to derive a per-group summary relation, which is its result, from
@@ -1128,14 +1130,14 @@ C<$topic> relation at once (except by chance of it resolving to 1 group);
 you should instead invoke your summarize-all C<$summ_func> directly, or
 inline it, rather than by way of C<summary>, especially if you want a
 single-tuple result on an empty C<$topic> (which C<summary>) won't do.
-Now, C<summary> requires the extra C<$result_attrs> argument to prevent
-ambiguity in the general case where C<$topic> might have zero tuples,
-because in that situation, C<$summ_func> would never be invoked, and the
-names of the attributes of the result are not known (we don't generally
-assume that C<summary> can reverse-engineer C<$summ_func> to see what
-attributes it would have resulted in).  This method will fail if C<$topic>
-has at least 1 tuple and the result of C<$summ_func> does not have matching
-attribute names to those named by C<$result_attrs>.
+Now, C<summary> requires the extra C<$result_attr_names> argument to
+prevent ambiguity in the general case where C<$topic> might have zero
+tuples, because in that situation, C<$summ_func> would never be invoked,
+and the names of the attributes of the result are not known (we don't
+generally assume that C<summary> can reverse-engineer C<$summ_func> to see
+what attributes it would have resulted in).  This method will fail if
+C<$topic> has at least 1 tuple and the result of C<$summ_func> does not
+have matching attribute names to those named by C<$result_attr_names>.
 
 =head1 Multiple Input Relation Functional Methods
 
@@ -1409,7 +1411,7 @@ to supporting substitutions.
 
 =head2 substitution
 
-C<method substitution of Set::Relation ($topic: Array|Str $attrs, Code
+C<method substitution of Set::Relation ($topic: Array|Str $attr_names, Code
 $func)>
 
 This functional method is similar to C<extension> except that it
@@ -1430,10 +1432,10 @@ C<substitution> could conceivably be implemented such that each result from
 C<$func> is allowed to specify replacement values for different subsets of
 C<$topic> attributes; however, to improve the method's predictability and
 ease of implementation over disparate foundations, C<substitution> requires
-the extra C<$attrs> argument so that users can specify a consistent subset
-that C<$func> will update (possibly to itself).  This method will fail if
-C<$topic> has at least 1 tuple and the result of C<$func> does not have
-matching attribute names to those named by C<$attrs>.
+the extra C<$attr_names> argument so that users can specify a consistent
+subset that C<$func> will update (possibly to itself).  This method will
+fail if C<$topic> has at least 1 tuple and the result of C<$func> does not
+have matching attribute names to those named by C<$attr_names>.
 
 =head2 static_substitution
 
@@ -1447,15 +1449,15 @@ attributes; the new attribute values are given in the C<$attrs> argument.
 =head2 subst_in_restr
 
 C<method subst_in_restr of Set::Relation ($topic: Code $restr_func,
-Array|Str $subst_attrs, Code $subst_func)>
+Array|Str $subst_attr_names, Code $subst_func)>
 
 This functional method is like C<substitution> except that it only
 transforms a subset of the tuples of C<$topic> rather than all of them.  It
 is a short-hand for first separating the tuples of C<$topic> into 2 groups
 where those passed by a relational restriction (defined by C<$restr_func>)
-are then transformed (defined by C<$subst_attrs> and C<$subst_func>), then
-the result of the substitution is unioned with the un-transformed group.
-See also the C<subst_in_semijoin> method, which is a simpler-syntax
+are then transformed (defined by C<$subst_attr_names> and C<$subst_func>),
+then the result of the substitution is unioned with the un-transformed
+group.  See also the C<subst_in_semijoin> method, which is a simpler-syntax
 alternative for C<subst_in_restr> in its typical usage where restrictions
 are composed simply of anded or ored tests for attribute value equality.
 
@@ -1470,7 +1472,7 @@ is to C<substitution>.  See also the C<static_subst_in_semijoin> method.
 =head2 subst_in_semijoin
 
 C<method subst_in_semijoin of Set::Relation ($topic: Set::Relation $restr,
-Array|Str $subst_attrs, Code $subst_func)>
+Array|Str $subst_attr_names, Code $subst_func)>
 
 This functional method is like C<subst_in_restr> except that the subset of
 the tuples of C<$topic> to be transformed is determined by those matched by
