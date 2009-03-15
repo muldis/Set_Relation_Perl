@@ -48,6 +48,12 @@
     or 'new' or relational operations will start out with no 'keys' for
     simplicity; presumably an upcoming V2 will be different.
 
+    * (Relation.pm, V1.pm)  Added new functional method "classification"
+    which is sort of a cross between "restriction" and "group"; it uses a
+    Perl subroutine argument to partition a relation's tuples into an
+    arbitrary number of groups.  It is named after Perl 6's "classify"
+    operator, and is like List::MoreUtil's "part" function.
+
     * (Relation.pm, V1.pm)  Other minor updates and fixes.
 
 2009-02-13   Darren Duncan <perl@DarrenDuncan.net>

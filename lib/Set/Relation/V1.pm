@@ -1457,6 +1457,78 @@ sub cmpl_restriction {
 
 ###########################################################################
 
+sub classification {
+    my ($topic, $func, $class_attr_name, $group_attr_name) = @_;
+
+    $topic->_assert_valid_func_arg( 'classification', '$func', $func );
+    $topic->_assert_valid_atnm_arg(
+        'classification', '$class_attr_name', $class_attr_name );
+    $topic->_assert_valid_atnm_arg(
+        'classification', '$group_attr_name', $group_attr_name );
+
+    my $result = $topic->new();
+
+    $result->_heading(
+        {$class_attr_name => undef, $group_attr_name => undef} );
+    $result->_degree( 2 );
+
+    if ($topic->is_empty()) {
+        # An empty $topic means an empty result.
+        # So result body is already correct.
+        return $result;
+    }
+
+    my $topic_h = $topic->_heading();
+    my $topic_degree = $topic->degree();
+    my $topic_b = $topic->_body();
+
+    my $tuples_per_class = {};
+
+    for my $topic_t_ident_str (CORE::keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_ident_str};
+        my $class;
+        {
+            local $_ = $topic->_export_nfmt_tuple( $topic_t );
+            $class = $func->();
+        }
+        my $class_ident_str = $topic->_ident_str( $class );
+        if (!exists $tuples_per_class->{$class_ident_str}) {
+            $tuples_per_class->{$class_ident_str} = [$class, []];
+        }
+        push @{$tuples_per_class->{$class_ident_str}->[1]},
+            [$topic_t, $topic_t_ident_str];
+    }
+
+    my $result_b = $result->_body();
+    for my $class_ident_str (CORE::keys %{$tuples_per_class}) {
+        my ($class, $tuples_in_class)
+            = @{$tuples_per_class->{$class_ident_str}};
+
+        my $inner_r = $topic->new();
+        $inner_r->_heading( $topic_h );
+        $inner_r->_degree( $topic_degree );
+        my $inner_b = $inner_r->_body();
+        for my $topic_t_w_ident (@{$tuples_in_class}) {
+            my ($topic_t, $topic_t_ident_str) = @{$topic_t_w_ident};
+            $inner_b->{$topic_t_ident_str} = $topic_t;
+        }
+        $inner_r->_cardinality( scalar @{$tuples_in_class} );
+        my $outer_atvl = [$inner_r, $inner_r->which()];
+
+        my $result_t = {
+            $class_attr_name => [$class, $class_ident_str],
+            $group_attr_name => $outer_atvl,
+        };
+        my $result_t_ident_str = $topic->_ident_str( $result_t );
+        $result_b->{$result_t_ident_str} = $result_t;
+    }
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
+
+    return $result;
+}
+
+###########################################################################
+
 sub extension {
     my ($topic, $attr_names, $func) = @_;
 

@@ -47,6 +47,7 @@ use warnings FATAL => 'all';
     requires 'restriction';
     requires 'restriction_and_cmpl';
     requires 'cmpl_restriction';
+    requires 'classification';
     requires 'extension';
     requires 'static_extension';
     requires 'map';
@@ -1024,10 +1025,11 @@ equality.
 C<method restriction_and_cmpl of Array ($topic: Code $func)>
 
 This functional method performs a 2-way partitioning of all the tuples of
-C<$topic> and results in a 2-element Perl Array whose 2 element values are
-each Set::Relation objects; the first and second elements are what
-C<restriction> and C<cmpl_restriction>, respectively, would result in when
-having the same invocant and argument.
+C<$topic> and results in a 2-element Perl Array whose element values are
+each Set::Relation objects that have the same heading as C<$topic> and
+complementary subsets of its q/tuples; the first and second elements are
+what C<restriction> and C<cmpl_restriction>, respectively, would result in
+when having the same invocant and argument.
 
 =head2 cmpl_restriction
 
@@ -1036,6 +1038,28 @@ C<method cmpl_restriction of Set::Relation ($topic: Code $func)>
 This functional method is the same as C<restriction> but that it results in
 the complementary subset of tuples of C<$topic> when given the same
 arguments.  See also the C<semidifference> method.
+
+=head2 classification
+
+C<method classification of Set::Relation ($topic: Code $func, Str
+$class_attr_name, Str $group_attr_name)>
+
+This functional method conceptually is to C<restriction> what C<group> is
+to C<semijoin>.  It classifies the tuples of C<$topic> into N groups using
+the zero-parameter Perl subroutine reference given in C<$func>, such that
+any distinct tuples are in a common group if the subroutine given in
+C<$func> results in the same value when given either of those tuples as its
+C<$_> topic.  This method conceptually is a short-hand for first extending
+C<$topic> with a new attribute whose name is given in C<$class_attr_name>,
+whose value per tuple is determined from C<$topic> using C<$func>, and then
+grouping that result relation on all of its original attributes, with the
+post-group RVA having the name given in C<$group_attr_name>; the result of
+C<classification> is a binary relation whose 2 attributes have the names
+given in C<$class_attr_name> and C<$group_attr_name>.  This method is
+intended for use when you want to partition a relation's tuples into an
+arbitrary number of groups using arbitrary criteria, in contrast with
+C<restriction> where you are dividing into exactly 2 groups (and returning
+one) using arbitrary criteria.
 
 =head2 extension
 
@@ -1261,9 +1285,10 @@ I<antijoin> or I<anti-semijoin>.
 C<method semijoin_and_diff of Array ($source: Set::Relation $filter)>
 
 This functional method performs a 2-way partitioning of all the tuples of
-C<$source> and results in a 2-element Perl Array whose 2 element values are
-each Set::Relation objects; the first and second elements are what
-C<semijoin> and C<semidifference>, respectively, would result in when
+C<$source> and results in a 2-element Perl Array whose element values are
+each Set::Relation objects that have the same heading as C<$source> and
+complementary subsets of its q/tuples; the first and second elements are
+what C<semijoin> and C<semidifference>, respectively, would result in when
 having the same invocant and argument.
 
 =head2 semijoin
