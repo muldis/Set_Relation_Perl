@@ -9,6 +9,12 @@
     * Updated external dependencies: Moose/etc to version 0.72, Class::MOP
     to version 0.78.
 
+    * (Set_Relation_5(0_Synopsis|1_Database_in_Depth_Example).t)  Updated
+    the test suite internals to make them more modular; in each test file,
+    refactored all the actual tests into a subroutine, so the set can be
+    defined once and reinvoked for each bundled Set::Relation-doing class,
+    when more than one of those (others besides V1.pm) come to exist.
+
     * (Relation.pm)  Updated all 10 methods of the Set::Relation role that
     had a "Array|Str"-typed parameter named "(|\w+_)attrs" and renamed said
     parameter to "(|\w+_)attr_names"; any similarly named parameters that
