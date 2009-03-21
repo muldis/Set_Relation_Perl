@@ -9,56 +9,26 @@
     * Updated external dependencies: Moose/etc to version 0.72, Class::MOP
     to version 0.78.
 
-    * (Set_Relation_5(0_Synopsis|1_Database_in_Depth_Example).t)  Updated
+    * (Set_Relation_5[0_Synopsis|1_Database_in_Depth_Example].t)  Updated
     the test suite internals to make them more modular; in each test file,
     refactored all the actual tests into a subroutine, so the set can be
     defined once and reinvoked for each bundled Set::Relation-doing class,
     when more than one of those (others besides V1.pm) come to exist.
 
     * (Relation.pm)  Updated all 10 methods of the Set::Relation role that
-    had a "Array|Str"-typed parameter named "(|\w+_)attrs" and renamed said
-    parameter to "(|\w+_)attr_names"; any similarly named parameters that
+    had a "Array|Str"-typed parameter named "[|\w+_]attrs" and renamed said
+    parameter to "[|\w+_]attr_names"; any similarly named parameters that
     were of some other type, such as "Hash", kept their old names.  This
     change should make the parameters more self-documenting, since "attrs"
     names now tend to have both attribute names and values, where as
     "attr_names" have just names.  The changed 10 methods were: "slice",
-    "has_attrs", "(|cmpl_)projection", "extension", "map", "summary",
-    "substitution", "subst_in_(restr|semijoin)".  Note that, since all of
+    "has_attrs", "[|cmpl_]projection", "extension", "map", "summary",
+    "substitution", "subst_in_[restr|semijoin]".  Note that, since all of
     the methods' parameters are positional (rather than named), the change
     is completely backwards compatible.
 
     * (V1.pm)  Updated the Set::Relation::V1 class to rename some of its
     public method parameters as per the previous change item.
-
-    * (Relation.pm)  Updated the Set::Relation role in several closely
-    related ways.  Added new named parameter to 'new' named 'keys' which
-    lets one define candidate keys for the new relation which the 'members'
-    argument must satisfy for 'new' to succeed; a variety of format
-    examples were included in the documentation.  Also updated the accessor
-    method 'export_for_new' and added the accessor method 'keys' which take
-    care of dumping the list of candidate keys that the relation object is
-    known to satisfy.  Also added new functional method 'has_key' which
-    tests whether the invocant relation has a certain candidate key; if it
-    does, this method also has the side effect of remembering the fact for
-    'keys' to return later.  It was also documented in a few places that
-    these 'keys' are not constraints against future object mutations, and
-    so they might be invalidated by 'insert' later for mutable objects.
-    The ::Mutable role inherits all these changes.
-
-    * (V1.pm)  Updated the Set::Relation::V1 class to implement the new
-    features required by the above change item.  The current implementation
-    also is such that while 'insert' is smart enough to clear a candidate
-    key iff it becomes violated, 'delete' will not restore or add any
-    candidate key; you must invoke 'has_key' later to do that.  Also, like
-    with indexes, all new relations derived from others such as by 'clone'
-    or 'new' or relational operations will start out with no 'keys' for
-    simplicity; presumably an upcoming V2 will be different.
-
-    * (Relation.pm, V1.pm)  Added new functional method "classification"
-    which is sort of a cross between "restriction" and "group"; it uses a
-    Perl subroutine argument to partition a relation's tuples into an
-    arbitrary number of groups.  It is named after Perl 6's "classify"
-    operator, and is like List::MoreUtil's "part" function.
 
     * (Relation.pm, V1.pm)  Other minor updates and fixes.
 
@@ -261,7 +231,7 @@
     is always at least one operand which is the invocant.
 
     * (Relation.pm)  Updated each of the 4 functional methods
-    ["(|cmpl_)restriction", "extension", "map"] to remove its optional
+    ["[|cmpl_]restriction", "extension", "map"] to remove its optional
     "assuming" parameter.  This parameter was a fossil left over from the
     original Muldis D versions of these operators that the Perl version was
     ported from; the parameter was necessary in Muldis D to have reasonable
@@ -270,7 +240,7 @@
     keep the Perl simpler; it also sets the stage for the next change item.
 
     * (Relation.pm, Set_Relation_51_Database_in_Depth_Example.t)  Updated
-    each of the 4 functional methods ["(|cmpl_)restriction", "extension",
+    each of the 4 functional methods ["[|cmpl_]restriction", "extension",
     "map"] so that the Perl routine supplied as its "func" argument is now
     assumed to have zero parameters rather than one, and the Perl routine
     is now supplied its input tuple/Hash in $_, same as how Perl's built-in
@@ -279,8 +249,8 @@
     make it more DWIM.
 
     * (Relation.pm, Set_Relation_51_Database_in_Depth_Example.t)  Updated
-    each of the 4 functional methods ["(|cmpl_)projection", "extension",
-    "map"] so that the "(|result_)attrs" parameter can also take a Str
+    each of the 4 functional methods ["[|cmpl_]projection", "extension",
+    "map"] so that the "[|result_]attrs" parameter can also take a Str
     argument rather than just an Array of Str argument.  Thanks to Todd
     Hepler for proposing that design change to "projection" to make it more
     DWIM.  Also updated the Set::Relation constructor submethod similarly,
