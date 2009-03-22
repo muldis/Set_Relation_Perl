@@ -126,14 +126,16 @@ This document describes Set::Relation version 0.7.0 for Perl 5.
 
 =head1 SYNOPSIS
 
-    use Set::Relation::V1;
+    use Set::Relation::V2;
 
-    my $r1 = Set::Relation::V1->new( [ [ 'x', 'y' ], [
+    sub relation { return Set::Relation::V2->new( @_ ); }
+
+    my $r1 = relation( [ [ 'x', 'y' ], [
         [ 4, 7 ],
         [ 3, 2 ],
     ] ] );
 
-    my $r2 = Set::Relation::V1->new( [
+    my $r2 = relation( [
         { 'y' => 5, 'z' => 6 },
         { 'y' => 2, 'z' => 1 },
         { 'y' => 2, 'z' => 4 },
@@ -230,11 +232,7 @@ Despite initial design efforts to help Set::Relation's execution (CPU, RAM,
 etc) performance, this module is still assumed to be very un-optimized for
 its conceptually low level task of data crunching.  It generally applies
 the same internal representation and algorithms regardless of the actual
-structure or meaning of the data, and regardless of the amount of data.  It
-generically applies certain up-front costs in the form of data hashing that
-should both speed up later operations and simplify the implementation code
-of most operations, but any actual performance benefit depends a lot on
-actual use, and it may even have a net loss of execution performance.
+structure or meaning of the data, and regardless of the amount of data.
 
 This module is still assumed to be considerably, perhaps an order or three
 of magnitude, slower than a hand-rolled task-specific solution.  If your
@@ -450,6 +448,56 @@ I<Note: Were this Perl 6, we would basically just use the standard C<WHICH>
 method or C<===> comparison operator to determine identity; but Perl 5
 doesn't have that so we do the aforementioned instead.>
 
+=head2 Matters of Correctness
+
+Set::Relation explicitly supports implementations that want to give users
+the option of trading away specified guarantees of correctness for their
+user-visible behaviour in exchange for better performance (by letting the
+implementation be lazier), when an approximation is good enough for the
+users' purposes.  But Set::Relation requires that implementations fully
+guarantee correctness (insomuch as they reasonably have the power to do so)
+for their user-visible behaviour by default, and only trade this for
+laziness when users explicitly request the trade.  Of course,
+implementations can always be internally lazy as they see fit where it
+doesn't impact their externally observable semantics, so the trading
+feature under discussion here is only about behaviour that users can see.
+
+For example, some Set::Relation routines have the optional boolean
+parameter C<$allow_dup_tuples> which, when explicitly given a true
+argument, tells the implementation it may save itself the work of comparing
+tuples with each other to test their uniqueness, and so multiple instances
+of the same tuple value may be treated in user-visible ways as being
+distinct when they logically aren't.  For example, if users construct a
+Set::Relation-doing object using a list of tuples that contains duplicates,
+then by default that object's C<cardinality> method will only result in a
+count of distinct tuples, and that object's C<body> method will only result
+in a list containing distinct tuples, because a relation is logically a set
+of tuples not a multiset; but if a true C<$allow_dup_tuples> argument is
+given to either method, then the result may include duplicates as if the
+class were implementing a multiset rather than a set.  Similarly, internal
+duplicates can arise out of none in many other situations than object
+construction, such as from a relational union or projection.  Note that
+because Perl closures in general are not pure and so might have different
+results or side-effects from repeated invocations with the same arguments,
+the C<$allow_dup_tuples> parameter is also present on methods like
+C<restriction> and C<extension>.
+
+It is important to realize that even when users explicitly waive a need for
+correctness, the implementation may choose to ignore them and give the
+fully correct answers anyway.  Trade-off options should not be construed as
+having a guarantee to not do the normal behaviour, and in particular a true
+C<$allow_dup_tuples> argument will I<not> guarantee consistent logical
+multiset behaviour.
+
+It is an design decision feature of Set::Relation that flags like
+C<$allow_dup_tuples> are only available directly on the methods where they
+would take effect just on specific invocations, and are not available as
+object attributes.  This is to prevent action at a distance, where one spot
+in code requesting less accuracy doesn't also cause other spots in code
+using the same objects to also get less accuracy.  And so you may have to
+use said flag explicitly multiple times to get continuous such laziness
+through the lifecycle of an object or chain of derived objects.
+
 =head2 Matters of Mutability
 
 This module defines both the Set::Relation role and the
@@ -483,7 +531,7 @@ Note:  See also the L</Appropriate Uses For Set::Relation> section above.
 
 The matters of performance can differ significantly depending on the
 implementation class, so see each of their corresponding documentation
-sections for details: L<Set::Relation::V1>.
+sections for details: L<Set::Relation::V1>, L<Set::Relation::V2>.
 
 =head1 INTERFACE
 
@@ -530,17 +578,19 @@ L<HDMD_Perl5_Tiny|Muldis::D::Dialect::HDMD_Perl5_Tiny> for a C<QRelation>
 are just ordinary Perl values and not HDMD_Perl5_Tiny value literal nodes.
 Examples are:
 
+    sub relation { return $sr_class_name->new( @_ ); }
+
     # Zero attrs + zero tuples.
-    my $r1 = Set::Relation->new( [] );
+    my $r1 = relation( [] );
 
     # 3 attrs + zero tuples.
-    my $r2 = Set::Relation->new( [ 'x', 'y', 'z' ] );
+    my $r2 = relation( [ 'x', 'y', 'z' ] );
 
     # Zero attrs + 1 tuple
-    my $r3 = Set::Relation->new( [ {} ] );
+    my $r3 = relation( [ {} ] );
 
     # Named attributes format: 3 attrs + 1 tuple.
-    my $r4 = Set::Relation->new( [
+    my $r4 = relation( [
         {
             'login_name' => 'hartmark',
             'login_pass' => 'letmein',
@@ -549,7 +599,7 @@ Examples are:
     ] );
 
     # Ordered attributes format: 2 attrs + 1 tuple.
-    my $r5 = Set::Relation->new( [ [ 'name', 'age' ], [
+    my $r5 = relation( [ [ 'name', 'age' ], [
         [ 'Michelle', 17 ],
     ] ] );
 
@@ -557,13 +607,13 @@ However, Set::Relation also supports a few additional, trivial formats for
 C<$members>, as illustrated here:
 
     # The default value of a Set::Relation has zero attrs + zero tuples.
-    my $r6 = Set::Relation->new();
+    my $r6 = relation();
 
     # One way to clone a relation object.
-    my $r7 = Set::Relation->new( $r5 );
+    my $r7 = relation( $r5 );
 
     # Abbreviated way to specify 1 attr + zero tuples.
-    my $r8 = Set::Relation->new( 'value' );
+    my $r8 = relation( 'value' );
 
 =head1 Accessor Methods
 
@@ -572,12 +622,13 @@ attributes, essentially the reverse process of an object constructor.
 
 =head2 export_for_new
 
-C<method export_for_new of Hash ($self: Bool|Array $want_ord_attrs?)>
+C<method export_for_new of Hash ($self: Bool|Array $want_ord_attrs?, Bool
+$allow_dup_tuples?)>
 
 This method results in a Perl Hash value whose Hash keys and values you can
 give as argument names and values to C<new> such that the latter would
-result in a clone of this method's invocant, as if you had used C<clone>.
-In other words, C<export_for_new> is the inverse function to C<new>.  If
+result in a clone of this method's invocant.  In other words,
+C<export_for_new> is the inverse function to C<new>.  If
 this method's C<$want_ord_attrs> argument is missing or false, then the
 exported attributes and tuples are in named attributes format; if that
 argument is true, they are in ordered attributes format.  If
@@ -586,7 +637,9 @@ attribute names matching those of the invocant, and so it is specifying
 what order the attributes should be in the result; otherwise if
 C<$want_ord_attrs> is the Perl string value C<1>, then the result will have
 its attributes ordered alphabetically by attribute name (see the C<heading>
-method docs for why that is the case).
+method docs for why that is the case).  If this method's
+C<$allow_dup_tuples> argument is true, then the result may have
+duplicate tuples; otherwise (the default), all result tuples are unique.
 
 =head2 which
 
@@ -608,7 +661,8 @@ C<which> (code inside said classes will do conversions as needed).
 
 =head2 members
 
-C<method members of Array ($self: Bool|Array $want_ord_attrs?)>
+C<method members of Array ($self: Bool|Array $want_ord_attrs?, Bool
+$allow_dup_tuples?)>
 
 This method results in a Perl Array value as per the 'members' element of
 the Hash that C<export_for_new> would result in with the same invocant and
@@ -630,16 +684,18 @@ method is currently an alias for the C<attr_names> functional method.
 
 =head2 body
 
-C<method body of Array ($self: Bool|Array $want_ord_attrs?)>
+C<method body of Array ($self: Bool|Array $want_ord_attrs?, Bool
+$allow_dup_tuples?)>
 
 This method results in a Perl Array value whose elements are the tuples of
 the invocant.  Each tuple is either a Perl Hash or a Perl Array depending
-on the value of the C<$want_ord_attrs>, like with the C<members> method.
+on the value of the C<$want_ord_attrs>, like with the C<members> method;
+similarly C<$allow_dup_tuples> affects the result as with C<members>.
 
 =head2 slice
 
 C<method slice of Array ($self: Array|Str $attr_names, Bool
-$want_ord_attrs?)>
+$want_ord_attrs?, Bool $allow_dup_tuples?)>
 
 This method is like C<body> except that the result has just a subset of the
 attributes of the invocant, those named by C<$attr_names>.  Unlike using
@@ -648,11 +704,14 @@ retained in the result of C<slice>.  Each result subtuple is either a Perl
 Hash or a Perl Array depending on the value of the C<$want_ord_attrs>, like
 with C<body>, except that C<$want_ord_attrs> may only be a Bool here; when
 that argument is true, the exported attributes are in the same order as
-specified in C<$attr_names>.
+specified in C<$attr_names>.  If this method's C<$allow_dup_tuples>
+argument is false (the default), then the result is guaranteed to have the
+same number of elements as the cardinality of C<$self>; otherwise, the
+result may have more elements.
 
 =head2 attr
 
-C<method attr of Array ($self: Str $name)>
+C<method attr of Array ($self: Str $name, Bool $allow_dup_tuples?)>
 
 This method is like C<slice> except that the result has exactly one of the
 invocant's attributes, the one named by C<$name>, and each result element
@@ -706,10 +765,14 @@ accessor method.
 
 =head2 cardinality
 
-C<method cardinality of UInt ($topic:)>
+C<method cardinality of UInt ($topic: Bool $allow_dup_tuples?)>
 
 This functional method results in the cardinality of its invocant (that is,
-the count of tuples its body has).
+the count of tuples its body has).  If this method's C<$allow_dup_tuples>
+argument is false (the default), then the result is guaranteed to only
+count the number of distinct tuples of C<$topic>; otherwise, the result may
+be higher, unless the invocant is empty, in which case the result is still
+exactly zero.
 
 =head2 is_empty
 
@@ -912,7 +975,8 @@ at all levels, of some specified part).
 
 =head2 restriction
 
-C<method restriction of Set::Relation ($topic: Code $func)>
+C<method restriction of Set::Relation ($topic: Code $func, Bool
+$allow_dup_tuples?)>
 
 This functional method results in the relational restriction of its
 C<$topic> invocant as determined by applying the Bool-resulting
@@ -927,31 +991,35 @@ relation with the same heading.  Note that this operation is also
 legitimately known as I<where>.  See also the C<semijoin> method, which is
 a simpler-syntax alternative for C<restriction> in its typical usage where
 restrictions are composed simply of anded or ored tests for attribute value
-equality.
+equality.  If this method's C<$allow_dup_tuples> argument is false (the
+default), then C<$func> is guaranteed to be invoked just once per distinct
+tuple of C<$topic>; otherwise it might be multiple invoked.
 
 =head2 restriction_and_cmpl
 
-C<method restriction_and_cmpl of Array ($topic: Code $func)>
+C<method restriction_and_cmpl of Array ($topic: Code $func, Bool
+$allow_dup_tuples?)>
 
 This functional method performs a 2-way partitioning of all the tuples of
 C<$topic> and results in a 2-element Perl Array whose element values are
 each Set::Relation objects that have the same heading as C<$topic> and
 complementary subsets of its tuples; the first and second elements are
 what C<restriction> and C<cmpl_restriction>, respectively, would result in
-when having the same invocant and argument.
+when having the same invocant and arguments.
 
 =head2 cmpl_restriction
 
-C<method cmpl_restriction of Set::Relation ($topic: Code $func)>
+C<method cmpl_restriction of Set::Relation ($topic: Code $func, Bool
+$allow_dup_tuples?)>
 
 This functional method is the same as C<restriction> but that it results in
 the complementary subset of tuples of C<$topic> when given the same
-arguments.  See also the C<semidifference> method.
+invocant and arguments.  See also the C<semidifference> method.
 
 =head2 extension
 
 C<method extension of Set::Relation ($topic: Array|Str $attr_names, Code
-$func)>
+$func, Bool $allow_dup_tuples?)>
 
 This functional method results in the relational extension of its C<topic>
 invocant as determined by applying the tuple/Hash-resulting zero-parameter
@@ -972,7 +1040,9 @@ are not known (we don't generally assume that C<extension> can
 reverse-engineer C<$func> to see what attributes it would have resulted
 in).  This method will fail if C<$topic> has at least 1 tuple and the
 result of C<$func> does not have matching attribute names to those named by
-C<$attr_names>.
+C<$attr_names>.  If this method's C<$allow_dup_tuples> argument is false
+(the default), then C<$func> is guaranteed to be invoked just once per
+distinct tuple of C<$topic>; otherwise it might be multiple invoked.
 
 =head2 static_extension
 
@@ -987,7 +1057,7 @@ are given in the C<$attrs> argument.
 =head2 map
 
 C<method map of Set::Relation ($topic: Array|Str $result_attr_names, Code
-$func)>
+$func, Bool $allow_dup_tuples?)>
 
 This functional method provides a convenient one-place generalization of
 per-tuple transformations that otherwise might require the chaining of up
@@ -1013,11 +1083,14 @@ not known (we don't generally assume that C<map> can reverse-engineer
 C<$func> to see what attributes it would have resulted in).  This method
 will fail if C<$topic> has at least 1 tuple and the result of C<$func> does
 not have matching attribute names to those named by C<$result_attr_names>.
+If this method's C<$allow_dup_tuples> argument is false (the default), then
+C<$func> is guaranteed to be invoked just once per distinct tuple of
+C<$topic>; otherwise it might be multiple invoked.
 
 =head2 summary
 
 C<method summary of Set::Relation ($topic: Array|Str $group_per, Array|Str
-$result_attr_names, Code $summ_func)>
+$result_attr_names, Code $summ_func, Bool $allow_dup_tuples?)>
 
 This functional method provides a convenient context for using aggregate
 functions to derive a per-group summary relation, which is its result, from
@@ -1048,7 +1121,10 @@ and the names of the attributes of the result are not known (we don't
 generally assume that C<summary> can reverse-engineer C<$summ_func> to see
 what attributes it would have resulted in).  This method will fail if
 C<$topic> has at least 1 tuple and the result of C<$summ_func> does not
-have matching attribute names to those named by C<$result_attr_names>.
+have matching attribute names to those named by C<$result_attr_names>.  If
+this method's C<$allow_dup_tuples> argument is false (the default), then
+C<$summ_func> is guaranteed to be invoked just once per distinct post-group
+tuple; otherwise it might be multiple invoked.
 
 =head1 Multiple Input Relation Functional Methods
 
@@ -1324,7 +1400,7 @@ to supporting substitutions.
 =head2 substitution
 
 C<method substitution of Set::Relation ($topic: Array|Str $attr_names, Code
-$func)>
+$func, Bool $allow_dup_tuples?)>
 
 This functional method is similar to C<extension> except that it
 substitutes values of existing relation attributes rather than adding new
@@ -1347,7 +1423,10 @@ ease of implementation over disparate foundations, C<substitution> requires
 the extra C<$attr_names> argument so that users can specify a consistent
 subset that C<$func> will update (possibly to itself).  This method will
 fail if C<$topic> has at least 1 tuple and the result of C<$func> does not
-have matching attribute names to those named by C<$attr_names>.
+have matching attribute names to those named by C<$attr_names>.  If this
+method's C<$allow_dup_tuples> argument is false (the default), then
+C<$func> is guaranteed to be invoked just once per distinct tuple of
+C<$topic>; otherwise it might be multiple invoked.
 
 =head2 static_substitution
 
@@ -1361,7 +1440,7 @@ attributes; the new attribute values are given in the C<$attrs> argument.
 =head2 subst_in_restr
 
 C<method subst_in_restr of Set::Relation ($topic: Code $restr_func,
-Array|Str $subst_attr_names, Code $subst_func)>
+Array|Str $subst_attr_names, Code $subst_func, Bool $allow_dup_tuples?)>
 
 This functional method is like C<substitution> except that it only
 transforms a subset of the tuples of C<$topic> rather than all of them.  It
@@ -1376,7 +1455,7 @@ are composed simply of anded or ored tests for attribute value equality.
 =head2 static_subst_in_restr
 
 C<method static_subst_in_restr of Set::Relation ($topic: Code $restr_func,
-Hash $subst)>
+Hash $subst, Bool $allow_dup_tuples?)>
 
 This functional method is to C<subst_in_restr> what C<static_substitution>
 is to C<substitution>.  See also the C<static_subst_in_semijoin> method.
@@ -1384,7 +1463,7 @@ is to C<substitution>.  See also the C<static_subst_in_semijoin> method.
 =head2 subst_in_semijoin
 
 C<method subst_in_semijoin of Set::Relation ($topic: Set::Relation $restr,
-Array|Str $subst_attr_names, Code $subst_func)>
+Array|Str $subst_attr_names, Code $subst_func, Bool $allow_dup_tuples?)>
 
 This functional method is like C<subst_in_restr> except that the subset of
 the tuples of C<$topic> to be transformed is determined by those matched by
@@ -1442,13 +1521,16 @@ those missing attribute values.
 =head2 outer_join_with_exten
 
 C<method outer_join_with_exten of Set::Relation ($primary: Set::Relation
-$secondary, Code $exten_func)>
+$secondary, Code $exten_func, Bool $allow_dup_tuples?)>
 
 This functional method is the same as C<outer_join_with_static_exten> but
 that the result tuples from non-matches are the result of performing a
 relational extension on the un-matched C<$primary> tuples such that each
 said result tuple is determined by applying the Perl subroutine given in
-C<$exten_func> to each said C<$primary> tuple.
+C<$exten_func> to each said C<$primary> tuple.  If this method's
+C<$allow_dup_tuples> argument is false (the default), then C<$exten_func>
+is guaranteed to be invoked just once per un-matched tuple of
+C<$secondary>; otherwise it might be multiple invoked.
 
 =head1 THE Set::Relation::Mutable ROLE
 

@@ -9,22 +9,25 @@ use Test::More;
 
 plan( 'tests' => 1*18 );
 
+my $sr_class_name;
+sub relation { return $sr_class_name->new( @_ ); }
+
 use Set::Relation::V1;
-main( 'Set::Relation::V1' );
+$sr_class_name = 'Set::Relation::V1';
+validate_sr_class();
 
 ###########################################################################
 
-sub main {
-    my ($class) = @_;
+sub validate_sr_class {
 
 ####
 
-my $r1 = $class->new( [ [ 'x', 'y' ], [
+my $r1 = relation( [ [ 'x', 'y' ], [
     [ 4, 7 ],
     [ 3, 2 ],
 ] ] );
 pass( 'no death from instantiating $r1 w ordered-attrs format members' );
-isa_ok( $r1, $class );
+isa_ok( $r1, $sr_class_name );
 
 my $got_r1_as_nfmt_perl = $r1->members();
 pass( 'no death from extract $r1 members in named-attrs format' );
@@ -40,13 +43,13 @@ is_deeply( $got_r1_as_nfmt_perl, $exp_r1_as_nfmt_perl, q{$r1n val corr} );
 
 ####
 
-my $r2 = $class->new( [
+my $r2 = relation( [
     { 'y' => 5, 'z' => 6 },
     { 'y' => 2, 'z' => 1 },
     { 'y' => 2, 'z' => 4 },
 ] );
 pass( 'no death from instantiating $r2 with named-attrs format members' );
-isa_ok( $r2, $class );
+isa_ok( $r2, $sr_class_name );
 
 my $got_r2_as_ofmt_perl = $r2->members( 1 );
 pass( 'no death from extract $r2 members in named-attrs format' );
@@ -65,7 +68,7 @@ is_deeply( $got_r2_as_ofmt_perl, $exp_r2_as_ofmt_perl, q{$r2o val corr} );
 
 my $r3 = $r1->join( $r2 );
 pass( 'no death from joining $r1 and $r2 to yield $r3' );
-isa_ok( $r3, $class );
+isa_ok( $r3, $sr_class_name );
 
 ####
 

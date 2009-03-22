@@ -9,6 +9,13 @@
     * Updated external dependencies: Moose/etc to version 0.72, Class::MOP
     to version 0.78.
 
+    * (Set_Relation_5[0_Synopsis|1_Database_in_Depth_Example].t,
+    Relation.pm)  Updated the test suite and the SYNOPSIS docs and the
+    'new' submethod docs to avoid the repetition of the
+    Set::Relation-implementing class name by creating a one-liner-per-file
+    wrapper function over 'new' named 'relation' which is now used for all
+    methodless S::R object creation.
+
     * (Set_Relation_5[0_Synopsis|1_Database_in_Depth_Example].t)  Updated
     the test suite internals to make them more modular; in each test file,
     refactored all the actual tests into a subroutine, so the set can be
@@ -29,6 +36,29 @@
 
     * (V1.pm)  Updated the Set::Relation::V1 class to rename some of its
     public method parameters as per the previous change item.
+
+    * (Relation.pm)  Added new performance-enhancing feature to the
+    Set::Relation role, in the form of a new optional boolean parameter
+    "allow_dup_tuples" for each of 17 methods.  Each Set::Relation-doing
+    class has the option of honoring a true argument for that parameter by
+    avoiding work involved in eliminating duplicate tuples and thereby
+    having possibly different results or side-effects on said method
+    invocations, due to what are partially multiset semantics being used
+    instead of set semantics.  So users can explicitly request, on a
+    case-by-case basis, to get possibly less accurate but "good enough"
+    results in exchange for better performance.  Also added new
+    documentation sub-section "Matters of Correctness" under the
+    DESCRIPTION main section, that explains the feature.  The changed 17
+    methods were: "export_for_new", "members", "body", "slice", "attr",
+    "cardinality", "[|cmpl_]restriction", "restriction_and_cmpl",
+    "extension", "map", "summary", "substitution"
+    "[|static_]subst_in_restr", "subst_in_semijoin",
+    "outer_join_with_exten".
+
+    * (V1.pm)  Updated the Set::Relation::V1 class to add some public
+    method parameters as per the previous change item.  However, this
+    change is a no-op since the parameters are ignored in every case, with
+    the semantics being the same as if they were never given arguments.
 
     * (Relation.pm, V1.pm)  Other minor updates and fixes.
 

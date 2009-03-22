@@ -16,7 +16,7 @@ use Set::Relation 0.007000;
 
     use Moose 0.72;
 
-#    use namespace::clean -except => 'meta';
+    use namespace::clean -except => 'meta';
 
     has '_heading' => (
         is  => 'rw',
@@ -247,7 +247,7 @@ sub BUILD {
 ###########################################################################
 
 sub export_for_new {
-    my ($self, $want_ord_attrs) = @_;
+    my ($self, $want_ord_attrs, $allow_dup_tuples) = @_;
     return {
         'members' => $self->_members(
             'export_for_new', '$want_ord_attrs', $want_ord_attrs ),
@@ -281,7 +281,7 @@ sub which {
 ###########################################################################
 
 sub members {
-    my ($self, $want_ord_attrs) = @_;
+    my ($self, $want_ord_attrs, $allow_dup_tuples) = @_;
     return $self->_members(
         'members', '$want_ord_attrs', $want_ord_attrs );
 }
@@ -324,7 +324,7 @@ sub heading {
 ###########################################################################
 
 sub body {
-    my ($self, $want_ord_attrs) = @_;
+    my ($self, $want_ord_attrs, $allow_dup_tuples) = @_;
 
     my $body = $self->_body();
 
@@ -366,7 +366,7 @@ sub _normalize_true_want_ord_attrs_arg {
 ###########################################################################
 
 sub slice {
-    my ($self, $attr_names, $want_ord_attrs) = @_;
+    my ($self, $attr_names, $want_ord_attrs, $allow_dup_tuples) = @_;
 
     (my $proj_h, $attr_names)
         = $self->_atnms_hr_from_assert_valid_atnms_arg(
@@ -400,7 +400,7 @@ sub slice {
 ###########################################################################
 
 sub attr {
-    my ($self, $name) = @_;
+    my ($self, $name, $allow_dup_tuples) = @_;
 
     $self->_assert_valid_atnm_arg( 'attr', '$name', $name );
     confess q{attr(): Bad $name arg; that attr name}
@@ -1273,7 +1273,7 @@ sub _transitive_closure_of_xy {
 ###########################################################################
 
 sub restriction {
-    my ($topic, $func) = @_;
+    my ($topic, $func, $allow_dup_tuples) = @_;
 
     $topic->_assert_valid_func_arg( 'restriction', '$func', $func );
 
@@ -1303,7 +1303,7 @@ sub restriction {
 }
 
 sub restriction_and_cmpl {
-    my ($topic, $func) = @_;
+    my ($topic, $func, $allow_dup_tuples) = @_;
     $topic->_assert_valid_func_arg(
         'restriction_and_cmpl', '$func', $func );
     return $topic->_restriction_and_cmpl( $func );
@@ -1344,7 +1344,7 @@ sub _restriction_and_cmpl {
 }
 
 sub cmpl_restriction {
-    my ($topic, $func) = @_;
+    my ($topic, $func, $allow_dup_tuples) = @_;
 
     $topic->_assert_valid_func_arg( 'cmpl_restriction', '$func', $func );
 
@@ -1376,7 +1376,7 @@ sub cmpl_restriction {
 ###########################################################################
 
 sub extension {
-    my ($topic, $attr_names, $func) = @_;
+    my ($topic, $attr_names, $func, $allow_dup_tuples) = @_;
 
     (my $exten_h, $attr_names)
         = $topic->_atnms_hr_from_assert_valid_atnms_arg(
@@ -1478,7 +1478,7 @@ sub _static_extension {
 ###########################################################################
 
 sub map {
-    my ($topic, $result_attr_names, $func) = @_;
+    my ($topic, $result_attr_names, $func, $allow_dup_tuples) = @_;
 
     (my $result_h, $result_attr_names)
         = $topic->_atnms_hr_from_assert_valid_atnms_arg(
@@ -1524,7 +1524,8 @@ sub map {
 ###########################################################################
 
 sub summary {
-    my ($topic, $group_per, $result_attr_names, $summ_func) = @_;
+    my ($topic, $group_per, $result_attr_names, $summ_func,
+        $allow_dup_tuples) = @_;
 
     (my $group_per_h, $group_per)
         = $topic->_atnms_hr_from_assert_valid_atnms_arg(
@@ -2561,7 +2562,7 @@ sub limit {
 ###########################################################################
 
 sub substitution {
-    my ($topic, $attr_names, $func) = @_;
+    my ($topic, $attr_names, $func, $allow_dup_tuples) = @_;
     (my $subst_h, $attr_names)
         = $topic->_atnms_hr_from_assert_valid_subst_args(
         'substitution', '$attr_names', '$func', $attr_names, $func );
@@ -2683,7 +2684,8 @@ sub _static_substitution {
 ###########################################################################
 
 sub subst_in_restr {
-    my ($topic, $restr_func, $subst_attr_names, $subst_func) = @_;
+    my ($topic, $restr_func, $subst_attr_names, $subst_func,
+        $allow_dup_tuples) = @_;
 
     $topic->_assert_valid_func_arg(
         'subst_in_restr', '$restr_func', $restr_func );
@@ -2705,7 +2707,7 @@ sub subst_in_restr {
 ###########################################################################
 
 sub static_subst_in_restr {
-    my ($topic, $restr_func, $subst) = @_;
+    my ($topic, $restr_func, $subst, $allow_dup_tuples) = @_;
 
     $topic->_assert_valid_func_arg(
         'static_subst_in_restr', '$restr_func', $restr_func );
@@ -2724,7 +2726,8 @@ sub static_subst_in_restr {
 ###########################################################################
 
 sub subst_in_semijoin {
-    my ($topic, $restr, $subst_attr_names, $subst_func) = @_;
+    my ($topic, $restr, $subst_attr_names, $subst_func, $allow_dup_tuples)
+        = @_;
 
     $restr = $topic->_normalize_relation_arg(
         'subst_in_semijoin', '$restr', $restr );
@@ -2860,7 +2863,7 @@ sub outer_join_with_static_exten {
 ###########################################################################
 
 sub outer_join_with_exten {
-    my ($primary, $secondary, $exten_func) = @_;
+    my ($primary, $secondary, $exten_func, $allow_dup_tuples) = @_;
 
     $secondary = $primary->_normalize_relation_arg(
         'outer_join_with_exten', '$secondary', $secondary );
@@ -3163,6 +3166,12 @@ mutate the result object of a relational operation, as you might then be
 mutating an argument too.  So take appropriate precautions and do
 appropriate tests where necessary so that you don't have undesired
 side-effects in your program.
+
+Note that due to an aspect of its design, using the Set::Relation-defined
+parameter C<$allow_dup_tuples> on any applicable method of
+C<Set::Relation::V1> will have no effect since uniqueness comparisons for
+tuples are always done eagerly on storage and there is no mechanism to have
+even partial multiset semantics for performance.
 
 =head1 INTERFACE
 
