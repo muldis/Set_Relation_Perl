@@ -60,7 +60,7 @@
     change is a no-op since the parameters are ignored in every case, with
     the semantics being the same as if they were never given arguments.
 
-    * (Relation.pm, V1.pm)  Other minor updates and fixes.
+    * (Relation.pm, V1.pm)  Various other small updates and fixes.
 
 2009-02-13   Darren Duncan <perl@DarrenDuncan.net>
 

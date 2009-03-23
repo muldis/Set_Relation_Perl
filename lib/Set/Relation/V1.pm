@@ -12,28 +12,30 @@ use Set::Relation 0.007000;
     use version 0.74; our $VERSION = qv('0.7.0');
 
     use Scalar::Util 'refaddr';
-    use List::MoreUtils 'any', 'all', 'notall';
+    use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
     use Moose 0.72;
 
     use namespace::clean -except => 'meta';
 
     has '_heading' => (
-        is  => 'rw',
-        isa => 'HashRef',
+        is      => 'rw',
+        isa     => 'HashRef',
             # One elem per attribute:
                 # hkey is Str attr name
                 # hval is undef+unused
+        default => sub { {} },
     );
     has '_degree' => (
-        is     => 'rw',
-        isa    => 'Int',
-        reader => 'degree',
+        is      => 'rw',
+        isa     => 'Int',
+        reader  => 'degree',
+        default => 0,
     );
 
     has '_body' => (
-        is  => 'rw',
-        isa => 'HashRef',
+        is      => 'rw',
+        isa     => 'HashRef',
             # One elem per tuple:
                 # hkey is Str identity generated from all tuple attrs
                 # hval is HashRef that is the coll of separate tuple attrs:
@@ -41,11 +43,13 @@ use Set::Relation 0.007000;
                     # hval is 2-elem ArrayRef that is the tuple attr value
                         # [0] is actual attr value
                         # [1] is Str identity generated from attr value
+        default => sub { {} },
     );
     has '_cardinality' => (
-        is     => 'rw',
-        isa    => 'Int',
-        reader => 'cardinality',
+        is      => 'rw',
+        isa     => 'Int',
+        reader  => 'cardinality',
+        default => 0,
     );
 
     # This may only be made defined when _has_frozen_identity is true.
@@ -134,17 +138,16 @@ sub BUILD {
 
     # If we get here, $members is either a Set::Relation::V1 or an ary-ref.
 
-    my ($heading, $body);
-
     if (blessed $members and $members->isa( __PACKAGE__ )) {
         # We will just copy another Set::Relation::V1 object's member-set.
-        $heading = {%{$members->_heading()}};
-        $body = {%{$members->_body()}};
+        $self->_heading( {%{$members->_heading()}} );
+        $self->_degree( $members->degree() );
+        $self->_body( {%{$members->_body()}} );
+        $self->_cardinality( $members->cardinality() );
     }
     elsif (@{$members} == 0) {
         # Input specifies zero attrs + zero tuples.
-        $heading = {};
-        $body = {};
+        # No-op; attr defaults are fine.
     }
     else {
         # Input specifies at least one attr or at least one tuple.
@@ -155,23 +158,22 @@ sub BUILD {
         }
         elsif (!ref $member0) {
             # Input spec at least 1 attr + zero tuples.
-            for my $atnm (@{$members}) {
-                confess q{new(): Bad :$members arg; it has a non-ref elem,}
-                        . q{ indicating it should just be a list of attr}
-                        . q{ names, but at least one other elem is}
-                        . q{ undefined or is a ref.}
-                    if !defined $atnm or ref $atnm;
-            }
-            $heading = {CORE::map { ($_ => undef) } @{$members}};
+            # Each $members elem is expected to be an atnm.
+            confess q{new(): Bad :$members arg; it has a non-ref elem,}
+                    . q{ indicating it should just be a list of attr}
+                    . q{ names, but at least one other elem is}
+                    . q{ undefined or is a ref.}
+                if notall { defined $_ and !ref $_ } @{$members};
             confess q{new(): Bad :$members arg; it specifies a list of}
                     . q{ attr names with at least one duplicated name.}
-                if (keys %{$heading}) != @{$members};
-            $body = {};
+                if (uniq @{$members}) != @{$members};
+            $self->_heading( {CORE::map { ($_ => undef) } @{$members}} );
+            $self->_degree( scalar @{$members} );
         }
         elsif (ref $member0 eq 'HASH') {
             # Input spec at least 1 tuple, in named attr format.
-            $heading = {CORE::map { ($_ => undef) } keys %{$member0}};
-            $body = {};
+            my $heading = {CORE::map { ($_ => undef) } keys %{$member0}};
+            my $body = {};
             for my $tuple (@{$members}) {
                 confess q{new(): Bad :$members arg; it has a hash-ref}
                         . q{ elem, indicating it should just be a list of}
@@ -188,6 +190,10 @@ sub BUILD {
                 $tuple = $self->_import_nfmt_tuple( $tuple );
                 $body->{$self->_ident_str( $tuple )} = $tuple;
             }
+            $self->_heading( $heading );
+            $self->_degree( scalar keys %{$heading} );
+            $self->_body( $body );
+            $self->_cardinality( scalar keys %{$body} );
         }
         elsif (ref $member0 eq 'ARRAY') {
             # Input is in ordered attr format.
@@ -198,36 +204,38 @@ sub BUILD {
                     . q{ :$members doesn't have exactly 2 elements or its}
                     . q{ second element isn't also an array-ref.}
                 if @{$members} != 2 or ref $member1 ne 'ARRAY';
-            for my $atnm (@{$member0}) {
-                confess q{new(): Bad :$members array-ref arg array-ref}
-                        . q{ first elem; it should be just be a list of}
-                        . q{ attr names, but at least one name}
-                        . q{ is undefined or is a ref.}
-                    if !defined $atnm or ref $atnm;
-            }
-            $heading = {CORE::map { ($_ => undef) } @{$member0}};
+            # Each $member0 elem is expected to be an atnm.
+            confess q{new(): Bad :$members array-ref arg array-ref}
+                    . q{ first elem; it should be just be a list of}
+                    . q{ attr names, but at least one name}
+                    . q{ is undefined or is a ref.}
+                if notall { defined $_ and !ref $_ } @{$member0};
             confess q{new(): Bad :$members arg; it specifies a list of}
                     . q{ attr names with at least one duplicated name.}
-                if (keys %{$heading}) != @{$member0};
-            $body = {};
+                if (uniq @{$member0}) != @{$member0};
+            my $heading = {CORE::map { ($_ => undef) } @{$member0}};
+            my $body = {};
             for my $tuple (@{$member1}) {
                 confess q{new(): Bad :$members array-ref arg array-ref}
                         . q{ second elem; at least one elem isn't an}
                         . q{ array-ref, or that doesn't have the same}
                         . q{ count of elems as the :$members first elem.}
                     if ref $tuple ne 'ARRAY' or @{$tuple} != @{$member0};
-                for my $atvl (@{$tuple}) {
-                    confess q{new(): Bad :$members arg;}
-                            . q{ at least one of its array-ref elems}
-                            . q{ is such that there exists circular refs}
-                            . q{ between its tuple-valued components.}
-                        if ref $atvl eq 'HASH'
-                            and $self->_tuple_arg_has_circular_refs(
-                                $atvl );
-                }
+                # Each $tuple elem is expected to be an atvl.
+                confess q{new(): Bad :$members arg;}
+                        . q{ at least one of its array-ref elems}
+                        . q{ is such that there exists circular refs}
+                        . q{ between its tuple-valued components.}
+                    if any { ref $_ eq 'HASH'
+                            and $self->_tuple_arg_has_circular_refs( $_ )
+                        } (@{$tuple});
                 $tuple = $self->_import_ofmt_tuple( $member0, $tuple );
                 $body->{$self->_ident_str( $tuple )} = $tuple;
             }
+            $self->_heading( $heading );
+            $self->_degree( scalar keys %{$heading} );
+            $self->_body( $body );
+            $self->_cardinality( scalar keys %{$body} );
         }
         else {
             confess q{new(): Bad :$members arg; it is an array-ref but it}
@@ -235,11 +243,6 @@ sub BUILD {
                 . q{ an array-ref nor a hash-ref.};
         }
     }
-
-    $self->_heading( $heading );
-    $self->_degree( scalar keys %{$heading} );
-    $self->_body( $body );
-    $self->_cardinality( scalar keys %{$body} );
 
     return;
 }
@@ -288,30 +291,22 @@ sub members {
 
 sub _members {
     my ($self, $rtn_nm, $arg_nm, $want_ord_attrs) = @_;
-
-    my $heading = $self->_heading();
-    my $body = $self->_body();
-
-    my $members;
-
     if ($want_ord_attrs) {
         my $ord_attr_names = $self->_normalize_true_want_ord_attrs_arg(
             $rtn_nm, $arg_nm, $want_ord_attrs );
-        $members = [$ord_attr_names, [CORE::map {
+        return [$ord_attr_names, [CORE::map {
                 $self->_export_ofmt_tuple( $ord_attr_names, $_ )
-            } values %{$body}]];
+            } values %{$self->_body()}]];
     }
-    elsif ((keys %{$body}) == 0) {
+    elsif ((keys %{$self->_body()}) == 0) {
         # We have zero tuples, just export attr names.
-        $members = [keys %{$heading}];
+        return [sort keys %{$self->_heading()}];
     }
     else {
         # We have at least one tuple, export in named-attr format.
-        $members = [CORE::map { $self->_export_nfmt_tuple( $_ ) }
-            values %{$body}];
+        return [CORE::map { $self->_export_nfmt_tuple( $_ ) }
+            values %{$self->_body()}];
     }
-
-    return $members;
 }
 
 ###########################################################################
@@ -325,21 +320,16 @@ sub heading {
 
 sub body {
     my ($self, $want_ord_attrs, $allow_dup_tuples) = @_;
-
-    my $body = $self->_body();
-
     if ($want_ord_attrs) {
         my $ord_attr_names = $self->_normalize_true_want_ord_attrs_arg(
             'body', '$want_ord_attrs', $want_ord_attrs );
-        $body = [CORE::map { $self->_export_ofmt_tuple(
-            $ord_attr_names, $_ ) } values %{$body}];
+        return [CORE::map { $self->_export_ofmt_tuple(
+            $ord_attr_names, $_ ) } values %{$self->_body()}];
     }
     else {
-        $body = [CORE::map { $self->_export_nfmt_tuple( $_ ) }
-            values %{$body}];
+        return [CORE::map { $self->_export_nfmt_tuple( $_ ) }
+            values %{$self->_body()}];
     }
-
-    return $body;
 }
 
 ###########################################################################
@@ -357,7 +347,7 @@ sub _normalize_true_want_ord_attrs_arg {
         if not (!ref $want_ord_attrs and $want_ord_attrs eq '1'
             or ref $want_ord_attrs eq 'ARRAY'
                 and @{$want_ord_attrs} == @{$attr_names}
-                and !grep { !exists $heading->{$_} } @{$want_ord_attrs});
+                and all { exists $heading->{$_} } @{$want_ord_attrs});
 
     return
         $want_ord_attrs eq '1' ? [sort @{$attr_names}] : $want_ord_attrs;
@@ -377,24 +367,20 @@ sub slice {
             . q{ isn't a subset of the invocant's heading.}
         if @{$proj_only} > 0;
 
-    my $body = $self->_body();
-
     if ($want_ord_attrs) {
         confess q{slice(): Bad $want_ord_attrs arg; it must be}
                 . q{ either undefined|false or the scalar value '1'.}
             if $want_ord_attrs ne '1';
-        $body = [CORE::map { $self->_export_ofmt_tuple(
-            $attr_names, $_ ) } values %{$body}];
+        return [CORE::map { $self->_export_ofmt_tuple(
+            $attr_names, $_ ) } values %{$self->_body()}];
     }
     else {
-        $body = [CORE::map {
+        return [CORE::map {
             my $t = $_;
             $t = {CORE::map { ($_ => $t->{$_}) } @{$attr_names}};
             $self->_export_nfmt_tuple( $t );
-        } values %{$body}];
+        } values %{$self->_body()}];
     }
-
-    return $body;
 }
 
 ###########################################################################
@@ -664,7 +650,7 @@ sub insertion {
     if (@{$t} == 0) {
         return $r;
     }
-    return $r->clone()->_insert( $t );
+    return $r->new( $r )->_insert( $t );
 }
 
 sub deletion {
@@ -673,7 +659,7 @@ sub deletion {
     if (@{$t} == 0) {
         return $r;
     }
-    return $r->clone()->_delete( $t );
+    return $r->new( $r )->_delete( $t );
 }
 
 ###########################################################################
@@ -683,17 +669,14 @@ sub rename {
 
     confess q{rename(): Bad $map arg; it must be a hash-ref.}
         if ref $map ne 'HASH';
-    for my $atnm (values %{$map}) {
-        confess q{rename(): Bad $map arg;}
-                . q{ its hash elem values should be just be a list of attr}
-                . q{ names, but at least one name is undefined or isa ref.}
-            if !defined $atnm or ref $atnm;
-    }
-    my $inv_map = {reverse %{$map}};
+    confess q{rename(): Bad $map arg;}
+            . q{ its hash elem values should be just be a list of attr}
+            . q{ names, but at least one name is undefined or isa ref.}
+        if notall { defined $_ and !ref $_ } values %{$map};
     confess q{rename(): Bad $map arg;}
             . q{ its hash elem values specify a list of}
             . q{ attr names with at least one duplicated name.}
-        if (keys %{$inv_map}) != (keys %{$map});
+        if (uniq values %{$map}) != (keys %{$map});
 
     my ($topic_attrs_to_ren, $topic_attrs_no_ren, $map_hkeys_not_in_topic)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $map );
@@ -704,7 +687,7 @@ sub rename {
     my ($map_hvals_same_as_topic_no_ren, undef, undef)
         = $topic->_ptn_conj_and_disj(
             {CORE::map { ($_ => undef) } @{$topic_attrs_no_ren}},
-            $inv_map );
+            {reverse %{$map}} );
     confess q{rename(): Bad $map arg; at least one value of that hash,}
             . q{ a new name for an attr of the invocant to rename,}
             . q{ duplicates an attr of the invocant not being renamed.}
@@ -1080,7 +1063,7 @@ sub _group {
             $inner_r->_cardinality( scalar keys %{$matched_topic_b} );
             my $outer_atvl = [$inner_r, $inner_r->which()];
 
-            my $any_mtpt = any { 1 } values %{$matched_topic_b};
+            my $any_mtpt = (values %{$matched_topic_b})[0];
 
             my $result_t = {
                 $outer => $outer_atvl,
@@ -1286,15 +1269,15 @@ sub restriction {
     my $topic_b = $topic->_body();
     my $result_b = $result->_body();
 
-    for my $tuple_ident_str (keys %{$topic_b}) {
-        my $tuple = $topic_b->{$tuple_ident_str};
+    for my $topic_t_ident_str (keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_ident_str};
         my $is_matched;
         {
-            local $_ = $topic->_export_nfmt_tuple( $tuple );
+            local $_ = $topic->_export_nfmt_tuple( $topic_t );
             $is_matched = $func->();
         }
         if ($is_matched) {
-            $result_b->{$tuple_ident_str} = $tuple;
+            $result_b->{$topic_t_ident_str} = $topic_t;
         }
     }
     $result->_cardinality( scalar keys %{$result_b} );
@@ -1323,18 +1306,18 @@ sub _restriction_and_cmpl {
     my $pass_result_b = $pass_result->_body();
     my $fail_result_b = $fail_result->_body();
 
-    for my $tuple_ident_str (keys %{$topic_b}) {
-        my $tuple = $topic_b->{$tuple_ident_str};
+    for my $topic_t_ident_str (keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_ident_str};
         my $is_matched;
         {
-            local $_ = $topic->_export_nfmt_tuple( $tuple );
+            local $_ = $topic->_export_nfmt_tuple( $topic_t );
             $is_matched = $func->();
         }
         if ($is_matched) {
-            $pass_result_b->{$tuple_ident_str} = $tuple;
+            $pass_result_b->{$topic_t_ident_str} = $topic_t;
         }
         else {
-            $fail_result_b->{$tuple_ident_str} = $tuple;
+            $fail_result_b->{$topic_t_ident_str} = $topic_t;
         }
     }
     $pass_result->_cardinality( scalar keys %{$pass_result_b} );
@@ -1357,15 +1340,15 @@ sub cmpl_restriction {
     my $topic_b = $topic->_body();
     my $result_b = $result->_body();
 
-    for my $tuple_ident_str (keys %{$topic_b}) {
-        my $tuple = $topic_b->{$tuple_ident_str};
+    for my $topic_t_ident_str (keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_ident_str};
         my $is_matched;
         {
-            local $_ = $topic->_export_nfmt_tuple( $tuple );
+            local $_ = $topic->_export_nfmt_tuple( $topic_t );
             $is_matched = $func->();
         }
         if (!$is_matched) {
-            $result_b->{$tuple_ident_str} = $tuple;
+            $result_b->{$topic_t_ident_str} = $topic_t;
         }
     }
     $result->_cardinality( scalar keys %{$result_b} );
@@ -1584,7 +1567,7 @@ sub summary {
         }
         $inner_r->_cardinality( scalar keys %{$matched_topic_b} );
 
-        my $any_mtpt = any { 1 } values %{$matched_topic_b};
+        my $any_mtpt = (values %{$matched_topic_b})[0];
         my $group_per_t = {CORE::map { ($_ => $any_mtpt->{$_}) }
             @{$topic_attrs_no_gr}};
 
@@ -1621,18 +1604,16 @@ sub _atnms_hr_from_assert_valid_atnms_arg {
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it must be an array-ref or a defined non-ref.}
         if ref $atnms ne 'ARRAY';
-    for my $atnm (@{$atnms}) {
-        confess qq{$rtn_nm(): Bad $arg_nm arg;}
-                . q{ it should be just be a list of attr names,}
-                . q{ but at least one name is undefined or is a ref.}
-            if !defined $atnm or ref $atnm;
-    }
-    my $heading = {CORE::map { ($_ => undef) } @{$atnms}};
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ it should be just be a list of attr names,}
+            . q{ but at least one name is undefined or is a ref.}
+        if notall { defined $_ and !ref $_ } @{$atnms};
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it specifies a list of}
             . q{ attr names with at least one duplicated name.}
-        if (keys %{$heading}) != @{$atnms};
+        if (uniq @{$atnms}) != @{$atnms};
 
+    my $heading = {CORE::map { ($_ => undef) } @{$atnms}};
     return ($heading, $atnms);
 }
 
@@ -1730,8 +1711,7 @@ sub is_subset {
     $look_for = $look_in->_normalize_same_heading_relation_arg(
         'is_subset', '$look_for', $look_for );
     my $look_in_b = $look_in->_body();
-    return all { exists $look_in_b->{$_} }
-        keys %{$look_for->_body()};
+    return all { exists $look_in_b->{$_} } keys %{$look_for->_body()};
 }
 
 sub is_proper_subset {
@@ -1740,8 +1720,7 @@ sub is_proper_subset {
         'is_proper_subset', '$look_for', $look_for );
     my $look_in_b = $look_in->_body();
     return ($look_for->cardinality() < $look_in->cardinality()
-        and all { exists $look_in_b->{$_} }
-            keys %{$look_for->_body()});
+        and all { exists $look_in_b->{$_} } keys %{$look_for->_body()});
 }
 
 sub is_disjoint {
@@ -1781,7 +1760,7 @@ sub _union {
 
     my $largest = shift @{$inputs};
 
-    my $result = $largest->clone();
+    my $result = $largest->new( $largest );
 
     my $smaller_bs = [CORE::map { $_->_body() } @{$inputs}];
     my $result_b = $result->_body();
@@ -1826,7 +1805,7 @@ sub exclusion {
 
     my $largest = shift @{$inputs};
 
-    my $result = $largest->clone();
+    my $result = $largest->new( $largest );
 
     my $smaller_bs = [CORE::map { $_->_body() } @{$inputs}];
     my $result_b = $result->_body();
@@ -2105,18 +2084,23 @@ sub _join {
         return $topic;
     }
 
-    if (any { $_->is_empty() } $topic, @{$others}) {
+    my $inputs = [$topic, @{$others}];
+
+    if (any { $_->is_empty() } @{$inputs}) {
         # At least one input has zero tuples; so does result.
-        my $rslt_h = {CORE::map { %{$_->_heading()} } $topic, @{$others}};
-        return $topic->new( [keys %{$rslt_h}] );
+        my $result = $topic->new();
+        my $result_h = {CORE::map { %{$_->_heading()} } @{$inputs}};
+        $result->_heading( $result_h );
+        $result->_degree( scalar keys %{$result_h} );
+        return $result;
     }
 
     # If we get here, all inputs have at least one tuple.
 
-    my $inputs = [
+    $inputs = [
         sort { $a->cardinality() <=> $b->cardinality() }
         grep { !$_->is_nullary() } # filter out identity value instances
-        $topic, @{$others}];
+        @{$inputs}];
 
     if (@{$inputs} == 0) {
         # All inputs were the identity value; so is result.
@@ -2222,29 +2206,29 @@ sub product {
         return $topic;
     }
 
-    my $seen_attrs = {%{$topic->_heading()}};
-    for my $other (@{$others}) {
-        for my $atnm (keys %{$others->_heading()}) {
-            confess q{product(): Bad $others arg;}
-                    . q{ one of its elems has an attr name duplicated by}
-                    . q{ either the invocant or another $others elem.}
-                if exists $seen_attrs->{$atnm};
-            $seen_attrs->{$atnm} = undef;
-        }
-    }
+    my $inputs = [$topic, @{$others}];
 
-    if (any { $_->is_empty() } $topic, @{$others}) {
+    my $attr_names = [CORE::map { keys %{$_->_heading()} } @{$inputs}];
+
+    confess q{product(): Bad $others arg;}
+            . q{ one of its elems has an attr name duplicated by}
+            . q{ either the invocant or another $others elem.}
+        if (uniq @{$attr_names}) != @{$attr_names};
+
+    if (any { $_->is_empty() } @{$inputs}) {
         # At least one input has zero tuples; so does result.
-        my $rslt_h = {CORE::map { %{$_->_heading()} } $topic, @{$others}};
-        return $topic->new( [keys %{$rslt_h}] );
+        my $result = $topic->new();
+        $result->_heading( {CORE::map { ($_ => undef) } @{$attr_names}} );
+        $result->_degree( scalar @{$attr_names} );
+        return $result;
     }
 
     # If we get here, all inputs have at least one tuple.
 
-    my $inputs = [
+    $inputs = [
         sort { $a->cardinality() <=> $b->cardinality() }
         grep { !$_->is_nullary() } # filter out identity value instances
-        $topic, @{$others}];
+        @{$inputs}];
 
     if (@{$inputs} == 0) {
         # All inputs were the identity value; so is result.
@@ -2279,9 +2263,9 @@ sub _regular_product {
     my $lg_b = $lg->_body();
     my $result_b = {};
 
-    for my $t1 (values %{$sm_b}) {
-        for my $t2 (values %{$lg_b}) {
-            my $result_t = {%{$t1}, %{$t2}};
+    for my $sm_t (values %{$sm_b}) {
+        for my $lg_t (values %{$lg_b}) {
+            my $result_t = {%{$sm_t}, %{$lg_t}};
             $result_b->{$topic->_ident_str( $result_t )} = $result_t;
         }
     }
