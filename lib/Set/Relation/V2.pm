@@ -40,6 +40,14 @@ use Set::Relation 0.007000;
         default => sub { {} },
     );
 
+    # Note, this flag expressly only applies to the object it is a
+    # member of, and it doesn't say anything about this object's RVAs.
+    has '_is_known_dup_free' => (
+        is      => 'rw',
+        isa     => 'Bool',
+        default => 0,
+    );
+
     has '_which' => (
         is  => 'rw',
         isa => 'Maybe[Str]',
@@ -158,7 +166,7 @@ sub BUILD {
                         . q{ itself or its tuple-valued components.}
                     if $self->_tuple_arg_has_circular_refs( $tuple );
                 $tuple = $self->_import_nfmt_tuple( $tuple );
-                $body->{$self->_ident_str( $tuple )} = $tuple;
+                $body->{refaddr $tuple} = $tuple;
             }
             $self->_heading( $heading );
             $self->_body( $body );
@@ -198,7 +206,7 @@ sub BUILD {
                             and $self->_tuple_arg_has_circular_refs( $_ )
                         } (@{$tuple});
                 $tuple = $self->_import_ofmt_tuple( $member0, $tuple );
-                $body->{$self->_ident_str( $tuple )} = $tuple;
+                $body->{refaddr $tuple} = $tuple;
             }
             $self->_heading( $heading );
             $self->_body( $body );
@@ -351,7 +359,7 @@ sub attr {
         if !exists $self->_heading()->{$name};
 
     return [CORE::map {
-            my $atvl = $_->{$name}->[0];
+            my $atvl = $_->{$name};
             if (ref $atvl eq 'HASH') {
                 $atvl = $self->_export_nfmt_tuple( $atvl );
             }
@@ -468,7 +476,7 @@ sub _ident_str {
         if (ref $value eq 'HASH') {
             my $vstr = CORE::join q{,}, CORE::map {
                 my $atnm = 'Atnm:' . (length $_) . ':<' . $_ . '>';
-                my $atvl = $value->{$_}->[1];
+                my $atvl = $self->_ident_str( $value->{$_} );
                 "N=$atnm;V=$atvl";
             } sort keys %{$value};
             $ident_str = 'Tuple:' . (length $vstr) . ':{' . $vstr . '}';
@@ -509,7 +517,7 @@ sub _import_nfmt_tuple {
                 and !$atvl->isa( __PACKAGE__ )) {
             $atvl = $self->new( $atvl );
         }
-        ($atnm => [$atvl, $self->_ident_str( $atvl )]);
+        ($atnm => $atvl);
     } keys %{$tuple}};
 }
 
@@ -517,7 +525,7 @@ sub _export_nfmt_tuple {
     my ($self, $tuple) = @_;
     return {CORE::map {
         my $atnm = $_;
-        my $atvl = $tuple->{$_}->[0];
+        my $atvl = $tuple->{$_};
         if (ref $atvl eq 'HASH') {
             $atvl = $self->_export_nfmt_tuple( $atvl );
         }
@@ -538,14 +546,14 @@ sub _import_ofmt_tuple {
                 and !$atvl->isa( __PACKAGE__ )) {
             $atvl = $self->new( $atvl );
         }
-        ($atnm => [$atvl, $self->_ident_str( $atvl )]);
+        ($atnm => $atvl);
     } 0..$#{$atnms}};
 }
 
 sub _export_ofmt_tuple {
     my ($self, $atnms, $tuple) = @_;
     return [CORE::map {
-        my $atvl = $tuple->{$_}->[0];
+        my $atvl = $tuple->{$_};
         if (ref $atvl eq 'HASH') {
             $atvl = $self->_export_nfmt_tuple( $atvl );
         }
@@ -584,6 +592,9 @@ sub attr_names {
 
 sub cardinality {
     my ($topic, $allow_dup_tuples) = @_;
+    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
+#        $topic->_index_body_with_dup_purge();
+    }
     return scalar keys %{$topic->_body()};
 }
 
@@ -690,8 +701,8 @@ sub _rename {
         my $result_t = {CORE::map {
                 ($map->{$_} => $topic_t->{$_})
             } keys %{$topic_t}};
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t_refaddr = refaddr $result_t;
+        $result_b->{$result_t_refaddr} = $result_t;
     }
 
     return $result;
@@ -740,9 +751,9 @@ sub _projection {
     for my $topic_t (values %{$topic->_body()}) {
         my $result_t
             = {CORE::map { ($_ => $topic_t->{$_}) } @{$attr_names}};
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        if (!exists $result_b->{$result_t_ident_str}) {
-            $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t_refaddr = refaddr $result_t;
+        if (!exists $result_b->{$result_t_refaddr}) {
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
 
@@ -808,33 +819,32 @@ sub _wrap {
         # Wrap zero $topic attrs as new attr.
         # So this is a simple static extension of $topic w static $outer.
         my $inner_t = {};
-        my $outer_atvl = [$inner_t, $topic->_ident_str( $inner_t )];
+        my $outer_atvl = $inner_t;
         for my $topic_t (values %{$topic_b}) {
             my $result_t = {$outer => $outer_atvl, {%{$topic_t}}};
-            my $result_t_ident_str = $topic->_ident_str( $result_t );
-            $result_b->{$result_t_ident_str} = $result_t;
+            my $result_t_refaddr = refaddr $result_t;
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
     elsif (@{$topic_attrs_no_wr} == 0) {
         # Wrap all $topic attrs as new attr.
-        for my $topic_t_ident_str (keys %{$topic_b}) {
-            my $result_t = {$outer => [$topic_b->{$topic_t_ident_str},
-                $topic_t_ident_str]};
-            my $result_t_ident_str = $topic->_ident_str( $result_t );
-            $result_b->{$result_t_ident_str} = $result_t;
+        for my $topic_t_refaddr (keys %{$topic_b}) {
+            my $result_t = {$outer => $topic_b->{$topic_t_refaddr}};
+            my $result_t_refaddr = refaddr $result_t;
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
     else {
         # Wrap at least one but not all $topic attrs as new attr.
         for my $topic_t (values %{$topic_b}) {
             my $inner_t = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
-            my $outer_atvl = [$inner_t, $topic->_ident_str( $inner_t )];
+            my $outer_atvl = $inner_t;
             my $result_t = {
                 $outer => $outer_atvl,
                 CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_wr}
             };
-            my $result_t_ident_str = $topic->_ident_str( $result_t );
-            $result_b->{$result_t_ident_str} = $result_t;
+            my $result_t_refaddr = refaddr $result_t;
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
 
@@ -897,7 +907,7 @@ sub unwrap {
     my $topic_b = $topic->_body();
 
     for my $topic_t (values %{$topic_b}) {
-        my $inner_t = $topic_t->{$outer}->[0];
+        my $inner_t = $topic_t->{$outer};
         confess q{unwrap(): Can't unwrap $topic{$outer} because there is}
                 . q{ not a same-heading tuple value for the $outer attr of}
                 . q{ every tuple of $topic whose heading matches $inner.}
@@ -919,7 +929,7 @@ sub unwrap {
         # Only $topic attr is $outer, all result attrs from $outer unwrap.
         for my $topic_t (values %{$topic_b}) {
             my $outer_atvl = $topic_t->{$outer};
-            $result_b->{$outer_atvl->[1]} = $outer_atvl->[0];
+            $result_b->{$topic->_ident_str( $outer_atvl )} = $outer_atvl;
         }
     }
     elsif (@{$inner} == 0) {
@@ -929,19 +939,19 @@ sub unwrap {
             my $result_t = {
                 CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_uwr}
             };
-            my $result_t_ident_str = $topic->_ident_str( $result_t );
-            $result_b->{$result_t_ident_str} = $result_t;
+            my $result_t_refaddr = refaddr $result_t;
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
     else {
         # Result has at least 1 attr from $outer, at least 1 not from it.
         for my $topic_t (values %{$topic_b}) {
             my $result_t = {
-                %{$topic_t->{$outer}->[0]},
+                %{$topic_t->{$outer}},
                 CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_uwr}
             };
-            my $result_t_ident_str = $topic->_ident_str( $result_t );
-            $result_b->{$result_t_ident_str} = $result_t;
+            my $result_t_refaddr = refaddr $result_t;
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
 
@@ -987,19 +997,19 @@ sub _group {
         # So this is a simple static extension of $topic w static $outer.
         my $result_b = $result->_body();
         my $inner_r = $topic->new( [ {} ] );
-        my $outer_atvl = [$inner_r, $inner_r->which()];
+        my $outer_atvl = $inner_r;
         for my $topic_t (values %{$topic->_body()}) {
             my $result_t = {$outer => $outer_atvl, {%{$topic_t}}};
-            my $result_t_ident_str = $topic->_ident_str( $result_t );
-            $result_b->{$result_t_ident_str} = $result_t;
+            my $result_t_refaddr = refaddr $result_t;
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
     elsif (@{$topic_attrs_no_gr} == 0) {
         # Group all $topic attrs as new attr.
         # So $topic is just used as sole attr of sole tuple of result.
-        my $result_t = {$outer => [$topic, $topic->which()]};
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        $result->_body( {$result_t_ident_str => $result_t} );
+        my $result_t = {$outer => $topic};
+        my $result_t_refaddr = refaddr $result_t;
+        $result->_body( {$result_t_refaddr => $result_t} );
     }
     else {
         # Group at least one but not all $topic attrs as new attr.
@@ -1013,9 +1023,9 @@ sub _group {
             for my $topic_t (values %{$matched_topic_b}) {
                 my $inner_t
                     = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
-                $inner_b->{$topic->_ident_str( $inner_t )} = $inner_t;
+                $inner_b->{refaddr $inner_t} = $inner_t;
             }
-            my $outer_atvl = [$inner_r, $inner_r->which()];
+            my $outer_atvl = $inner_r;
 
             my $any_mtpt = (values %{$matched_topic_b})[0];
 
@@ -1023,8 +1033,8 @@ sub _group {
                 $outer => $outer_atvl,
                 CORE::map { ($_ => $any_mtpt->{$_}) } @{$topic_attrs_no_gr}
             };
-            my $result_t_ident_str = $topic->_ident_str( $result_t );
-            $result_b->{$result_t_ident_str} = $result_t;
+            my $result_t_refaddr = refaddr $result_t;
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
 
@@ -1087,7 +1097,7 @@ sub ungroup {
     my $topic_b = $topic->_body();
 
     for my $topic_t (values %{$topic_b}) {
-        my $inner_r = $topic_t->{$outer}->[0];
+        my $inner_r = $topic_t->{$outer};
         confess q{ungroup(): Can't ungroup $topic{$outer} because there is}
                 . q{ not a same-heading relation val for the $outer attr}
                 . q{ of every tuple of $topic whose head matches $inner.}
@@ -1124,8 +1134,8 @@ sub ungroup {
             my $result_t = {
                 CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_ugr}
             };
-            my $result_t_ident_str = $topic->_ident_str( $result_t );
-            $result_b->{$result_t_ident_str} = $result_t;
+            my $result_t_refaddr = refaddr $result_t;
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
     else {
@@ -1134,10 +1144,10 @@ sub ungroup {
         for my $topic_t (@{$topic_tuples_w_nonemp_inn}) {
             my $no_ugr_t = {CORE::map { ($_ => $topic_t->{$_}) }
                 @{$topic_attrs_no_ugr}};
-            my $inner_r = $topic_t->{$outer}->[0];
+            my $inner_r = $topic_t->{$outer};
             for my $inner_t (values %{$inner_r->_body()}) {
                 my $result_t = {%{$inner_t}, %{$no_ugr_t}};
-                $result_b->{$topic->_ident_str( $result_t )} = $result_t;
+                $result_b->{refaddr $result_t} = $result_t;
             }
         }
     }
@@ -1219,15 +1229,15 @@ sub restriction {
     my $topic_b = $topic->_body();
     my $result_b = $result->_body();
 
-    for my $topic_t_ident_str (keys %{$topic_b}) {
-        my $topic_t = $topic_b->{$topic_t_ident_str};
+    for my $topic_t_refaddr (keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_refaddr};
         my $is_matched;
         {
             local $_ = $topic->_export_nfmt_tuple( $topic_t );
             $is_matched = $func->();
         }
         if ($is_matched) {
-            $result_b->{$topic_t_ident_str} = $topic_t;
+            $result_b->{$topic_t_refaddr} = $topic_t;
         }
     }
 
@@ -1255,18 +1265,18 @@ sub _restriction_and_cmpl {
     my $pass_result_b = $pass_result->_body();
     my $fail_result_b = $fail_result->_body();
 
-    for my $topic_t_ident_str (keys %{$topic_b}) {
-        my $topic_t = $topic_b->{$topic_t_ident_str};
+    for my $topic_t_refaddr (keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_refaddr};
         my $is_matched;
         {
             local $_ = $topic->_export_nfmt_tuple( $topic_t );
             $is_matched = $func->();
         }
         if ($is_matched) {
-            $pass_result_b->{$topic_t_ident_str} = $topic_t;
+            $pass_result_b->{$topic_t_refaddr} = $topic_t;
         }
         else {
-            $fail_result_b->{$topic_t_ident_str} = $topic_t;
+            $fail_result_b->{$topic_t_refaddr} = $topic_t;
         }
     }
 
@@ -1287,15 +1297,15 @@ sub cmpl_restriction {
     my $topic_b = $topic->_body();
     my $result_b = $result->_body();
 
-    for my $topic_t_ident_str (keys %{$topic_b}) {
-        my $topic_t = $topic_b->{$topic_t_ident_str};
+    for my $topic_t_refaddr (keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_refaddr};
         my $is_matched;
         {
             local $_ = $topic->_export_nfmt_tuple( $topic_t );
             $is_matched = $func->();
         }
         if (!$is_matched) {
-            $result_b->{$topic_t_ident_str} = $topic_t;
+            $result_b->{$topic_t_refaddr} = $topic_t;
         }
     }
 
@@ -1345,8 +1355,8 @@ sub _extension {
             'extension', '$func', '$attr_names', $exten_t, $exten_h );
         $exten_t = $topic->_import_nfmt_tuple( $exten_t );
         my $result_t = {%{$topic_t}, %{$exten_t}};
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t_refaddr = refaddr $result_t;
+        $result_b->{$result_t_refaddr} = $result_t;
     }
 
     return $result;
@@ -1393,8 +1403,8 @@ sub _static_extension {
 
     for my $topic_t (values %{$topic->_body()}) {
         my $result_t = {%{$topic_t}, %{$attrs}};
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t_refaddr = refaddr $result_t;
+        $result_b->{$result_t_refaddr} = $result_t;
     }
 
     return $result;
@@ -1435,9 +1445,9 @@ sub map {
         $topic->_assert_valid_tuple_result_of_func_arg(
             'map', '$func', '$result_attr_names', $result_t, $result_h );
         $result_t = $topic->_import_nfmt_tuple( $result_t );
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        if (!exists $result_b->{$result_t_ident_str}) {
-            $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t_refaddr = refaddr $result_t;
+        if (!exists $result_b->{$result_t_refaddr}) {
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
 
@@ -1501,7 +1511,7 @@ sub summary {
         my $inner_b = $inner_r->_body();
         for my $topic_t (values %{$matched_topic_b}) {
             my $inner_t = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
-            $inner_b->{$topic->_ident_str( $inner_t )} = $inner_t;
+            $inner_b->{refaddr $inner_t} = $inner_t;
         }
 
         my $any_mtpt = (values %{$matched_topic_b})[0];
@@ -1520,9 +1530,9 @@ sub summary {
             '$summ_func', '$result_attr_names', $result_t, $result_h );
         $result_t = $topic->_import_nfmt_tuple( $result_t );
 
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        if (!exists $result_b->{$result_t_ident_str}) {
-            $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t_refaddr = refaddr $result_t;
+        if (!exists $result_b->{$result_t_refaddr}) {
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
 
@@ -1702,10 +1712,10 @@ sub _union {
     my $result_b = $result->_body();
 
     for my $smaller_b (@{$smaller_bs}) {
-        for my $tuple_ident_str (keys %{$smaller_b}) {
-            if (!exists $result_b->{$tuple_ident_str}) {
-                $result_b->{$tuple_ident_str}
-                    = $smaller_b->{$tuple_ident_str};
+        for my $tuple_refaddr (keys %{$smaller_b}) {
+            if (!exists $result_b->{$tuple_refaddr}) {
+                $result_b->{$tuple_refaddr}
+                    = $smaller_b->{$tuple_refaddr};
             }
         }
     }
@@ -1746,13 +1756,13 @@ sub exclusion {
     my $result_b = $result->_body();
 
     for my $smaller_b (@{$smaller_bs}) {
-        for my $tuple_ident_str (keys %{$smaller_b}) {
-            if (exists $result_b->{$tuple_ident_str}) {
-                delete $result_b->{$tuple_ident_str};
+        for my $tuple_refaddr (keys %{$smaller_b}) {
+            if (exists $result_b->{$tuple_refaddr}) {
+                delete $result_b->{$tuple_refaddr};
             }
             else {
-                $result_b->{$tuple_ident_str}
-                    = $smaller_b->{$tuple_ident_str};
+                $result_b->{$tuple_refaddr}
+                    = $smaller_b->{$tuple_refaddr};
             }
         }
     }
@@ -1795,12 +1805,12 @@ sub _intersection {
     my $result_b = $result->_body();
 
     TUPLE:
-    for my $tuple_ident_str (keys %{$smallest_b}) {
+    for my $tuple_refaddr (keys %{$smallest_b}) {
         for my $larger_b (@{$larger_bs}) {
             next TUPLE
-                if !exists $larger_b->{$tuple_ident_str};
+                if !exists $larger_b->{$tuple_refaddr};
         }
-        $result_b->{$tuple_ident_str} = $smallest_b->{$tuple_ident_str};
+        $result_b->{$tuple_refaddr} = $smallest_b->{$tuple_refaddr};
     }
 
     return $result;
@@ -1891,9 +1901,9 @@ sub _regular_difference {
     my $filter_b = $filter->_body();
     my $result_b = $result->_body();
 
-    for my $tuple_ident_str (keys %{$source_b}) {
-        if (!exists $filter_b->{$tuple_ident_str}) {
-            $result_b->{$tuple_ident_str} = $source_b->{$tuple_ident_str};
+    for my $tuple_refaddr (keys %{$source_b}) {
+        if (!exists $filter_b->{$tuple_refaddr}) {
+            $result_b->{$tuple_refaddr} = $source_b->{$tuple_refaddr};
         }
     }
 
@@ -1989,9 +1999,9 @@ sub _regular_semijoin {
     for my $subtuple_ident_str (keys %{$sm_index}) {
         if (exists $lg_index->{$subtuple_ident_str}) {
             my $matched_source_b = $source_index->{$subtuple_ident_str};
-            for my $tuple_ident_str (keys %{$matched_source_b}) {
-                $result_b->{$tuple_ident_str}
-                    = $matched_source_b->{$tuple_ident_str};
+            for my $tuple_refaddr (keys %{$matched_source_b}) {
+                $result_b->{$tuple_refaddr}
+                    = $matched_source_b->{$tuple_refaddr};
             }
         }
     }
@@ -2111,8 +2121,7 @@ sub _regular_join {
             for my $t1 (values %{$matched_sm_b}) {
                 for my $t2 (values %{$matched_lg_b}) {
                     my $result_t = {%{$t1}, %{$t2}};
-                    $result_b->{$topic->_ident_str( $result_t )}
-                        = $result_t;
+                    $result_b->{refaddr $result_t} = $result_t;
                 }
             }
         }
@@ -2192,7 +2201,7 @@ sub _regular_product {
     for my $sm_t (values %{$sm_b}) {
         for my $lg_t (values %{$lg_b}) {
             my $result_t = {%{$sm_t}, %{$lg_t}};
-            $result_b->{$topic->_ident_str( $result_t )} = $result_t;
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
     $result->_body( $result_b );
@@ -2325,12 +2334,12 @@ sub _want_index {
             = [ $subheading, {} ];
         my $index = $index_and_meta->[1];
         my $body = $self->_body();
-        for my $tuple_ident_str (keys %{$body}) {
-            my $tuple = $body->{$tuple_ident_str};
+        for my $tuple_refaddr (keys %{$body}) {
+            my $tuple = $body->{$tuple_refaddr};
             my $subtuple_ident_str = $self->_ident_str(
                 {CORE::map { ($_ => $tuple->{$_}) } @{$atnms}} );
             my $matched_b = $index->{$subtuple_ident_str} ||= {};
-            $matched_b->{$tuple_ident_str} = $tuple;
+            $matched_b->{$tuple_refaddr} = $tuple;
         }
     }
     return $indexes->{$subheading_ident_str}->[1];
@@ -2408,10 +2417,9 @@ sub rank {
     for my $ext_topic_t (@{$sorted_ext_topic_tuples}) {
         my $topic_t = $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t};
         $rank ++;
-        my $rank_atvl = [$rank, $topic->_ident_str( $rank )];
-        my $result_t = {$name => $rank_atvl, %{$topic_t}};
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t = {$name => $rank, %{$topic_t}};
+        my $result_t_refaddr = refaddr $result_t;
+        $result_b->{$result_t_refaddr} = $result_t;
     }
 
     return $result;
@@ -2438,12 +2446,12 @@ sub limit {
     my $ext_topic_tuples = [];
     my $topic_tuples_by_ext_tt_ref = {};
 
-    for my $topic_t_ident_str (keys %{$topic_b}) {
-        my $topic_t = $topic_b->{$topic_t_ident_str};
+    for my $topic_t_refaddr (keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_refaddr};
         my $ext_topic_t = $topic->_export_nfmt_tuple( $topic_t );
         push @{$ext_topic_tuples}, $ext_topic_t;
         $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t}
-            = $topic_t_ident_str;
+            = $topic_t_refaddr;
     }
 
     my $sorted_ext_topic_tuples = [sort {
@@ -2457,9 +2465,9 @@ sub limit {
 
     for my $ext_topic_t
             (@{$sorted_ext_topic_tuples}[$min_rank..$max_rank]) {
-        my $topic_t_ident_str
+        my $topic_t_refaddr
             = $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t};
-        $result_b->{$topic_t_ident_str} = $topic_b->{$topic_t_ident_str};
+        $result_b->{$topic_t_refaddr} = $topic_b->{$topic_t_refaddr};
     }
 
     return $result;
@@ -2519,9 +2527,9 @@ sub _substitution {
             $rtn_nm, $arg_nm_func, $arg_nm_attrs, $subst_t, $subst_h );
         $subst_t = $topic->_import_nfmt_tuple( $subst_t );
         my $result_t = {%{$topic_t}, %{$subst_t}};
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        if (!exists $result_b->{$result_t_ident_str}) {
-            $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t_refaddr = refaddr $result_t;
+        if (!exists $result_b->{$result_t_refaddr}) {
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
 
@@ -2576,9 +2584,9 @@ sub _static_substitution {
 
     for my $topic_t (values %{$topic->_body()}) {
         my $result_t = {%{$topic_t}, %{$attrs}};
-        my $result_t_ident_str = $topic->_ident_str( $result_t );
-        if (!exists $result_b->{$result_t_ident_str}) {
-            $result_b->{$result_t_ident_str} = $result_t;
+        my $result_t_refaddr = refaddr $result_t;
+        if (!exists $result_b->{$result_t_refaddr}) {
+            $result_b->{$result_t_refaddr} = $result_t;
         }
     }
 
@@ -2802,9 +2810,9 @@ sub _insert {
 
     for my $tuple (@{$t}) {
         $tuple = $r->_import_nfmt_tuple( $tuple );
-        my $tuple_ident_str = $r->_ident_str( $tuple );
-        if (!exists $r_b->{$tuple_ident_str}) {
-            $r_b->{$tuple_ident_str} = $tuple;
+        my $tuple_refaddr = refaddr $tuple;
+        if (!exists $r_b->{$tuple_refaddr}) {
+            $r_b->{$tuple_refaddr} = $tuple;
 
             for my $subheading_ident_str (keys %{$r_indexes}) {
                 my ($subheading, $index)
@@ -2813,7 +2821,7 @@ sub _insert {
                     {CORE::map { ($_ => $tuple->{$_}) }
                         keys %{$subheading}} );
                 my $matched_b = $index->{$subtuple_ident_str} ||= {};
-                $matched_b->{$tuple_ident_str} = $tuple;
+                $matched_b->{$tuple_refaddr} = $tuple;
             }
 
         }
@@ -2832,9 +2840,9 @@ sub _delete {
 
     for my $tuple (@{$t}) {
         $tuple = $r->_import_nfmt_tuple( $tuple );
-        my $tuple_ident_str = $r->_ident_str( $tuple );
-        if (exists $r_b->{$tuple_ident_str}) {
-            delete $r_b->{$tuple_ident_str};
+        my $tuple_refaddr = refaddr $tuple;
+        if (exists $r_b->{$tuple_refaddr}) {
+            delete $r_b->{$tuple_refaddr};
 
             for my $subheading_ident_str (keys %{$r_indexes}) {
                 my ($subheading, $index)
@@ -2843,7 +2851,7 @@ sub _delete {
                     {CORE::map { ($_ => $tuple->{$_}) }
                         keys %{$subheading}} );
                 my $matched_b = $index->{$subtuple_ident_str};
-                delete $matched_b->{$tuple_ident_str};
+                delete $matched_b->{$tuple_refaddr};
                 if ((scalar keys %{$matched_b}) == 0) {
                     delete $index->{$subtuple_ident_str};
                 }
