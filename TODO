@@ -3,26 +3,13 @@
 
 Following is a summary of things that still need doing.
 
-* Add new class Set::Relation::V2 which is like ::V1 but for certain
-primary internals changes:  1. The relation body is represented as a set of
-Perl Array, one Array representing one tuple; the relation heading is still
-a Perl Hash with attr names for keys, but now the attr values are array
-indicies into each body tuple rather than being unused/undefined; or
-alternately the heading could also be an Array of attr names, with the
-heading and body corresponding on common indices.  This change should both
-make 'rename' a very cheap operation (only heading is updated); while that
-wasn't a prerequisite, tuple/relation serialization can also be made more
-memory-preserving by not repeating attr names per tuple.  2. The relation
-body is still represented by a main Perl Hash, but the hash keys are now
-the Array refaddr numbers of the hash values.  3. Use the API's support for
-explicit key definitions to just hash subtuples rather than
-whole tuples.  4. Don't generate and cache serializations of
-every tuple attribute individually; no more binary array refs; while
-sometimes this may mean that work has to be repeated later, we hope over
-all that time will be saved thanks to never needing those hashed values
-often times.  5. For all that matter, V2 will be immutable period, not
-consuming ::Mutable, and also lazy to insertion() etc could reasonably be
-used with almost the performance of insert(), etc.
+* For v0.9.0:  Update the Set::Relation role and both bundled
+implementations to add support for explicit candidate keys.  This initial
+cut of the feature would be done fairly simply and not be very integrated;
+it probably won't have any positive impact on performance as it would
+initially just be an extra validation or introspection step.
+
+* For v0.9.0:  Also add new 'classification' function across the board.
 
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
@@ -39,9 +26,39 @@ implement more operators?
 * Consider adding disjoint insertion, union operators (same as normal but
 fails on a duplicate).
 
+* Consider exploiting the candidate keys feature to improve performance of
+S::R objects by generally only comparing tuples for uniqueness on their
+subtuples that range over a key's attributes.  Associated with this,
+consider a more efficient variant of object internal indexes that are
+simply a hash of tuples rather than a hash of singleton-set of tuples; the
+normal index format generalizes for indexes on non-keys, and the variant
+wouldn't.
+
+* Consider support for S::R objects internally having symbolic
+representations in terms of other objects or their internals, which is even
+lazier than what we have now but requires more smarts.  For example, one
+object is defined as another but for a tuple being inserted or deleted.  Or
+perhaps more likely, Set::Relation will never do this in general but
+Muldis::Rosetta would, probably as a side effect of its existing support
+for functional Muldis D value expression code.
+
+* Consider adding a new class Set::Relation::V3 which is like ::V2 but
+primarily that its tuples are internally represented by Perl Arrays rather
+than Perl Hashes, and the relation heading is a Perl Array too, so each
+attribute name exists just once, in the heading, not in each tuple, and
+attribute values match with their names on common Array indices.  At the
+very least this would make 'rename' very cheap initially (only the heading
+is changed rather than every tuple), and also relation objects should
+consume much less memory.  This would likely also more closely resemble how
+non-trivial DBMSs tend to work internally since tuple storage as ordered
+arrays rather than named arrays should be a lot more efficient and more
+like how lower-level languages like C are accustomed to operate.  Or
+perhaps more likely, Set::Relation will never do this but Muldis::Rosetta
+would for its internal relation objects.
+
 * Consider adding more mutator methods.
 
-* Improve performance.
+* Improve performance in other ways.
 
 * Port this to Perl 6 again; meanwhile, a much older initial version
 pre-dating this Perl 5 rewrite already exists FYI.

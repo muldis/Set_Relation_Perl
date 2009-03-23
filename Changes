@@ -6,6 +6,8 @@
     * Set::Relation version 0.8.0 for Perl 5 is released on CPAN as
     Set-Relation-0.8.0.tar.gz.
 
+LAST ITEM IN PROGRESS ...
+
     * Updated external dependencies: Moose/etc to version 0.72, Class::MOP
     to version 0.78.
 
@@ -61,6 +63,21 @@
     the semantics being the same as if they were never given arguments.
 
     * (Relation.pm, V1.pm)  Various other small updates and fixes.
+
+    * Added new file lib/Set/Relation/V2.pm which is now the bundled second
+    implementation of the Set::Relation role, and updated all the other
+    relevant distribution files concerning it.  The new V2.pm initially
+    started as a clone of V1.pm following all of the above change items,
+    and then differentiated in 2 main ways:  The first is that V2 provides
+    immutable objects (doesn't do ::Mutable) while V1 provides mutable
+    objects.  The second is that V2 is lazy and will defer any tests for
+    duplicate tuples as late as possible, while V1 is eager and will test
+    for duplicate tuples as early as possible; V2 will also respect true
+    "allow_dup_tuples" arguments, while V1 will ignore them.  Besides those
+    2 matters and their associated large differences in performance
+    profiles, V2 is essentially the same as V1, including that relation
+    tuples are internally represented by Perl Hashes.  Also V2 just has a
+    short DESCRIPTION pod section to start out, while V1's is longer.
 
 2009-02-13   Darren Duncan <perl@DarrenDuncan.net>
 

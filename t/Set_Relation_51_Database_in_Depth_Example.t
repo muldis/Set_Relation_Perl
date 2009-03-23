@@ -13,13 +13,17 @@ use version 0.74;
 use Test::More;
 use Test::Deep;
 
-plan( 'tests' => 1*33 );
+plan( 'tests' => 2*33 );
 
 my $sr_class_name;
 sub relation { return $sr_class_name->new( @_ ); }
 
 use Set::Relation::V1;
 $sr_class_name = 'Set::Relation::V1';
+validate_sr_class();
+
+use Set::Relation::V2;
+$sr_class_name = 'Set::Relation::V2';
 validate_sr_class();
 
 ###########################################################################

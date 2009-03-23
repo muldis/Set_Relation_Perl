@@ -7,13 +7,17 @@ use version 0.74;
 
 use Test::More;
 
-plan( 'tests' => 1*18 );
+plan( 'tests' => 2*18 );
 
 my $sr_class_name;
 sub relation { return $sr_class_name->new( @_ ); }
 
 use Set::Relation::V1;
 $sr_class_name = 'Set::Relation::V1';
+validate_sr_class();
+
+use Set::Relation::V2;
+$sr_class_name = 'Set::Relation::V2';
 validate_sr_class();
 
 ###########################################################################

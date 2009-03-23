@@ -1641,7 +1641,8 @@ the work of Christopher J. Date and Hugh Darwen whose home website is
 L<http://www.thethirdmanifesto.com/>.
 
 These Perl 5 packages that are in the current distribution are classes that
-implement the Set::Relation roles: L<Set::Relation::V1>.
+implement the Set::Relation roles: L<Set::Relation::V1>,
+L<Set::Relation::V2>.
 
 These other Perl 6 packages: L<Muldis::Rosetta>, L<Set>.
 
