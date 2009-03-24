@@ -42,6 +42,10 @@ use Set::Relation 0.007000;
 
     # Note, this flag expressly only applies to the object it is a
     # member of, and it doesn't say anything about this object's RVAs.
+    # Note, this flag is always true when an index exists over all attrs,
+    # because said index is always made in such a way to ensure this,
+    # but this flag may also be true when said index doesn't exist,
+    # depending on how the V2 object was created.
     has '_is_known_dup_free' => (
         is      => 'rw',
         isa     => 'Bool',
@@ -117,10 +121,18 @@ sub BUILD {
 
     # If we get here, $members is either a Set::Relation::V2 or an ary-ref.
 
+    # Note, we expressly do not set _is_known_dup_free to true when
+    # we are not cloning an S::R object and we know we have an empty body
+    # because often our other methods will be directly adding tuples to
+    # result objects after simply asking new() to make an empty starter
+    # object, and so we are trying to avoid bugs due to those other methods
+    # forgetting to expressly set _is_known_dup_free to false.
+
     if (blessed $members and $members->isa( __PACKAGE__ )) {
         # We'll just shallow-clone anoth Set::Relation::V2 obj's memb-set.
         $self->_heading( $members->_heading() );
         $self->_body( $members->_body() );
+        $self->_is_known_dup_free( $members->_is_known_dup_free() );
         $self->_which( $members->_which() );
         $self->_indexes( $members->_indexes() );
     }
@@ -226,8 +238,8 @@ sub BUILD {
 sub export_for_new {
     my ($self, $want_ord_attrs, $allow_dup_tuples) = @_;
     return {
-        'members' => $self->_members(
-            'export_for_new', '$want_ord_attrs', $want_ord_attrs ),
+        'members' => $self->_members( 'export_for_new',
+            '$want_ord_attrs', $want_ord_attrs, $allow_dup_tuples ),
     };
 }
 
@@ -237,8 +249,9 @@ sub which {
     my ($self) = @_;
     my $ident_str = $self->_which();
     if (!defined $ident_str) {
+        my $index = $self->_dup_free_want_index_over_all_attrs();
         my $hs = $self->_heading_ident_str( $self->_heading() );
-        my $bs = CORE::join qq{,\n}, sort keys %{$self->_body()};
+        my $bs = CORE::join qq{,\n}, sort keys %{$index};
         my $vstr = "H=$hs;\nB={$bs}";
         $ident_str = 'Relation:' . (length $vstr) . ':{' . $vstr . '}';
         $self->_which( $ident_str );
@@ -250,12 +263,15 @@ sub which {
 
 sub members {
     my ($self, $want_ord_attrs, $allow_dup_tuples) = @_;
-    return $self->_members(
-        'members', '$want_ord_attrs', $want_ord_attrs );
+    return $self->_members( 'members',
+        '$want_ord_attrs', $want_ord_attrs, $allow_dup_tuples );
 }
 
 sub _members {
-    my ($self, $rtn_nm, $arg_nm, $want_ord_attrs) = @_;
+    my ($self, $rtn_nm, $arg_nm, $want_ord_attrs, $allow_dup_tuples) = @_;
+    if (!$allow_dup_tuples and !$self->_is_known_dup_free()) {
+        $self->_dup_free_want_index_over_all_attrs();
+    }
     if ($want_ord_attrs) {
         my $ord_attr_names = $self->_normalize_true_want_ord_attrs_arg(
             $rtn_nm, $arg_nm, $want_ord_attrs );
@@ -285,6 +301,9 @@ sub heading {
 
 sub body {
     my ($self, $want_ord_attrs, $allow_dup_tuples) = @_;
+    if (!$allow_dup_tuples and !$self->_is_known_dup_free()) {
+        $self->_dup_free_want_index_over_all_attrs();
+    }
     if ($want_ord_attrs) {
         my $ord_attr_names = $self->_normalize_true_want_ord_attrs_arg(
             'body', '$want_ord_attrs', $want_ord_attrs );
@@ -332,6 +351,10 @@ sub slice {
             . q{ isn't a subset of the invocant's heading.}
         if @{$proj_only} > 0;
 
+    if (!$allow_dup_tuples and !$self->_is_known_dup_free()) {
+        $self->_dup_free_want_index_over_all_attrs();
+    }
+
     if ($want_ord_attrs) {
         confess q{slice(): Bad $want_ord_attrs arg; it must be}
                 . q{ either undefined|false or the scalar value '1'.}
@@ -357,6 +380,10 @@ sub attr {
     confess q{attr(): Bad $name arg; that attr name}
             . q{ doesn't match an attr of the invocant's heading.}
         if !exists $self->_heading()->{$name};
+
+    if (!$allow_dup_tuples and !$self->_is_known_dup_free()) {
+        $self->_dup_free_want_index_over_all_attrs();
+    }
 
     return [CORE::map {
             my $atvl = $_->{$name};
@@ -413,23 +440,6 @@ sub _tuple_arg_has_circular_refs {
             return 1
                 if $self->_tuple_arg_has_circular_refs(
                     $atvl, $ancs_of_tup_atvls );
-        }
-    }
-    return 0;
-}
-
-###########################################################################
-
-sub _self_is_component_of_tuple_arg {
-    my ($self, $tuple) = @_;
-    for my $atvl (values %{$tuple}) {
-        if (blessed $atvl and $atvl->isa( __PACKAGE__ )) {
-            return 1
-                if refaddr $atvl == refaddr $self;
-        }
-        elsif (ref $atvl eq 'HASH') {
-            return 1
-                if $self->_self_is_component_of_tuple_arg( $atvl );
         }
     }
     return 0;
@@ -592,10 +602,21 @@ sub attr_names {
 
 sub cardinality {
     my ($topic, $allow_dup_tuples) = @_;
-    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
-#        $topic->_index_body_with_dup_purge();
+    my $on_entry_body_cardinality = scalar keys %{$topic->_body()};
+    if ($topic->_is_known_dup_free()) {
+        return $on_entry_body_cardinality;
     }
-    return scalar keys %{$topic->_body()};
+    elsif ($on_entry_body_cardinality == 0) {
+        $topic->_is_known_dup_free( 1 );
+        return 0;
+    }
+    elsif ($allow_dup_tuples) {
+        return $on_entry_body_cardinality;
+    }
+    else {
+        $topic->_dup_free_want_index_over_all_attrs();
+        return scalar keys %{$topic->_body()};
+    }
 }
 
 sub is_empty {
@@ -606,9 +627,9 @@ sub is_empty {
 sub is_member {
     my ($r, $t) = @_;
     $t = $r->_normalize_same_heading_tuples_arg( 'is_member', '$t', $t );
-    my $r_b = $r->_body();
+    my $r_i = $r->_dup_free_want_index_over_all_attrs();
     return all {
-            exists $r_b->{$r->_ident_str( $r->_import_nfmt_tuple( $_ ) )}
+            exists $r_i->{$r->_ident_str( $r->_import_nfmt_tuple( $_ ) )}
         } @{$t};
 }
 
@@ -1224,6 +1245,10 @@ sub restriction {
         return $topic;
     }
 
+    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
+    }
+
     my $result = $topic->empty();
 
     my $topic_b = $topic->_body();
@@ -1248,14 +1273,18 @@ sub restriction_and_cmpl {
     my ($topic, $func, $allow_dup_tuples) = @_;
     $topic->_assert_valid_func_arg(
         'restriction_and_cmpl', '$func', $func );
-    return $topic->_restriction_and_cmpl( $func );
+    return $topic->_restriction_and_cmpl( $func, $allow_dup_tuples );
 }
 
 sub _restriction_and_cmpl {
-    my ($topic, $func) = @_;
+    my ($topic, $func, $allow_dup_tuples) = @_;
 
     if ($topic->is_empty()) {
         return [$topic, $topic];
+    }
+
+    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
     }
 
     my $pass_result = $topic->empty();
@@ -1290,6 +1319,10 @@ sub cmpl_restriction {
 
     if ($topic->is_empty()) {
         return $topic;
+    }
+
+    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
     }
 
     my $result = $topic->empty();
@@ -1328,15 +1361,20 @@ sub extension {
             . q{ isn't disjoint with the invocant's heading.}
         if @{$both} > 0;
 
-    return $topic->_extension( $attr_names, $func, $exten_h );
+    return $topic->_extension(
+        $attr_names, $func, $exten_h, $allow_dup_tuples );
 }
 
 sub _extension {
-    my ($topic, $attr_names, $func, $exten_h) = @_;
+    my ($topic, $attr_names, $func, $exten_h, $allow_dup_tuples) = @_;
 
     if (@{$attr_names} == 0) {
         # Extension of input by zero attrs yields the input.
         return $topic;
+    }
+
+    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
     }
 
     my $result = $topic->new();
@@ -1357,6 +1395,10 @@ sub _extension {
         my $result_t = {%{$topic_t}, %{$exten_t}};
         my $result_t_refaddr = refaddr $result_t;
         $result_b->{$result_t_refaddr} = $result_t;
+    }
+
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
     }
 
     return $result;
@@ -1407,6 +1449,10 @@ sub _static_extension {
         $result_b->{$result_t_refaddr} = $result_t;
     }
 
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
+
     return $result;
 }
 
@@ -1428,6 +1474,10 @@ sub map {
         else {
             return $topic->new( [ {} ] );
         }
+    }
+
+    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
     }
 
     my $result = $topic->new();
@@ -1497,6 +1547,10 @@ sub summary {
     if ($topic->is_empty()) {
         # An empty $topic means an empty result.
         return $result;
+    }
+
+    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
     }
 
     # Note: We skipped a number of shortcuts that _group() has for
@@ -2326,6 +2380,11 @@ sub _ptn_conj_and_disj {
 
 sub _want_index {
     my ($self, $atnms) = @_;
+    if (@{$atnms} == $self->degree()) {
+        # Special case; index is over all attributes of the relation, so
+        # create this index in a special way that includes dup elimination.
+        return $self->_dup_free_want_index_over_all_attrs();
+    }
     my $subheading = {CORE::map { ($_ => undef) } @{$atnms}};
     my $subheading_ident_str = $self->_heading_ident_str( $subheading );
     my $indexes = $self->_indexes();
@@ -2343,6 +2402,53 @@ sub _want_index {
         }
     }
     return $indexes->{$subheading_ident_str}->[1];
+}
+
+###########################################################################
+
+sub _dup_free_want_index_over_all_attrs {
+    my ($self) = @_;
+
+    my $heading = $self->_heading();
+    my $indexes = $self->_indexes();
+
+    my $heading_ident_str = $self->_heading_ident_str( $heading );
+
+    if (!exists $indexes->{$heading_ident_str}) {
+        my $extras_to_delete = {};
+    
+        my $body = $self->_body();
+        my $index_and_meta = $indexes->{$heading_ident_str}
+            = [ $heading, {} ];
+        my $index = $index_and_meta->[1];
+        for my $tuple_refaddr (keys %{$body}) {
+            my $tuple = $body->{$tuple_refaddr};
+            my $tuple_ident_str = $self->_ident_str( $tuple );
+            if (exists $index->{$tuple_ident_str}) {
+                delete $body->{$tuple_refaddr};
+                $extras_to_delete->{$tuple_refaddr} = $tuple;
+            }
+            $index->{$tuple_ident_str} = {$tuple_refaddr => $tuple};
+        }
+
+        if ((keys %{$extras_to_delete}) > 0) {
+            for my $subheading_ident_str (keys %{$indexes}) {
+                my ($subheading, $index)
+                    = @{$indexes->{$subheading_ident_str}};
+                for my $tuple_refaddr (keys %{$extras_to_delete}) {
+                    my $tuple = $extras_to_delete->{$tuple_refaddr};
+                    my $subtuple_ident_str = $self->_ident_str(
+                        {CORE::map { ($_ => $tuple->{$_}) }
+                            keys %{$subheading}} );
+                    delete $index->{$subtuple_ident_str}->{$tuple_refaddr};
+                }
+            }
+        }
+
+        $self->_is_known_dup_free( 1 );
+    }
+
+    return $indexes->{$heading_ident_str}->[1];
 }
 
 ###########################################################################
@@ -2482,7 +2588,7 @@ sub substitution {
         'substitution', '$attr_names', '$func', $attr_names, $func );
     return $topic->_substitution(
         'substitution', '$attr_names', '$func',
-        $attr_names, $func, $subst_h );
+        $attr_names, $func, $subst_h, $allow_dup_tuples );
 }
 
 sub _atnms_hr_from_assert_valid_subst_args {
@@ -2503,7 +2609,7 @@ sub _atnms_hr_from_assert_valid_subst_args {
 
 sub _substitution {
     my ($topic, $rtn_nm, $arg_nm_attrs, $arg_nm_func, $attrs, $func,
-        $subst_h) = @_;
+        $subst_h, $allow_dup_tuples) = @_;
 
     if ($topic->is_empty()) {
         return $topic;
@@ -2511,6 +2617,10 @@ sub _substitution {
     if (@{$attrs} == 0) {
         # Substitution in zero attrs of input yields the input.
         return $topic;
+    }
+
+    if (!$allow_dup_tuples and !$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
     }
 
     my $result = $topic->empty();
@@ -2608,11 +2718,13 @@ sub subst_in_restr {
             $subst_attr_names, $subst_func );
 
     my ($topic_to_subst, $topic_no_subst)
-        = @{$topic->_restriction_and_cmpl( $restr_func )};
+        = @{$topic->_restriction_and_cmpl(
+            $restr_func, $allow_dup_tuples )};
 
     return $topic_to_subst
         ->_substitution( 'subst_in_restr', '$subst_attr_names',
-            '$subst_func', $subst_attr_names, $subst_func, $subst_h )
+            '$subst_func', $subst_attr_names, $subst_func, $subst_h,
+            $allow_dup_tuples )
         ->_union( [$topic_no_subst] );
 }
 
@@ -2628,7 +2740,8 @@ sub static_subst_in_restr {
         'static_subst_in_restr', '$subst', $subst );
 
     my ($topic_to_subst, $topic_no_subst)
-        = @{$topic->_restriction_and_cmpl( $restr_func )};
+        = @{$topic->_restriction_and_cmpl(
+            $restr_func, $allow_dup_tuples )};
 
     return $topic_to_subst
         ->_static_substitution( $subst )
@@ -2654,7 +2767,8 @@ sub subst_in_semijoin {
 
     return $topic_to_subst
         ->_substitution( 'subst_in_semijoin', '$subst_attr_names',
-            '$subst_func', $subst_attr_names, $subst_func, $subst_h )
+            '$subst_func', $subst_attr_names, $subst_func, $subst_h,
+            $allow_dup_tuples )
         ->_union( [$topic_no_subst] );
 }
 
@@ -2794,8 +2908,8 @@ sub outer_join_with_exten {
     # Note: if '_extension' dies due to what $exten_func did it would
     # state the error is reported by 'extension' and with some wrong
     # details; todo fix later; on correct it won't affect users though.
-    my $result_nonmatched = $pri_nonmatched
-        ->_extension( $exten_attrs, $exten_func, $exten_h );
+    my $result_nonmatched = $pri_nonmatched->_extension(
+        $exten_attrs, $exten_func, $exten_h, $allow_dup_tuples );
 
     return $result_matched->_union( [$result_nonmatched] );
 }
