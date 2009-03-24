@@ -2179,9 +2179,9 @@ sub _regular_join {
         if (exists $lg_index->{$subtuple_ident_str}) {
             my $matched_sm_b = $sm_index->{$subtuple_ident_str};
             my $matched_lg_b = $lg_index->{$subtuple_ident_str};
-            for my $t1 (values %{$matched_sm_b}) {
-                for my $t2 (values %{$matched_lg_b}) {
-                    my $result_t = {%{$t1}, %{$t2}};
+            for my $sm_t (values %{$matched_sm_b}) {
+                for my $lg_t (values %{$matched_lg_b}) {
+                    my $result_t = {%{$sm_t}, %{$lg_t}};
                     $result_b->{$topic->_ident_str( $result_t )}
                         = $result_t;
                 }

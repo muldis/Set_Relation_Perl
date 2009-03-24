@@ -127,6 +127,8 @@ sub BUILD {
     # result objects after simply asking new() to make an empty starter
     # object, and so we are trying to avoid bugs due to those other methods
     # forgetting to expressly set _is_known_dup_free to false.
+    # But if we know we have exactly 1 input tuple, we set the flag to
+    # true, since its unlikely the meths add tuples both on new and after.
 
     if (blessed $members and $members->isa( __PACKAGE__ )) {
         # We'll just shallow-clone anoth Set::Relation::V2 obj's memb-set.
@@ -182,6 +184,9 @@ sub BUILD {
             }
             $self->_heading( $heading );
             $self->_body( $body );
+            if (@{$members} == 1) {
+                $self->_is_known_dup_free( 1 );
+            }
         }
         elsif (ref $member0 eq 'ARRAY') {
             # Input is in ordered attr format.
@@ -222,6 +227,9 @@ sub BUILD {
             }
             $self->_heading( $heading );
             $self->_body( $body );
+            if (@{$member1} == 1) {
+                $self->_is_known_dup_free( 1 );
+            }
         }
         else {
             confess q{new(): Bad :$members arg; it is an array-ref but it}
@@ -649,8 +657,37 @@ sub insertion {
     if (@{$t} == 0) {
         return $r;
     }
-    return $r->new( $r )->_insert( $t );
+    return $r->union( $r->new( $t ) );
 }
+=x
+sub _insert {
+    my ($r, $t) = @_;
+
+    my $r_b = $r->_body();
+    my $r_indexes = $r->_indexes();
+
+    for my $tuple (@{$t}) {
+        $tuple = $r->_import_nfmt_tuple( $tuple );
+        my $tuple_refaddr = refaddr $tuple;
+        if (!exists $r_b->{$tuple_refaddr}) {
+            $r_b->{$tuple_refaddr} = $tuple;
+
+            for my $subheading_ident_str (keys %{$r_indexes}) {
+                my ($subheading, $index)
+                    = @{$r_indexes->{$subheading_ident_str}};
+                my $subtuple_ident_str = $r->_ident_str(
+                    {CORE::map { ($_ => $tuple->{$_}) }
+                        keys %{$subheading}} );
+                my $matched_b = $index->{$subtuple_ident_str} ||= {};
+                $matched_b->{$tuple_refaddr} = $tuple;
+            }
+
+        }
+    }
+
+    return $r;
+}
+=cut
 
 sub deletion {
     my ($r, $t) = @_;
@@ -658,8 +695,40 @@ sub deletion {
     if (@{$t} == 0) {
         return $r;
     }
-    return $r->new( $r )->_delete( $t );
+    return $r->difference( $r->new( $t ) );
 }
+=x
+sub _delete {
+    my ($r, $t) = @_;
+
+    my $r_b = $r->_body();
+    my $r_indexes = $r->_indexes();
+
+    for my $tuple (@{$t}) {
+        $tuple = $r->_import_nfmt_tuple( $tuple );
+        my $tuple_refaddr = refaddr $tuple;
+        if (exists $r_b->{$tuple_refaddr}) {
+            delete $r_b->{$tuple_refaddr};
+
+            for my $subheading_ident_str (keys %{$r_indexes}) {
+                my ($subheading, $index)
+                    = @{$r_indexes->{$subheading_ident_str}};
+                my $subtuple_ident_str = $r->_ident_str(
+                    {CORE::map { ($_ => $tuple->{$_}) }
+                        keys %{$subheading}} );
+                my $matched_b = $index->{$subtuple_ident_str};
+                delete $matched_b->{$tuple_refaddr};
+                if ((scalar keys %{$matched_b}) == 0) {
+                    delete $index->{$subtuple_ident_str};
+                }
+            }
+
+        }
+    }
+
+    return $r;
+}
+=cut
 
 ###########################################################################
 
@@ -724,6 +793,10 @@ sub _rename {
             } keys %{$topic_t}};
         my $result_t_refaddr = refaddr $result_t;
         $result_b->{$result_t_refaddr} = $result_t;
+    }
+
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
     }
 
     return $result;
@@ -869,6 +942,10 @@ sub _wrap {
         }
     }
 
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
+
     return $result;
 }
 
@@ -976,6 +1053,10 @@ sub unwrap {
         }
     }
 
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
+
     return $result;
 }
 
@@ -1057,6 +1138,10 @@ sub _group {
             my $result_t_refaddr = refaddr $result_t;
             $result_b->{$result_t_refaddr} = $result_t;
         }
+    }
+
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
     }
 
     return $result;
@@ -1173,6 +1258,10 @@ sub ungroup {
         }
     }
 
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
+
     return $result;
 }
 
@@ -1193,6 +1282,10 @@ sub transitive_closure {
     # If we get here, there are at least 2 arcs, so there is a chance they
     # may connect into longer paths.
 
+    if (!$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
+    }
+
     my ($atnm1, $atnm2) = sort keys %{$topic->_heading()};
 
     return $topic->_rename( { $atnm1 => 'x', $atnm2 => 'y' } )
@@ -1206,6 +1299,10 @@ sub transitive_closure {
 
 sub _transitive_closure_of_xy {
     my ($xy) = @_;
+
+    if (!$xy->_is_known_dup_free()) {
+        $xy->_dup_free_want_index_over_all_attrs();
+    }
 
     my $xyz = $xy->_rename( { 'x' => 'y', 'y' => 'z' } )
         ->_regular_join( $xy, ['y'], ['z'], ['x'] );
@@ -1266,6 +1363,10 @@ sub restriction {
         }
     }
 
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
+
     return $result;
 }
 
@@ -1309,6 +1410,11 @@ sub _restriction_and_cmpl {
         }
     }
 
+    if ($topic->_is_known_dup_free()) {
+        $pass_result->_is_known_dup_free( 1 );
+        $fail_result->_is_known_dup_free( 1 );
+    }
+
     return [$pass_result, $fail_result];
 }
 
@@ -1340,6 +1446,10 @@ sub cmpl_restriction {
         if (!$is_matched) {
             $result_b->{$topic_t_refaddr} = $topic_t;
         }
+    }
+
+    if ($topic->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
     }
 
     return $result;
@@ -1821,6 +1931,8 @@ sub exclusion {
         }
     }
 
+#    $result->_is_known_dup_free( 1 );
+
     return $result;
 }
 
@@ -1866,6 +1978,8 @@ sub _intersection {
         }
         $result_b->{$tuple_refaddr} = $smallest_b->{$tuple_refaddr};
     }
+
+#    $result->_is_known_dup_free( 1 );
 
     return $result;
 }
@@ -1960,6 +2074,8 @@ sub _regular_difference {
             $result_b->{$tuple_refaddr} = $source_b->{$tuple_refaddr};
         }
     }
+
+#    $result->_is_known_dup_free( 1 );
 
     return $result;
 }
@@ -2059,6 +2175,10 @@ sub _regular_semijoin {
             }
         }
     }
+
+#    if ($source->_is_known_dup_free()) {
+#        $result->_is_known_dup_free( 1 );
+#    }
 
     return $result;
 }
@@ -2172,15 +2292,19 @@ sub _regular_join {
         if (exists $lg_index->{$subtuple_ident_str}) {
             my $matched_sm_b = $sm_index->{$subtuple_ident_str};
             my $matched_lg_b = $lg_index->{$subtuple_ident_str};
-            for my $t1 (values %{$matched_sm_b}) {
-                for my $t2 (values %{$matched_lg_b}) {
-                    my $result_t = {%{$t1}, %{$t2}};
+            for my $sm_t (values %{$matched_sm_b}) {
+                for my $lg_t (values %{$matched_lg_b}) {
+                    my $result_t = {%{$sm_t}, %{$lg_t}};
                     $result_b->{refaddr $result_t} = $result_t;
                 }
             }
         }
     }
     $result->_body( $result_b );
+
+    if ($topic->_is_known_dup_free() and $other->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
 
     return $result;
 }
@@ -2259,6 +2383,10 @@ sub _regular_product {
         }
     }
     $result->_body( $result_b );
+
+    if ($topic->_is_known_dup_free() and $other->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
 
     return $result;
 }
@@ -2825,7 +2953,14 @@ sub outer_join_with_group {
     my $result_nonmatched = $pri_nonmatched
         ->_static_extension( {$group_attr => $primary->new( $inner )} );
 
-    return $result_matched->_union( [$result_nonmatched] );
+    my $result = $result_matched->_union( [$result_nonmatched] );
+
+    if ($primary->_is_known_dup_free()
+            and $secondary->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
+
+    return $result;
 }
 
 ###########################################################################
@@ -2847,7 +2982,14 @@ sub outer_join_with_undefs {
 
     my $result_nonmatched = $pri_nonmatched->_static_extension( $filler );
 
-    return $result_matched->_union( [$result_nonmatched] );
+    my $result = $result_matched->_union( [$result_nonmatched] );
+
+    if ($primary->_is_known_dup_free()
+            and $secondary->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
+
+    return $result;
 }
 
 ###########################################################################
@@ -2883,7 +3025,14 @@ sub outer_join_with_static_exten {
 
     my $result_nonmatched = $pri_nonmatched->_static_extension( $filler );
 
-    return $result_matched->_union( [$result_nonmatched] );
+    my $result = $result_matched->_union( [$result_nonmatched] );
+
+    if ($primary->_is_known_dup_free()
+            and $secondary->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
+
+    return $result;
 }
 
 ###########################################################################
@@ -2911,70 +3060,14 @@ sub outer_join_with_exten {
     my $result_nonmatched = $pri_nonmatched->_extension(
         $exten_attrs, $exten_func, $exten_h, $allow_dup_tuples );
 
-    return $result_matched->_union( [$result_nonmatched] );
-}
+    my $result = $result_matched->_union( [$result_nonmatched] );
 
-###########################################################################
-
-sub _insert {
-    my ($r, $t) = @_;
-
-    my $r_b = $r->_body();
-    my $r_indexes = $r->_indexes();
-
-    for my $tuple (@{$t}) {
-        $tuple = $r->_import_nfmt_tuple( $tuple );
-        my $tuple_refaddr = refaddr $tuple;
-        if (!exists $r_b->{$tuple_refaddr}) {
-            $r_b->{$tuple_refaddr} = $tuple;
-
-            for my $subheading_ident_str (keys %{$r_indexes}) {
-                my ($subheading, $index)
-                    = @{$r_indexes->{$subheading_ident_str}};
-                my $subtuple_ident_str = $r->_ident_str(
-                    {CORE::map { ($_ => $tuple->{$_}) }
-                        keys %{$subheading}} );
-                my $matched_b = $index->{$subtuple_ident_str} ||= {};
-                $matched_b->{$tuple_refaddr} = $tuple;
-            }
-
-        }
+    if ($primary->_is_known_dup_free()
+            and $secondary->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
     }
 
-    return $r;
-}
-
-###########################################################################
-
-sub _delete {
-    my ($r, $t) = @_;
-
-    my $r_b = $r->_body();
-    my $r_indexes = $r->_indexes();
-
-    for my $tuple (@{$t}) {
-        $tuple = $r->_import_nfmt_tuple( $tuple );
-        my $tuple_refaddr = refaddr $tuple;
-        if (exists $r_b->{$tuple_refaddr}) {
-            delete $r_b->{$tuple_refaddr};
-
-            for my $subheading_ident_str (keys %{$r_indexes}) {
-                my ($subheading, $index)
-                    = @{$r_indexes->{$subheading_ident_str}};
-                my $subtuple_ident_str = $r->_ident_str(
-                    {CORE::map { ($_ => $tuple->{$_}) }
-                        keys %{$subheading}} );
-                my $matched_b = $index->{$subtuple_ident_str};
-                delete $matched_b->{$tuple_refaddr};
-                if ((scalar keys %{$matched_b}) == 0) {
-                    delete $index->{$subtuple_ident_str};
-                }
-            }
-
-        }
-    }
-
-    return $r;
+    return $result;
 }
 
 ###########################################################################
