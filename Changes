@@ -6,8 +6,6 @@
     * Set::Relation version 0.8.0 for Perl 5 is released on CPAN as
     Set-Relation-0.8.0.tar.gz.
 
-LAST ITEM IN PROGRESS ...
-
     * This release features the addition of a second bundled implementation
     of the Set::Relation role, called V2, which should have different (and
     hopefully better) performance characteristics than V1.  This release

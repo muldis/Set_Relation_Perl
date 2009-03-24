@@ -655,82 +655,55 @@ sub empty {
 
 sub insertion {
     my ($r, $t) = @_;
+
     $t = $r->_normalize_same_heading_tuples_arg( 'insertion', '$t', $t );
+
     if (@{$t} == 0) {
         return $r;
     }
-    return $r->union( $r->new( $t ) );
+
+    my $tuples = {CORE::map {
+            my $tuple = $r->_import_nfmt_tuple( $_ );
+            (refaddr $tuple, $tuple);
+        } @{$t}};
+
+    my $result = $r->empty();
+
+    $result->_body( {%{$r->_body()}, %{$tuples}} );
+
+    return $result;
 }
-=x
-sub _insert {
-    my ($r, $t) = @_;
-
-    my $r_b = $r->_body();
-    my $r_indexes = $r->_indexes();
-
-    for my $tuple (@{$t}) {
-        $tuple = $r->_import_nfmt_tuple( $tuple );
-        my $tuple_refaddr = refaddr $tuple;
-        if (!exists $r_b->{$tuple_refaddr}) {
-            $r_b->{$tuple_refaddr} = $tuple;
-
-            for my $subheading_ident_str (keys %{$r_indexes}) {
-                my ($subheading, $index)
-                    = @{$r_indexes->{$subheading_ident_str}};
-                my $subtuple_ident_str = $r->_ident_str(
-                    {CORE::map { ($_ => $tuple->{$_}) }
-                        keys %{$subheading}} );
-                my $matched_b = $index->{$subtuple_ident_str} ||= {};
-                $matched_b->{$tuple_refaddr} = $tuple;
-            }
-
-        }
-    }
-
-    return $r;
-}
-=cut
 
 sub deletion {
     my ($r, $t) = @_;
+
     $t = $r->_normalize_same_heading_tuples_arg( 'deletion', '$t', $t );
+
     if (@{$t} == 0) {
         return $r;
     }
-    return $r->difference( $r->new( $t ) );
-}
-=x
-sub _delete {
-    my ($r, $t) = @_;
 
-    my $r_b = $r->_body();
-    my $r_indexes = $r->_indexes();
+    my $tuples = {CORE::map {
+            my $tuple = $r->_import_nfmt_tuple( $_ );
+            ($r->_ident_str( $tuple ), $tuple);
+        } @{$t}};
 
-    for my $tuple (@{$t}) {
-        $tuple = $r->_import_nfmt_tuple( $tuple );
-        my $tuple_refaddr = refaddr $tuple;
-        if (exists $r_b->{$tuple_refaddr}) {
-            delete $r_b->{$tuple_refaddr};
+    my $result = $r->empty();
 
-            for my $subheading_ident_str (keys %{$r_indexes}) {
-                my ($subheading, $index)
-                    = @{$r_indexes->{$subheading_ident_str}};
-                my $subtuple_ident_str = $r->_ident_str(
-                    {CORE::map { ($_ => $tuple->{$_}) }
-                        keys %{$subheading}} );
-                my $matched_b = $index->{$subtuple_ident_str};
-                delete $matched_b->{$tuple_refaddr};
-                if ((scalar keys %{$matched_b}) == 0) {
-                    delete $index->{$subtuple_ident_str};
-                }
-            }
+    my $r_i = $r->_dup_free_want_index_over_all_attrs();
+    my $result_b = $result->_body();
 
+    for my $tuple_ident_str (keys %{$r_i}) {
+        if (!exists $tuples->{$tuple_ident_str}) {
+            my ($tuple_refaddr, $tuple) = %{$r_i->{$tuple_ident_str}};
+            $result_b->{$tuple_refaddr} = $tuple;
         }
     }
 
-    return $r;
+    $result->_is_known_dup_free( 1 );
+
+    return $result;
 }
-=cut
 
 ###########################################################################
 
@@ -2145,9 +2118,9 @@ sub _regular_semijoin {
         }
     }
 
-#    if ($source->_is_known_dup_free()) {
-#        $result->_is_known_dup_free( 1 );
-#    }
+    if ($source->_is_known_dup_free() and $filter->_is_known_dup_free()) {
+        $result->_is_known_dup_free( 1 );
+    }
 
     return $result;
 }
@@ -2513,7 +2486,7 @@ sub _dup_free_want_index_over_all_attrs {
 
     if (!exists $indexes->{$heading_ident_str}) {
         my $extras_to_delete = {};
-    
+
         my $body = $self->_body();
         my $index_and_meta = $indexes->{$heading_ident_str}
             = [ $heading, {} ];
@@ -2603,6 +2576,10 @@ sub rank {
         return $result;
     }
 
+    if (!$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
+    }
+
     my $ext_topic_tuples = [];
     my $topic_tuples_by_ext_tt_ref = {};
 
@@ -2644,6 +2621,10 @@ sub limit {
 
     if ($topic->is_empty()) {
         return $topic;
+    }
+
+    if (!$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
     }
 
     my $topic_b = $topic->_body();
