@@ -629,7 +629,7 @@ sub cardinality {
 
 sub is_empty {
     my ($topic) = @_;
-    return $topic->cardinality() == 0;
+    return $topic->cardinality( 1 ) == 0;
 }
 
 sub is_member {
@@ -648,7 +648,9 @@ sub empty {
     if ($topic->is_empty()) {
         return $topic;
     }
-    return $topic->new( $topic->heading() );
+    my $result = $topic->new();
+    $result->_heading( $topic->_heading() );
+    return $result;
 }
 
 sub insertion {
@@ -791,8 +793,7 @@ sub _rename {
         my $result_t = {CORE::map {
                 ($map->{$_} => $topic_t->{$_})
             } keys %{$topic_t}};
-        my $result_t_refaddr = refaddr $result_t;
-        $result_b->{$result_t_refaddr} = $result_t;
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     if ($topic->_is_known_dup_free()) {
@@ -845,10 +846,7 @@ sub _projection {
     for my $topic_t (values %{$topic->_body()}) {
         my $result_t
             = {CORE::map { ($_ => $topic_t->{$_}) } @{$attr_names}};
-        my $result_t_refaddr = refaddr $result_t;
-        if (!exists $result_b->{$result_t_refaddr}) {
-            $result_b->{$result_t_refaddr} = $result_t;
-        }
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     return $result;
@@ -913,32 +911,27 @@ sub _wrap {
         # Wrap zero $topic attrs as new attr.
         # So this is a simple static extension of $topic w static $outer.
         my $inner_t = {};
-        my $outer_atvl = $inner_t;
         for my $topic_t (values %{$topic_b}) {
-            my $result_t = {$outer => $outer_atvl, {%{$topic_t}}};
-            my $result_t_refaddr = refaddr $result_t;
-            $result_b->{$result_t_refaddr} = $result_t;
+            my $result_t = {$outer => $inner_t, {%{$topic_t}}};
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
     elsif (@{$topic_attrs_no_wr} == 0) {
         # Wrap all $topic attrs as new attr.
         for my $topic_t_refaddr (keys %{$topic_b}) {
             my $result_t = {$outer => $topic_b->{$topic_t_refaddr}};
-            my $result_t_refaddr = refaddr $result_t;
-            $result_b->{$result_t_refaddr} = $result_t;
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
     else {
         # Wrap at least one but not all $topic attrs as new attr.
         for my $topic_t (values %{$topic_b}) {
             my $inner_t = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
-            my $outer_atvl = $inner_t;
             my $result_t = {
-                $outer => $outer_atvl,
+                $outer => $inner_t,
                 CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_wr}
             };
-            my $result_t_refaddr = refaddr $result_t;
-            $result_b->{$result_t_refaddr} = $result_t;
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
 
@@ -1026,8 +1019,8 @@ sub unwrap {
     elsif (@{$topic_attrs_no_uwr} == 0) {
         # Only $topic attr is $outer, all result attrs from $outer unwrap.
         for my $topic_t (values %{$topic_b}) {
-            my $outer_atvl = $topic_t->{$outer};
-            $result_b->{$topic->_ident_str( $outer_atvl )} = $outer_atvl;
+            my $result_t = $topic_t->{$outer};
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
     elsif (@{$inner} == 0) {
@@ -1037,8 +1030,7 @@ sub unwrap {
             my $result_t = {
                 CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_uwr}
             };
-            my $result_t_refaddr = refaddr $result_t;
-            $result_b->{$result_t_refaddr} = $result_t;
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
     else {
@@ -1048,8 +1040,7 @@ sub unwrap {
                 %{$topic_t->{$outer}},
                 CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_uwr}
             };
-            my $result_t_refaddr = refaddr $result_t;
-            $result_b->{$result_t_refaddr} = $result_t;
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
 
@@ -1099,19 +1090,16 @@ sub _group {
         # So this is a simple static extension of $topic w static $outer.
         my $result_b = $result->_body();
         my $inner_r = $topic->new( [ {} ] );
-        my $outer_atvl = $inner_r;
         for my $topic_t (values %{$topic->_body()}) {
-            my $result_t = {$outer => $outer_atvl, {%{$topic_t}}};
-            my $result_t_refaddr = refaddr $result_t;
-            $result_b->{$result_t_refaddr} = $result_t;
+            my $result_t = {$outer => $inner_r, {%{$topic_t}}};
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
     elsif (@{$topic_attrs_no_gr} == 0) {
         # Group all $topic attrs as new attr.
         # So $topic is just used as sole attr of sole tuple of result.
         my $result_t = {$outer => $topic};
-        my $result_t_refaddr = refaddr $result_t;
-        $result->_body( {$result_t_refaddr => $result_t} );
+        $result->_body( {refaddr $result_t => $result_t} );
     }
     else {
         # Group at least one but not all $topic attrs as new attr.
@@ -1127,16 +1115,14 @@ sub _group {
                     = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
                 $inner_b->{refaddr $inner_t} = $inner_t;
             }
-            my $outer_atvl = $inner_r;
 
             my $any_mtpt = (values %{$matched_topic_b})[0];
 
             my $result_t = {
-                $outer => $outer_atvl,
+                $outer => $inner_r,
                 CORE::map { ($_ => $any_mtpt->{$_}) } @{$topic_attrs_no_gr}
             };
-            my $result_t_refaddr = refaddr $result_t;
-            $result_b->{$result_t_refaddr} = $result_t;
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
 
@@ -1240,8 +1226,7 @@ sub ungroup {
             my $result_t = {
                 CORE::map { ($_ => $topic_t->{$_}) } @{$topic_attrs_no_ugr}
             };
-            my $result_t_refaddr = refaddr $result_t;
-            $result_b->{$result_t_refaddr} = $result_t;
+            $result_b->{refaddr $result_t} = $result_t;
         }
     }
     else {
@@ -1256,10 +1241,6 @@ sub ungroup {
                 $result_b->{refaddr $result_t} = $result_t;
             }
         }
-    }
-
-    if ($topic->_is_known_dup_free()) {
-        $result->_is_known_dup_free( 1 );
     }
 
     return $result;
@@ -1281,10 +1262,6 @@ sub transitive_closure {
 
     # If we get here, there are at least 2 arcs, so there is a chance they
     # may connect into longer paths.
-
-    if (!$topic->_is_known_dup_free()) {
-        $topic->_dup_free_want_index_over_all_attrs();
-    }
 
     my ($atnm1, $atnm2) = sort keys %{$topic->_heading()};
 
@@ -1503,8 +1480,7 @@ sub _extension {
             'extension', '$func', '$attr_names', $exten_t, $exten_h );
         $exten_t = $topic->_import_nfmt_tuple( $exten_t );
         my $result_t = {%{$topic_t}, %{$exten_t}};
-        my $result_t_refaddr = refaddr $result_t;
-        $result_b->{$result_t_refaddr} = $result_t;
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     if ($topic->_is_known_dup_free()) {
@@ -1555,8 +1531,7 @@ sub _static_extension {
 
     for my $topic_t (values %{$topic->_body()}) {
         my $result_t = {%{$topic_t}, %{$attrs}};
-        my $result_t_refaddr = refaddr $result_t;
-        $result_b->{$result_t_refaddr} = $result_t;
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     if ($topic->_is_known_dup_free()) {
@@ -1605,10 +1580,7 @@ sub map {
         $topic->_assert_valid_tuple_result_of_func_arg(
             'map', '$func', '$result_attr_names', $result_t, $result_h );
         $result_t = $topic->_import_nfmt_tuple( $result_t );
-        my $result_t_refaddr = refaddr $result_t;
-        if (!exists $result_b->{$result_t_refaddr}) {
-            $result_b->{$result_t_refaddr} = $result_t;
-        }
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     return $result;
@@ -1694,10 +1666,7 @@ sub summary {
             '$summ_func', '$result_attr_names', $result_t, $result_h );
         $result_t = $topic->_import_nfmt_tuple( $result_t );
 
-        my $result_t_refaddr = refaddr $result_t;
-        if (!exists $result_b->{$result_t_refaddr}) {
-            $result_b->{$result_t_refaddr} = $result_t;
-        }
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     return $result;
@@ -1807,11 +1776,12 @@ sub is_identical {
 sub _is_identical {
     my ($topic, $other) = @_;
     return ($topic->degree() == $other->degree()
-        and $topic->cardinality() == $other->cardinality()
         and $topic->_is_identical_hkeys(
             $topic->_heading(), $other->_heading() )
+        and $topic->cardinality() == $other->cardinality()
         and $topic->_is_identical_hkeys(
-            $topic->_body(), $other->_body() ));
+            $topic->_dup_free_want_index_over_all_attrs(),
+            $other->_dup_free_want_index_over_all_attrs() ));
 }
 
 ###########################################################################
@@ -1820,17 +1790,19 @@ sub is_subset {
     my ($look_in, $look_for) = @_;
     $look_for = $look_in->_normalize_same_heading_relation_arg(
         'is_subset', '$look_for', $look_for );
-    my $look_in_b = $look_in->_body();
-    return all { exists $look_in_b->{$_} } keys %{$look_for->_body()};
+    my $look_in_i = $look_in->_dup_free_want_index_over_all_attrs();
+    return all { exists $look_in_i->{$_} }
+        keys %{$look_for->_dup_free_want_index_over_all_attrs()};
 }
 
 sub is_proper_subset {
     my ($look_in, $look_for) = @_;
     $look_for = $look_in->_normalize_same_heading_relation_arg(
         'is_proper_subset', '$look_for', $look_for );
-    my $look_in_b = $look_in->_body();
+    my $look_in_i = $look_in->_dup_free_want_index_over_all_attrs();
     return ($look_for->cardinality() < $look_in->cardinality()
-        and all { exists $look_in_b->{$_} } keys %{$look_for->_body()});
+        and all { exists $look_in_i->{$_} }
+            keys %{$look_for->_dup_free_want_index_over_all_attrs()});
 }
 
 sub is_disjoint {
@@ -1853,7 +1825,6 @@ sub _union {
     my ($topic, $others) = @_;
 
     my $inputs = [
-        sort { $b->cardinality() <=> $a->cardinality() }
         grep { !$_->is_empty() } # filter out identity value instances
         $topic, @{$others}];
 
@@ -1868,21 +1839,9 @@ sub _union {
 
     # If we get here, there are at least 2 non-empty input relations.
 
-    my $largest = shift @{$inputs};
+    my $result = $topic->empty();
 
-    my $result = $largest->new( $largest );
-
-    my $smaller_bs = [CORE::map { $_->_body() } @{$inputs}];
-    my $result_b = $result->_body();
-
-    for my $smaller_b (@{$smaller_bs}) {
-        for my $tuple_refaddr (keys %{$smaller_b}) {
-            if (!exists $result_b->{$tuple_refaddr}) {
-                $result_b->{$tuple_refaddr}
-                    = $smaller_b->{$tuple_refaddr};
-            }
-        }
-    }
+    $result->_body( {CORE::map { %{$_->_body()} } @{$inputs}} );
 
     return $result;
 }
@@ -1913,25 +1872,31 @@ sub exclusion {
     # If we get here, there are at least 2 non-empty input relations.
 
     my $largest = shift @{$inputs};
+    my $largest_i = $largest->_dup_free_want_index_over_all_attrs();
 
-    my $result = $largest->new( $largest );
+    my $t_by_ident_str = {CORE::map {
+            ($_ => (values %{$largest_i->{$_}})[0])
+        } keys %{$largest_i}};
 
-    my $smaller_bs = [CORE::map { $_->_body() } @{$inputs}];
-    my $result_b = $result->_body();
-
-    for my $smaller_b (@{$smaller_bs}) {
-        for my $tuple_refaddr (keys %{$smaller_b}) {
-            if (exists $result_b->{$tuple_refaddr}) {
-                delete $result_b->{$tuple_refaddr};
+    for my $input (@{$inputs}) {
+        my $input_i = $input->_dup_free_want_index_over_all_attrs();
+        for my $tuple_ident_str (keys %{$input_i}) {
+            if (exists $t_by_ident_str->{$tuple_ident_str}) {
+                delete $t_by_ident_str->{$tuple_ident_str};
             }
             else {
-                $result_b->{$tuple_refaddr}
-                    = $smaller_b->{$tuple_refaddr};
+                $t_by_ident_str->{$tuple_ident_str}
+                    = (values %{$input_i->{$tuple_ident_str}})[0];
             }
         }
     }
 
-#    $result->_is_known_dup_free( 1 );
+    my $result = $topic->empty();
+
+    $result->_body(
+        {CORE::map { (refaddr $_ => $_) } values %{$t_by_ident_str}} );
+
+    $result->_is_known_dup_free( 1 );
 
     return $result;
 }
@@ -1953,7 +1918,7 @@ sub _intersection {
     }
 
     my $inputs = [
-        sort { $a->cardinality() <=> $b->cardinality() }
+        sort { $a->cardinality( 1 ) <=> $b->cardinality( 1 ) }
         $topic, @{$others}];
 
     my $smallest = shift @{$inputs};
@@ -1964,22 +1929,25 @@ sub _intersection {
 
     # If we get here, there are at least 2 non-empty input relations.
 
-    my $result = $smallest->empty();
+    my $result = $topic->empty();
 
-    my $smallest_b = $smallest->_body();
-    my $larger_bs = [CORE::map { $_->_body() } @{$inputs}];
+    my $smallest_i = $smallest->_dup_free_want_index_over_all_attrs();
+    my $larger_is = [CORE::map {
+            $_->_dup_free_want_index_over_all_attrs()
+        } @{$inputs}];
     my $result_b = $result->_body();
 
     TUPLE:
-    for my $tuple_refaddr (keys %{$smallest_b}) {
-        for my $larger_b (@{$larger_bs}) {
+    for my $tuple_ident_str (keys %{$smallest_i}) {
+        for my $larger_i (@{$larger_is}) {
             next TUPLE
-                if !exists $larger_b->{$tuple_refaddr};
+                if !exists $larger_i->{$tuple_ident_str};
         }
-        $result_b->{$tuple_refaddr} = $smallest_b->{$tuple_refaddr};
+        my ($tuple_refaddr, $tuple) = %{$smallest_i->{$tuple_ident_str}};
+        $result_b->{$tuple_refaddr} = $tuple;
     }
 
-#    $result->_is_known_dup_free( 1 );
+    $result->_is_known_dup_free( 1 );
 
     return $result;
 }
@@ -2065,17 +2033,18 @@ sub _regular_difference {
 
     my $result = $source->empty();
 
-    my $source_b = $source->_body();
-    my $filter_b = $filter->_body();
+    my $source_i = $source->_dup_free_want_index_over_all_attrs();
+    my $filter_i = $filter->_dup_free_want_index_over_all_attrs();
     my $result_b = $result->_body();
 
-    for my $tuple_refaddr (keys %{$source_b}) {
-        if (!exists $filter_b->{$tuple_refaddr}) {
-            $result_b->{$tuple_refaddr} = $source_b->{$tuple_refaddr};
+    for my $tuple_ident_str (keys %{$source_i}) {
+        if (!exists $filter_i->{$tuple_ident_str}) {
+            my ($tuple_refaddr, $tuple) = %{$source_i->{$tuple_ident_str}};
+            $result_b->{$tuple_refaddr} = $tuple;
         }
     }
 
-#    $result->_is_known_dup_free( 1 );
+    $result->_is_known_dup_free( 1 );
 
     return $result;
 }
@@ -2158,7 +2127,7 @@ sub _regular_semijoin {
 
     my $result = $source->empty();
 
-    my ($sm, $lg) = ($source->cardinality() < $filter->cardinality())
+    my ($sm, $lg) = ($source->cardinality( 1 ) < $filter->cardinality( 1 ))
         ? ($source, $filter) : ($filter, $source);
 
     my $sm_index = $sm->_want_index( $both );
@@ -2212,7 +2181,7 @@ sub _join {
     # If we get here, all inputs have at least one tuple.
 
     $inputs = [
-        sort { $a->cardinality() <=> $b->cardinality() }
+        sort { $a->cardinality( 1 ) <=> $b->cardinality( 1 ) }
         grep { !$_->is_nullary() } # filter out identity value instances
         @{$inputs}];
 
@@ -2281,7 +2250,7 @@ sub _regular_join {
     $result->_heading( {CORE::map { ($_ => undef) }
         @{$both}, @{$topic_only}, @{$other_only}} );
 
-    my ($sm, $lg) = ($topic->cardinality() < $other->cardinality())
+    my ($sm, $lg) = ($topic->cardinality( 1 ) < $other->cardinality( 1 ))
         ? ($topic, $other) : ($other, $topic);
 
     my $sm_index = $sm->_want_index( $both );
@@ -2340,7 +2309,7 @@ sub product {
     # If we get here, all inputs have at least one tuple.
 
     $inputs = [
-        sort { $a->cardinality() <=> $b->cardinality() }
+        sort { $a->cardinality( 1 ) <=> $b->cardinality( 1 ) }
         grep { !$_->is_nullary() } # filter out identity value instances
         @{$inputs}];
 
@@ -2369,7 +2338,7 @@ sub _regular_product {
 
     $result->_heading( {%{$topic->_heading()}, %{$other->_heading()}} );
 
-    my ($sm, $lg) = ($topic->cardinality() < $other->cardinality())
+    my ($sm, $lg) = ($topic->cardinality( 1 ) < $other->cardinality( 1 ))
         ? ($topic, $other) : ($other, $topic);
 
     my $sm_b = $sm->_body();
@@ -2555,12 +2524,15 @@ sub _dup_free_want_index_over_all_attrs {
             if (exists $index->{$tuple_ident_str}) {
                 delete $body->{$tuple_refaddr};
                 $extras_to_delete->{$tuple_refaddr} = $tuple;
+                next;
             }
             $index->{$tuple_ident_str} = {$tuple_refaddr => $tuple};
         }
 
         if ((keys %{$extras_to_delete}) > 0) {
             for my $subheading_ident_str (keys %{$indexes}) {
+                next
+                    if $subheading_ident_str eq $heading_ident_str;
                 my ($subheading, $index)
                     = @{$indexes->{$subheading_ident_str}};
                 for my $tuple_refaddr (keys %{$extras_to_delete}) {
@@ -2652,8 +2624,7 @@ sub rank {
         my $topic_t = $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t};
         $rank ++;
         my $result_t = {$name => $rank, %{$topic_t}};
-        my $result_t_refaddr = refaddr $result_t;
-        $result_b->{$result_t_refaddr} = $result_t;
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     return $result;
@@ -2765,10 +2736,7 @@ sub _substitution {
             $rtn_nm, $arg_nm_func, $arg_nm_attrs, $subst_t, $subst_h );
         $subst_t = $topic->_import_nfmt_tuple( $subst_t );
         my $result_t = {%{$topic_t}, %{$subst_t}};
-        my $result_t_refaddr = refaddr $result_t;
-        if (!exists $result_b->{$result_t_refaddr}) {
-            $result_b->{$result_t_refaddr} = $result_t;
-        }
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     return $result;
@@ -2822,10 +2790,7 @@ sub _static_substitution {
 
     for my $topic_t (values %{$topic->_body()}) {
         my $result_t = {%{$topic_t}, %{$attrs}};
-        my $result_t_refaddr = refaddr $result_t;
-        if (!exists $result_b->{$result_t_refaddr}) {
-            $result_b->{$result_t_refaddr} = $result_t;
-        }
+        $result_b->{refaddr $result_t} = $result_t;
     }
 
     return $result;

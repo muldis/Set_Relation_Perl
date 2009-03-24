@@ -139,8 +139,8 @@ sub BUILD {
     # If we get here, $members is either a Set::Relation::V1 or an ary-ref.
 
     if (blessed $members and $members->isa( __PACKAGE__ )) {
-        # We will just copy another Set::Relation::V1 object's member-set.
-        $self->_heading( {%{$members->_heading()}} );
+        # We'll just shallow clone h, copy b of anoth V1 obj's member-set.
+        $self->_heading( $members->_heading() );
         $self->_degree( $members->degree() );
         $self->_body( {%{$members->_body()}} );
         $self->_cardinality( $members->cardinality() );
@@ -641,7 +641,10 @@ sub empty {
     if ($topic->is_empty()) {
         return $topic;
     }
-    return $topic->new( $topic->heading() );
+    my $result = $topic->new();
+    $result->_heading( $topic->_heading() );
+    $result->_degree( $topic->_degree() );
+    return $result;
 }
 
 sub insertion {

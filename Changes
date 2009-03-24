@@ -8,6 +8,11 @@
 
 LAST ITEM IN PROGRESS ...
 
+    * This release features the addition of a second bundled implementation
+    of the Set::Relation role, called V2, which should have different (and
+    hopefully better) performance characteristics than V1.  This release
+    doesn't change the S::R public API in any particularly substantial way.
+
     * Updated external dependencies: Moose/etc to version 0.72, Class::MOP
     to version 0.78.
 
