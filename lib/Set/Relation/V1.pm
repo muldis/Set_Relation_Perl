@@ -77,6 +77,17 @@ use Set::Relation 0.008000;
         default => sub { {} },
     );
 
+    has '_keys' => (
+        is      => 'rw',
+        isa     => 'HashRef',
+            # One elem per key:
+                # hkey is key name;
+                    # - is Str ident gen f head subset tha index ranges ovr
+                # hval is HashRef of atnms that index ranges over
+                    # - structure same as '_heading'
+        default => sub { {} },
+    );
+
     # If this is made true, no further mutation of S::R head/body allowed,
     # and then it can't be made false again.
     has '_has_frozen_identity' => (
@@ -111,7 +122,7 @@ sub BUILDARGS {
 
 sub BUILD {
     my ($self, $args) = @_;
-    my ($members) = @{$args}{'members'};
+    my ($members, $keys) = @{$args}{'members', 'keys'};
 
     # Note, $members may be in all of the same formats as a HDMD_Perl5_Tiny
     # Relation value literal payload, but with a few extra trivial options.
@@ -138,12 +149,30 @@ sub BUILD {
 
     # If we get here, $members is either a Set::Relation::V1 or an ary-ref.
 
+    if (!defined $keys) {
+        $keys = [];
+    }
+    elsif (ref $keys ne 'ARRAY') {
+        $keys = [$keys];
+    }
+    if (any { ref $_ ne 'ARRAY' } @{$keys}) {
+        $keys = [$keys];
+    }
+    for my $key (@{$keys}) {
+        confess q{new(): Bad $keys arg; it is not correctly formatted.}
+            if ref $key ne 'ARRAY'
+                or notall { defined $_ and !ref $_ } @{$key};
+    }
+
+    # If we get here, $keys is an Array of Array of Str.
+
     if (blessed $members and $members->isa( __PACKAGE__ )) {
         # We'll just shallow clone h, copy b of anoth V1 obj's member-set.
         $self->_heading( $members->_heading() );
         $self->_degree( $members->degree() );
         $self->_body( {%{$members->_body()}} );
         $self->_cardinality( $members->cardinality() );
+        $self->_keys( {%{$members->_keys()}} );
     }
     elsif (@{$members} == 0) {
         # Input specifies zero attrs + zero tuples.
@@ -172,7 +201,8 @@ sub BUILD {
         }
         elsif (ref $member0 eq 'HASH') {
             # Input spec at least 1 tuple, in named attr format.
-            my $heading = {CORE::map { ($_ => undef) } keys %{$member0}};
+            my $heading
+                = {CORE::map { ($_ => undef) } CORE::keys %{$member0}};
             my $body = {};
             for my $tuple (@{$members}) {
                 confess q{new(): Bad :$members arg; it has a hash-ref}
@@ -191,9 +221,9 @@ sub BUILD {
                 $body->{$self->_ident_str( $tuple )} = $tuple;
             }
             $self->_heading( $heading );
-            $self->_degree( scalar keys %{$heading} );
+            $self->_degree( scalar CORE::keys %{$heading} );
             $self->_body( $body );
-            $self->_cardinality( scalar keys %{$body} );
+            $self->_cardinality( scalar CORE::keys %{$body} );
         }
         elsif (ref $member0 eq 'ARRAY') {
             # Input is in ordered attr format.
@@ -233,15 +263,28 @@ sub BUILD {
                 $body->{$self->_ident_str( $tuple )} = $tuple;
             }
             $self->_heading( $heading );
-            $self->_degree( scalar keys %{$heading} );
+            $self->_degree( scalar CORE::keys %{$heading} );
             $self->_body( $body );
-            $self->_cardinality( scalar keys %{$body} );
+            $self->_cardinality( scalar CORE::keys %{$body} );
         }
         else {
             confess q{new(): Bad :$members arg; it is an array-ref but it}
                 . q{ has an elem that is neither a defined scalar nor}
                 . q{ an array-ref nor a hash-ref.};
         }
+    }
+
+    my $self_h = $self->_heading();
+
+    for my $key (@{$keys}) {
+        confess q{new(): At least one of the relation keys defined by the}
+                . q{ $keys arg isn't a subset of the heading of the}
+                . q{ relation defined by the $members arg.}
+            if notall { exists $self_h->{$_} } @{$key};
+        confess q{new(): The relation defined by the $members arg violates}
+                . q{ at least one of the candidate unique key constraints}
+                . qq{ defined by the $members arg: [@{$key}].}
+            if !$self->_has_key( $key );
     }
 
     return;
@@ -254,6 +297,7 @@ sub export_for_new {
     return {
         'members' => $self->_members(
             'export_for_new', '$want_ord_attrs', $want_ord_attrs ),
+        'keys' => $self->keys(),
         # Note, we make an exception by not exporting the
         # 'has_frozen_identity' object attribute even though the 'new'
         # constructor can take an argument to user-initialize it;
@@ -273,7 +317,7 @@ sub which {
     if (!defined $ident_str) {
         $self->_has_frozen_identity( 1 );
         my $hs = $self->_heading_ident_str( $self->_heading() );
-        my $bs = CORE::join qq{,\n}, sort keys %{$self->_body()};
+        my $bs = CORE::join qq{,\n}, sort (CORE::keys %{$self->_body()});
         my $vstr = "H=$hs;\nB={$bs}";
         $ident_str = 'Relation:' . (length $vstr) . ':{' . $vstr . '}';
         $self->_which( $ident_str );
@@ -298,9 +342,9 @@ sub _members {
                 $self->_export_ofmt_tuple( $ord_attr_names, $_ )
             } values %{$self->_body()}]];
     }
-    elsif ((keys %{$self->_body()}) == 0) {
+    elsif ((CORE::keys %{$self->_body()}) == 0) {
         # We have zero tuples, just export attr names.
-        return [sort keys %{$self->_heading()}];
+        return [sort (CORE::keys %{$self->_heading()})];
     }
     else {
         # We have at least one tuple, export in named-attr format.
@@ -313,7 +357,7 @@ sub _members {
 
 sub heading {
     my ($self) = @_;
-    return [sort keys %{$self->_heading()}];
+    return [sort (CORE::keys %{$self->_heading()})];
 }
 
 ###########################################################################
@@ -339,7 +383,7 @@ sub _normalize_true_want_ord_attrs_arg {
 
     my $heading = $self->_heading();
 
-    my $attr_names = [keys %{$heading}];
+    my $attr_names = [CORE::keys %{$heading}];
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it must be either undefined|false or the scalar value '1'}
             . q{ or an array-ref of attr names whose degree and}
@@ -400,6 +444,13 @@ sub attr {
             }
             $atvl;
         } values %{$self->_body()}];
+}
+
+###########################################################################
+
+sub keys {
+    my ($self) = @_;
+    return [CORE::map { [sort @{$_}] } values %{$self->_keys()}];
 }
 
 ###########################################################################
@@ -474,8 +525,8 @@ sub _self_is_component_of_tuple_arg {
 
 sub _is_identical_hkeys {
     my ($self, $h1, $h2) = @_;
-    my $h1_hkeys = [keys %{$h1}];
-    my $h2_hkeys = [keys %{$h2}];
+    my $h1_hkeys = [CORE::keys %{$h1}];
+    my $h2_hkeys = [CORE::keys %{$h2}];
     return (@{$h1_hkeys} == @{$h2_hkeys}
         and all { exists $h1->{$_} } @{$h2_hkeys});
 }
@@ -486,7 +537,7 @@ sub _heading_ident_str {
     my ($self, $heading) = @_;
     my $vstr = CORE::join q{,}, CORE::map {
             'Atnm:' . (length $_) . ':<' . $_ . '>'
-        } sort keys %{$heading};
+        } sort (CORE::keys %{$heading});
     return 'Heading:' . (length $vstr) . ':{' . $vstr . '}';
 }
 
@@ -513,7 +564,7 @@ sub _ident_str {
                 my $atnm = 'Atnm:' . (length $_) . ':<' . $_ . '>';
                 my $atvl = $value->{$_}->[1];
                 "N=$atnm;V=$atvl";
-            } sort keys %{$value};
+            } sort (CORE::keys %{$value});
             $ident_str = 'Tuple:' . (length $vstr) . ':{' . $vstr . '}';
         }
         else {
@@ -553,7 +604,7 @@ sub _import_nfmt_tuple {
             $atvl = $self->new( $atvl );
         }
         ($atnm => [$atvl, $self->_ident_str( $atvl )]);
-    } keys %{$tuple}};
+    } CORE::keys %{$tuple}};
 }
 
 sub _export_nfmt_tuple {
@@ -565,7 +616,7 @@ sub _export_nfmt_tuple {
             $atvl = $self->_export_nfmt_tuple( $atvl );
         }
         ($atnm => $atvl);
-    } keys %{$tuple}};
+    } CORE::keys %{$tuple}};
 }
 
 sub _import_ofmt_tuple {
@@ -615,7 +666,7 @@ sub has_attrs {
 
 sub attr_names {
     my ($topic) = @_;
-    return [sort keys %{$topic->_heading()}];
+    return [sort (CORE::keys %{$topic->_heading()})];
 }
 
 ###########################################################################
@@ -632,6 +683,38 @@ sub is_member {
     return all {
             exists $r_b->{$r->_ident_str( $r->_import_nfmt_tuple( $_ ) )}
         } @{$t};
+}
+
+###########################################################################
+
+sub has_key {
+    my ($topic, $attr_names) = @_;
+    (undef, $attr_names) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
+        'has_key', '$attr_names', $attr_names );
+    my $topic_h = $topic->_heading();
+    confess q{has_key(): Bad $attr_names arg; that attr list}
+            . q{ isn't a subset of the invocant's heading.}
+        if notall { exists $topic_h->{$_} } @{$attr_names};
+    return $topic->_has_key( $attr_names );
+}
+
+sub _has_key {
+    my ($topic, $attr_names) = @_;
+
+    my $subheading = {CORE::map { ($_ => undef) } @{$attr_names}};
+    my $subheading_ident_str = $topic->_heading_ident_str( $subheading );
+    my $keys = $topic->_keys();
+
+    return 1
+        if exists $keys->{$subheading_ident_str};
+
+    my $index = $topic->_want_index( $attr_names );
+
+    return 0
+        if notall { (CORE::keys %{$_}) == 1 } values %{$index};
+
+    $keys->{$subheading_ident_str} = $subheading;
+    return 1;
 }
 
 ###########################################################################
@@ -679,7 +762,7 @@ sub rename {
     confess q{rename(): Bad $map arg;}
             . q{ its hash elem values specify a list of}
             . q{ attr names with at least one duplicated name.}
-        if (uniq values %{$map}) != (keys %{$map});
+        if (uniq values %{$map}) != (CORE::keys %{$map});
 
     my ($topic_attrs_to_ren, $topic_attrs_no_ren, $map_hkeys_not_in_topic)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $map );
@@ -704,9 +787,9 @@ sub _rename {
 
     # Remove any explicit no-ops of an attr being renamed to the same name.
     $map = {CORE::map { ($_ => $map->{$_}) }
-        grep { $map->{$_} ne $_ } keys %{$map}};
+        grep { $map->{$_} ne $_ } CORE::keys %{$map}};
 
-    if ((scalar keys %{$map}) == 0) {
+    if ((scalar CORE::keys %{$map}) == 0) {
         # Rename of zero attrs of input yields the input.
         return $topic;
     }
@@ -714,7 +797,7 @@ sub _rename {
     # Expand map to specify all topic attrs being renamed to something.
     $map = {CORE::map { ($_ => (
             exists $map->{$_} ? $map->{$_} : $_
-        )) } keys %{$topic->_heading()}};
+        )) } CORE::keys %{$topic->_heading()}};
 
     my $result = $topic->new();
 
@@ -726,7 +809,7 @@ sub _rename {
     for my $topic_t (values %{$topic->_body()}) {
         my $result_t = {CORE::map {
                 ($map->{$_} => $topic_t->{$_})
-            } keys %{$topic_t}};
+            } CORE::keys %{$topic_t}};
         my $result_t_ident_str = $topic->_ident_str( $result_t );
         $result_b->{$result_t_ident_str} = $result_t;
     }
@@ -784,7 +867,7 @@ sub _projection {
             $result_b->{$result_t_ident_str} = $result_t;
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -804,7 +887,7 @@ sub cmpl_projection {
         if @{$cproj_only} > 0;
 
     return $topic->_projection(
-        [grep { !$cproj_h->{$_} } keys %{$topic_h}] );
+        [grep { !$cproj_h->{$_} } CORE::keys %{$topic_h}] );
 }
 
 ###########################################################################
@@ -858,7 +941,7 @@ sub _wrap {
     }
     elsif (@{$topic_attrs_no_wr} == 0) {
         # Wrap all $topic attrs as new attr.
-        for my $topic_t_ident_str (keys %{$topic_b}) {
+        for my $topic_t_ident_str (CORE::keys %{$topic_b}) {
             my $result_t = {$outer => [$topic_b->{$topic_t_ident_str},
                 $topic_t_ident_str]};
             my $result_t_ident_str = $topic->_ident_str( $result_t );
@@ -897,7 +980,7 @@ sub cmpl_wrap {
             . q{ isn't a subset of the invocant's heading.}
         if notall { exists $topic_h->{$_} } @{$cmpl_inner};
 
-    my $inner = [grep { !$cmpl_inner_h->{$_} } keys %{$topic_h}];
+    my $inner = [grep { !$cmpl_inner_h->{$_} } CORE::keys %{$topic_h}];
     my $inner_h = {CORE::map { $_ => undef } @{$inner}};
 
     my (undef, $topic_attrs_no_wr, undef)
@@ -1063,7 +1146,8 @@ sub _group {
                     = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
                 $inner_b->{$topic->_ident_str( $inner_t )} = $inner_t;
             }
-            $inner_r->_cardinality( scalar keys %{$matched_topic_b} );
+            $inner_r->_cardinality(
+                scalar CORE::keys %{$matched_topic_b} );
             my $outer_atvl = [$inner_r, $inner_r->which()];
 
             my $any_mtpt = (values %{$matched_topic_b})[0];
@@ -1075,7 +1159,7 @@ sub _group {
             my $result_t_ident_str = $topic->_ident_str( $result_t );
             $result_b->{$result_t_ident_str} = $result_t;
         }
-        $result->_cardinality( scalar keys %{$topic_index} );
+        $result->_cardinality( scalar CORE::keys %{$topic_index} );
     }
 
     return $result;
@@ -1095,7 +1179,7 @@ sub cmpl_group {
             . q{ isn't a subset of the invocant's heading.}
         if notall { exists $topic_h->{$_} } @{$group_per};
 
-    my $inner = [grep { !$group_per_h->{$_} } keys %{$topic_h}];
+    my $inner = [grep { !$group_per_h->{$_} } CORE::keys %{$topic_h}];
     my $inner_h = {CORE::map { $_ => undef } @{$inner}};
 
     my (undef, $topic_attrs_no_gr, undef)
@@ -1192,7 +1276,7 @@ sub ungroup {
                 $result_b->{$topic->_ident_str( $result_t )} = $result_t;
             }
         }
-        $result->_cardinality( scalar keys %{$result_b} );
+        $result->_cardinality( scalar CORE::keys %{$result_b} );
     }
 
     return $result;
@@ -1215,7 +1299,7 @@ sub transitive_closure {
     # If we get here, there are at least 2 arcs, so there is a chance they
     # may connect into longer paths.
 
-    my ($atnm1, $atnm2) = sort keys %{$topic->_heading()};
+    my ($atnm1, $atnm2) = sort (CORE::keys %{$topic->_heading()});
 
     return $topic->_rename( { $atnm1 => 'x', $atnm2 => 'y' } )
         ->_transitive_closure_of_xy()
@@ -1272,7 +1356,7 @@ sub restriction {
     my $topic_b = $topic->_body();
     my $result_b = $result->_body();
 
-    for my $topic_t_ident_str (keys %{$topic_b}) {
+    for my $topic_t_ident_str (CORE::keys %{$topic_b}) {
         my $topic_t = $topic_b->{$topic_t_ident_str};
         my $is_matched;
         {
@@ -1283,7 +1367,7 @@ sub restriction {
             $result_b->{$topic_t_ident_str} = $topic_t;
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -1309,7 +1393,7 @@ sub _restriction_and_cmpl {
     my $pass_result_b = $pass_result->_body();
     my $fail_result_b = $fail_result->_body();
 
-    for my $topic_t_ident_str (keys %{$topic_b}) {
+    for my $topic_t_ident_str (CORE::keys %{$topic_b}) {
         my $topic_t = $topic_b->{$topic_t_ident_str};
         my $is_matched;
         {
@@ -1323,8 +1407,8 @@ sub _restriction_and_cmpl {
             $fail_result_b->{$topic_t_ident_str} = $topic_t;
         }
     }
-    $pass_result->_cardinality( scalar keys %{$pass_result_b} );
-    $fail_result->_cardinality( scalar keys %{$fail_result_b} );
+    $pass_result->_cardinality( scalar CORE::keys %{$pass_result_b} );
+    $fail_result->_cardinality( scalar CORE::keys %{$fail_result_b} );
 
     return [$pass_result, $fail_result];
 }
@@ -1343,7 +1427,7 @@ sub cmpl_restriction {
     my $topic_b = $topic->_body();
     my $result_b = $result->_body();
 
-    for my $topic_t_ident_str (keys %{$topic_b}) {
+    for my $topic_t_ident_str (CORE::keys %{$topic_b}) {
         my $topic_t = $topic_b->{$topic_t_ident_str};
         my $is_matched;
         {
@@ -1354,7 +1438,80 @@ sub cmpl_restriction {
             $result_b->{$topic_t_ident_str} = $topic_t;
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
+
+    return $result;
+}
+
+###########################################################################
+
+sub classification {
+    my ($topic, $func, $class_attr_name, $group_attr_name,
+        $allow_dup_tuples) = @_;
+
+    $topic->_assert_valid_func_arg( 'classification', '$func', $func );
+    $topic->_assert_valid_atnm_arg(
+        'classification', '$class_attr_name', $class_attr_name );
+    $topic->_assert_valid_atnm_arg(
+        'classification', '$group_attr_name', $group_attr_name );
+
+    my $result = $topic->new();
+
+    $result->_heading(
+        {$class_attr_name => undef, $group_attr_name => undef} );
+    $result->_degree( 2 );
+
+    if ($topic->is_empty()) {
+        # An empty $topic means an empty result.
+        # So result body is already correct.
+        return $result;
+    }
+
+    my $topic_h = $topic->_heading();
+    my $topic_degree = $topic->degree();
+    my $topic_b = $topic->_body();
+
+    my $tuples_per_class = {};
+
+    for my $topic_t_ident_str (CORE::keys %{$topic_b}) {
+        my $topic_t = $topic_b->{$topic_t_ident_str};
+        my $class;
+        {
+            local $_ = $topic->_export_nfmt_tuple( $topic_t );
+            $class = $func->();
+        }
+        my $class_ident_str = $topic->_ident_str( $class );
+        if (!exists $tuples_per_class->{$class_ident_str}) {
+            $tuples_per_class->{$class_ident_str} = [$class, []];
+        }
+        push @{$tuples_per_class->{$class_ident_str}->[1]},
+            [$topic_t, $topic_t_ident_str];
+    }
+
+    my $result_b = $result->_body();
+    for my $class_ident_str (CORE::keys %{$tuples_per_class}) {
+        my ($class, $tuples_in_class)
+            = @{$tuples_per_class->{$class_ident_str}};
+
+        my $inner_r = $topic->new();
+        $inner_r->_heading( $topic_h );
+        $inner_r->_degree( $topic_degree );
+        my $inner_b = $inner_r->_body();
+        for my $topic_t_w_ident (@{$tuples_in_class}) {
+            my ($topic_t, $topic_t_ident_str) = @{$topic_t_w_ident};
+            $inner_b->{$topic_t_ident_str} = $topic_t;
+        }
+        $inner_r->_cardinality( scalar @{$tuples_in_class} );
+        my $outer_atvl = [$inner_r, $inner_r->which()];
+
+        my $result_t = {
+            $class_attr_name => [$class, $class_ident_str],
+            $group_attr_name => $outer_atvl,
+        };
+        my $result_t_ident_str = $topic->_ident_str( $result_t );
+        $result_b->{$result_t_ident_str} = $result_t;
+    }
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -1436,7 +1593,7 @@ sub static_extension {
 sub _static_extension {
     my ($topic, $attrs) = @_;
 
-    if ((scalar keys %{$attrs}) == 0) {
+    if ((scalar CORE::keys %{$attrs}) == 0) {
         # Extension of input by zero attrs yields the input.
         return $topic;
     }
@@ -1446,8 +1603,8 @@ sub _static_extension {
     my $result = $topic->new();
 
     $result->_heading( {%{$topic->_heading()},
-        CORE::map { ($_ => undef) } keys %{$attrs}} );
-    $result->_degree( $topic->degree() + (scalar keys %{$attrs}) );
+        CORE::map { ($_ => undef) } CORE::keys %{$attrs}} );
+    $result->_degree( $topic->degree() + (scalar CORE::keys %{$attrs}) );
 
     my $result_b = $result->_body();
 
@@ -1502,7 +1659,7 @@ sub map {
             $result_b->{$result_t_ident_str} = $result_t;
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -1527,7 +1684,7 @@ sub summary {
             . q{ isn't a subset of the invocant's heading.}
         if notall { exists $topic_h->{$_} } @{$group_per};
 
-    my $inner = [grep { !$group_per_h->{$_} } keys %{$topic_h}];
+    my $inner = [grep { !$group_per_h->{$_} } CORE::keys %{$topic_h}];
     my $inner_h = {CORE::map { $_ => undef } @{$inner}};
 
     my (undef, $topic_attrs_no_gr, undef)
@@ -1568,7 +1725,7 @@ sub summary {
             my $inner_t = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
             $inner_b->{$topic->_ident_str( $inner_t )} = $inner_t;
         }
-        $inner_r->_cardinality( scalar keys %{$matched_topic_b} );
+        $inner_r->_cardinality( scalar CORE::keys %{$matched_topic_b} );
 
         my $any_mtpt = (values %{$matched_topic_b})[0];
         my $group_per_t = {CORE::map { ($_ => $any_mtpt->{$_}) }
@@ -1591,7 +1748,7 @@ sub summary {
             $result_b->{$result_t_ident_str} = $result_t;
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -1714,7 +1871,8 @@ sub is_subset {
     $look_for = $look_in->_normalize_same_heading_relation_arg(
         'is_subset', '$look_for', $look_for );
     my $look_in_b = $look_in->_body();
-    return all { exists $look_in_b->{$_} } keys %{$look_for->_body()};
+    return all { exists $look_in_b->{$_} }
+        CORE::keys %{$look_for->_body()};
 }
 
 sub is_proper_subset {
@@ -1723,7 +1881,8 @@ sub is_proper_subset {
         'is_proper_subset', '$look_for', $look_for );
     my $look_in_b = $look_in->_body();
     return ($look_for->cardinality() < $look_in->cardinality()
-        and all { exists $look_in_b->{$_} } keys %{$look_for->_body()});
+        and all { exists $look_in_b->{$_} }
+            CORE::keys %{$look_for->_body()});
 }
 
 sub is_disjoint {
@@ -1769,14 +1928,14 @@ sub _union {
     my $result_b = $result->_body();
 
     for my $smaller_b (@{$smaller_bs}) {
-        for my $tuple_ident_str (keys %{$smaller_b}) {
+        for my $tuple_ident_str (CORE::keys %{$smaller_b}) {
             if (!exists $result_b->{$tuple_ident_str}) {
                 $result_b->{$tuple_ident_str}
                     = $smaller_b->{$tuple_ident_str};
             }
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -1814,7 +1973,7 @@ sub exclusion {
     my $result_b = $result->_body();
 
     for my $smaller_b (@{$smaller_bs}) {
-        for my $tuple_ident_str (keys %{$smaller_b}) {
+        for my $tuple_ident_str (CORE::keys %{$smaller_b}) {
             if (exists $result_b->{$tuple_ident_str}) {
                 CORE::delete $result_b->{$tuple_ident_str};
             }
@@ -1824,7 +1983,7 @@ sub exclusion {
             }
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -1864,14 +2023,14 @@ sub _intersection {
     my $result_b = $result->_body();
 
     TUPLE:
-    for my $tuple_ident_str (keys %{$smallest_b}) {
+    for my $tuple_ident_str (CORE::keys %{$smallest_b}) {
         for my $larger_b (@{$larger_bs}) {
             next TUPLE
                 if !exists $larger_b->{$tuple_ident_str};
         }
         $result_b->{$tuple_ident_str} = $smallest_b->{$tuple_ident_str};
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -1961,12 +2120,12 @@ sub _regular_difference {
     my $filter_b = $filter->_body();
     my $result_b = $result->_body();
 
-    for my $tuple_ident_str (keys %{$source_b}) {
+    for my $tuple_ident_str (CORE::keys %{$source_b}) {
         if (!exists $filter_b->{$tuple_ident_str}) {
             $result_b->{$tuple_ident_str} = $source_b->{$tuple_ident_str};
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -2057,16 +2216,16 @@ sub _regular_semijoin {
     my $source_index = $source->_want_index( $both );
     my $result_b = $result->_body();
 
-    for my $subtuple_ident_str (keys %{$sm_index}) {
+    for my $subtuple_ident_str (CORE::keys %{$sm_index}) {
         if (exists $lg_index->{$subtuple_ident_str}) {
             my $matched_source_b = $source_index->{$subtuple_ident_str};
-            for my $tuple_ident_str (keys %{$matched_source_b}) {
+            for my $tuple_ident_str (CORE::keys %{$matched_source_b}) {
                 $result_b->{$tuple_ident_str}
                     = $matched_source_b->{$tuple_ident_str};
             }
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -2094,7 +2253,7 @@ sub _join {
         my $result = $topic->new();
         my $result_h = {CORE::map { %{$_->_heading()} } @{$inputs}};
         $result->_heading( $result_h );
-        $result->_degree( scalar keys %{$result_h} );
+        $result->_degree( scalar CORE::keys %{$result_h} );
         return $result;
     }
 
@@ -2178,7 +2337,7 @@ sub _regular_join {
     my $lg_index = $lg->_want_index( $both );
     my $result_b = {};
 
-    for my $subtuple_ident_str (keys %{$sm_index}) {
+    for my $subtuple_ident_str (CORE::keys %{$sm_index}) {
         if (exists $lg_index->{$subtuple_ident_str}) {
             my $matched_sm_b = $sm_index->{$subtuple_ident_str};
             my $matched_lg_b = $lg_index->{$subtuple_ident_str};
@@ -2192,7 +2351,7 @@ sub _regular_join {
         }
     }
     $result->_body( $result_b );
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -2211,7 +2370,7 @@ sub product {
 
     my $inputs = [$topic, @{$others}];
 
-    my $attr_names = [CORE::map { keys %{$_->_heading()} } @{$inputs}];
+    my $attr_names = [CORE::map { CORE::keys %{$_->_heading()} } @{$inputs}];
 
     confess q{product(): Bad $others arg;}
             . q{ one of its elems has an attr name duplicated by}
@@ -2384,10 +2543,10 @@ sub composition {
 sub _ptn_conj_and_disj {
     # inputs are hashes, results are arrays
     my ($self, $src1, $src2) = @_;
-    my $both = [grep { exists $src1->{$_} } keys %{$src2}];
+    my $both = [grep { exists $src1->{$_} } CORE::keys %{$src2}];
     my $both_h = {CORE::map { ($_ => undef) } @{$both}};
-    my $only1 = [grep { !exists $both_h->{$_} } keys %{$src1}];
-    my $only2 = [grep { !exists $both_h->{$_} } keys %{$src2}];
+    my $only1 = [grep { !exists $both_h->{$_} } CORE::keys %{$src1}];
+    my $only2 = [grep { !exists $both_h->{$_} } CORE::keys %{$src2}];
     return ($both, $only1, $only2);
 }
 
@@ -2403,7 +2562,7 @@ sub _want_index {
             = [ $subheading, {} ];
         my $index = $index_and_meta->[1];
         my $body = $self->_body();
-        for my $tuple_ident_str (keys %{$body}) {
+        for my $tuple_ident_str (CORE::keys %{$body}) {
             my $tuple = $body->{$tuple_ident_str};
             my $subtuple_ident_str = $self->_ident_str(
                 {CORE::map { ($_ => $tuple->{$_}) } @{$atnms}} );
@@ -2440,7 +2599,8 @@ sub join_with_group {
 
     return $primary
         ->_join( [$secondary] )
-        ->_group( $inner, $group_attr, [keys %{$primary_h}], $inner_h );
+        ->_group( $inner, $group_attr, [CORE::keys %{$primary_h}],
+            $inner_h );
 }
 
 ###########################################################################
@@ -2518,7 +2678,7 @@ sub limit {
     my $ext_topic_tuples = [];
     my $topic_tuples_by_ext_tt_ref = {};
 
-    for my $topic_t_ident_str (keys %{$topic_b}) {
+    for my $topic_t_ident_str (CORE::keys %{$topic_b}) {
         my $topic_t = $topic_b->{$topic_t_ident_str};
         my $ext_topic_t = $topic->_export_nfmt_tuple( $topic_t );
         push @{$ext_topic_tuples}, $ext_topic_t;
@@ -2541,7 +2701,7 @@ sub limit {
             = $topic_tuples_by_ext_tt_ref->{refaddr $ext_topic_t};
         $result_b->{$topic_t_ident_str} = $topic_b->{$topic_t_ident_str};
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -2605,7 +2765,7 @@ sub _substitution {
             $result_b->{$result_t_ident_str} = $result_t;
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -2645,7 +2805,7 @@ sub _static_substitution {
     if ($topic->is_empty()) {
         return $topic;
     }
-    if ((scalar keys %{$attrs}) == 0) {
+    if ((scalar CORE::keys %{$attrs}) == 0) {
         # Substitution in zero attrs of input yields the input.
         return $topic;
     }
@@ -2663,7 +2823,7 @@ sub _static_substitution {
             $result_b->{$result_t_ident_str} = $result_t;
         }
     }
-    $result->_cardinality( scalar keys %{$result_b} );
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
 }
@@ -2781,7 +2941,8 @@ sub outer_join_with_group {
 
     my $result_matched = $pri_matched
         ->_join( [$secondary] )
-        ->_group( $inner, $group_attr, [keys %{$primary_h}], $inner_h );
+        ->_group( $inner, $group_attr, [CORE::keys %{$primary_h}],
+            $inner_h );
 
     my $result_nonmatched = $pri_nonmatched
         ->_static_extension( {$group_attr => $primary->new( $inner )} );
@@ -2922,6 +3083,7 @@ sub _insert {
 
     my $r_b = $r->_body();
     my $r_indexes = $r->_indexes();
+    my $r_keys = $r->_keys();
 
     for my $tuple (@{$t}) {
         $tuple = $r->_import_nfmt_tuple( $tuple );
@@ -2929,19 +3091,31 @@ sub _insert {
         if (!exists $r_b->{$tuple_ident_str}) {
             $r_b->{$tuple_ident_str} = $tuple;
 
-            for my $subheading_ident_str (keys %{$r_indexes}) {
+            for my $subheading_ident_str (CORE::keys %{$r_indexes}) {
                 my ($subheading, $index)
                     = @{$r_indexes->{$subheading_ident_str}};
                 my $subtuple_ident_str = $r->_ident_str(
                     {CORE::map { ($_ => $tuple->{$_}) }
-                        keys %{$subheading}} );
+                        CORE::keys %{$subheading}} );
                 my $matched_b = $index->{$subtuple_ident_str} ||= {};
                 $matched_b->{$tuple_ident_str} = $tuple;
+
+                if (exists $r_keys->{$subheading_ident_str}) {
+                    if ((CORE::keys %{$matched_b}) == 1) {
+                        # A candidate key is still satisfied.
+                        $r_keys->{$subheading_ident_str} = $subheading;
+                    }
+                    else {
+                        # A candidate key is now violated.
+                        CORE::delete $r_keys->{$subheading_ident_str};
+                    }
+                }
+
             }
 
         }
     }
-    $r->_cardinality( scalar keys %{$r_b} );
+    $r->_cardinality( scalar CORE::keys %{$r_b} );
 
     return $r;
 }
@@ -2974,22 +3148,22 @@ sub _delete {
         if (exists $r_b->{$tuple_ident_str}) {
             CORE::delete $r_b->{$tuple_ident_str};
 
-            for my $subheading_ident_str (keys %{$r_indexes}) {
+            for my $subheading_ident_str (CORE::keys %{$r_indexes}) {
                 my ($subheading, $index)
                     = @{$r_indexes->{$subheading_ident_str}};
                 my $subtuple_ident_str = $r->_ident_str(
                     {CORE::map { ($_ => $tuple->{$_}) }
-                        keys %{$subheading}} );
+                        CORE::keys %{$subheading}} );
                 my $matched_b = $index->{$subtuple_ident_str};
                 CORE::delete $matched_b->{$tuple_ident_str};
-                if ((scalar keys %{$matched_b}) == 0) {
+                if ((scalar CORE::keys %{$matched_b}) == 0) {
                     CORE::delete $index->{$subtuple_ident_str};
                 }
             }
 
         }
     }
-    $r->_cardinality( scalar keys %{$r_b} );
+    $r->_cardinality( scalar CORE::keys %{$r_b} );
 
     return $r;
 }

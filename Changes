@@ -1,6 +1,41 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-03-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.9.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.9.0.tar.gz.
+
+    * (Relation.pm)  Updated the Set::Relation role in several closely
+    related ways.  Added new named parameter to 'new' named 'keys' which
+    lets one define candidate keys for the new relation which the 'members'
+    argument must satisfy for 'new' to succeed; a variety of format
+    examples were included in the documentation.  Also updated the accessor
+    method 'export_for_new' and added the accessor method 'keys' which take
+    care of dumping the list of candidate keys that the relation object is
+    known to satisfy.  Also added new functional method 'has_key' which
+    tests whether the invocant relation has a certain candidate key; if it
+    does, this method also has the side effect of remembering the fact for
+    'keys' to return later.  It was also documented in a few places that
+    these 'keys' are not constraints against future object mutations, and
+    so they might be invalidated by 'insert' later for mutable objects.
+    The ::Mutable role inherits all these changes.
+
+    * (V1.pm)  Updated the Set::Relation::V1 class to implement the new
+    features required by the above change item.  The current implementation
+    also is such that while 'insert' is smart enough to clear a candidate
+    key iff it becomes violated, 'delete' will not restore or add any
+    candidate key; you must invoke 'has_key' later to do that.  Also, like
+    with indexes, all new relations derived from others such as by 'clone'
+    or 'new' or relational operations will start out with no 'keys' for
+    simplicity; presumably an upcoming V2 will be different.
+
+    * (Relation.pm, V1.pm)  Added new functional method "classification"
+    which is sort of a cross between "restriction" and "group"; it uses a
+    Perl subroutine argument to partition a relation's tuples into an
+    arbitrary number of groups.  It is named after Perl 6's "classify"
+    operator, and is like List::MoreUtil's "part" function.
+
 2009-03-23   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.8.0 for Perl 5 is released on CPAN as
