@@ -6,6 +6,12 @@
     * Set::Relation version 0.9.0 for Perl 5 is released on CPAN as
     Set-Relation-0.9.0.tar.gz.
 
+    * (Relation.pm, V2.pm, V1.pm)  Added new functional method
+    "classification" which is sort of a cross between "restriction" and
+    "group"; it uses a Perl subroutine argument to partition a relation's
+    tuples into an arbitrary number of groups.  It is named after Perl 6's
+    "classify" operator, and is like List::MoreUtil's "part" function.
+
     * (Relation.pm)  Updated the Set::Relation role in several closely
     related ways.  Added new named parameter to 'new' named 'keys' which
     lets one define candidate keys for the new relation which the 'members'
@@ -21,6 +27,13 @@
     so they might be invalidated by 'insert' later for mutable objects.
     The ::Mutable role inherits all these changes.
 
+    * (V2.pm)  Updated the Set::Relation::V2 class to implement the new
+    features required by the above change item.  This is a fairly simple
+    first draft of of the 'keys' feature and isn't very integrated yet, not
+    any more than with V1; it currently doesn't have any positive impact on
+    performance and it currently just provides an extra kind of constraint
+    on new objects or an extra kind of validation on existing ones.
+
     * (V1.pm)  Updated the Set::Relation::V1 class to implement the new
     features required by the above change item.  The current implementation
     also is such that while 'insert' is smart enough to clear a candidate
@@ -29,12 +42,6 @@
     with indexes, all new relations derived from others such as by 'clone'
     or 'new' or relational operations will start out with no 'keys' for
     simplicity; presumably an upcoming V2 will be different.
-
-    * (Relation.pm, V1.pm)  Added new functional method "classification"
-    which is sort of a cross between "restriction" and "group"; it uses a
-    Perl subroutine argument to partition a relation's tuples into an
-    arbitrary number of groups.  It is named after Perl 6's "classify"
-    operator, and is like List::MoreUtil's "part" function.
 
 2009-03-23   Darren Duncan <perl@DarrenDuncan.net>
 

@@ -3,14 +3,6 @@
 
 Following is a summary of things that still need doing.
 
-* For v0.9.0:  Update the Set::Relation role and both bundled
-implementations to add support for explicit candidate keys.  This initial
-cut of the feature would be done fairly simply and not be very integrated;
-it probably won't have any positive impact on performance as it would
-initially just be an extra validation or introspection step.
-
-* For v0.9.0:  Also add new 'classification' function across the board.
-
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
 * Make the test suite actually run the code, not just compile it; maybe

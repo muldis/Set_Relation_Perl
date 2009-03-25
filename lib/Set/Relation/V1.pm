@@ -2370,7 +2370,8 @@ sub product {
 
     my $inputs = [$topic, @{$others}];
 
-    my $attr_names = [CORE::map { CORE::keys %{$_->_heading()} } @{$inputs}];
+    my $attr_names
+        = [CORE::map { CORE::keys %{$_->_heading()} } @{$inputs}];
 
     confess q{product(): Bad $others arg;}
             . q{ one of its elems has an attr name duplicated by}
