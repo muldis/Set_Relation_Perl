@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
     use version 0.74; our $VERSION = qv('0.9.0');
     # Note: This given version applies to all of this file's packages.
 
-    use Moose::Role 0.72;
+    use Moose::Role 0.73;
 
     use namespace::clean -except => 'meta';
 
@@ -92,7 +92,7 @@ use warnings FATAL => 'all';
 
 { package Set::Relation::Mutable; # role
 
-    use Moose::Role 0.72;
+    use Moose::Role 0.73;
 
     use namespace::clean -except => 'meta';
 
@@ -1739,8 +1739,8 @@ installation by users of earlier Perl versions:
 L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<namespace::clean-ver(0.09..*)|namespace::clean>,
-L<Moose::Role-ver(0.72..*)|Moose::Role>.
+L<namespace::clean-ver(0.11..*)|namespace::clean>,
+L<Moose::Role-ver(0.73..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 
