@@ -14,7 +14,7 @@ use Set::Relation 0.009000;
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.73;
+    use Moose 0.74;
 
     use namespace::clean -except => 'meta';
 
@@ -2660,6 +2660,13 @@ sub rank {
 
 ###########################################################################
 
+sub rank_by_attr_names {
+    my ($topic, $name, $order_by) = @_;
+    confess q{This method isn't implemented by this class yet.};
+}
+
+###########################################################################
+
 sub limit {
     my ($topic, $ord_func, $min_rank, $max_rank) = @_;
 
@@ -2705,6 +2712,13 @@ sub limit {
     $result->_cardinality( scalar CORE::keys %{$result_b} );
 
     return $result;
+}
+
+###########################################################################
+
+sub limit_by_attr_names {
+    my ($topic, $order_by, $min_rank, $max_rank) = @_;
+    confess q{This method isn't implemented by this class yet.};
 }
 
 ###########################################################################
@@ -3361,7 +3375,7 @@ L<version-ver(0.74..*)|version>.
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.11..*)|namespace::clean>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.73..*)|Moose>.
+L<Moose-ver(0.74..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.9.0..*)|Set::Relation>.

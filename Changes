@@ -1,13 +1,23 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
-2009-03-xx   Darren Duncan <perl@DarrenDuncan.net>
+2009-04-xx   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.x.x for Perl 5 is released on CPAN as
     Set-Relation-0.x.x.tar.gz.
 
     * Updated external dependencies: namespace::clean to version 0.11,
-    Moose/etc to version 0.73, Class::MOP to version 0.79.
+    Moose/etc to version 0.74, Class::MOP to version 0.81.
+
+    * (Relation.pm)  Added, to the Set::Relation role, 2 new functional
+    methods "[rank|limit]_by_attr_names", which are like "rank|limit" but
+    that rather than taking a closure function to determine relative
+    ordering of each pair of tuples, it takes an array of attribute names
+    to order by; the new methods are more specialized versions of the old
+    ones, and are recommended for use where they are applicable.
+
+    * (V2.pm, V1.pm)  Added placeholders for implementations of the above
+    change item.
 
 2009-03-24   Darren Duncan <perl@DarrenDuncan.net>
 

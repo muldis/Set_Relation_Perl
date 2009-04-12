@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
     use version 0.74; our $VERSION = qv('0.9.0');
     # Note: This given version applies to all of this file's packages.
 
-    use Moose::Role 0.73;
+    use Moose::Role 0.74;
 
     use namespace::clean -except => 'meta';
 
@@ -71,7 +71,9 @@ use warnings FATAL => 'all';
     requires 'join_with_group';
 
     requires 'rank';
+    requires 'rank_by_attr_names';
     requires 'limit';
+    requires 'limit_by_attr_names';
 
     requires 'substitution';
     requires 'static_substitution';
@@ -92,7 +94,7 @@ use warnings FATAL => 'all';
 
 { package Set::Relation::Mutable; # role
 
-    use Moose::Role 0.73;
+    use Moose::Role 0.74;
 
     use namespace::clean -except => 'meta';
 
@@ -1482,6 +1484,30 @@ the result of C<rank> is always a total ordering and so there is no "dense"
 / "not dense" distinction (however a partial ordering can be implemented
 over it).
 
+=head2 rank_by_attr_names
+
+C<method rank_by_attr_names of Set::Relation ($topic: Str $name,
+Array $order_by)>
+
+This functional method provides a convenient short-hand of C<rank> for the
+common case of ranking tuples of a relation on a sequential list of its
+named attributes; it simply takes a C<$order_by> array argument rather than
+a Perl closure argument, and it ranks each pair of tuples by comparing
+corresponding attribute values in the order that they are named in
+C<$order_by>, stopping once a comparison doesn't result in I<same>.  Each
+element of C<$order_by> is either a Str or a 1-3 element Array; in the
+first case, that is simply the name of the attribute; in the second case,
+the Array has these 1-3 elements in order: attribute name, "is reverse
+order" direction indicator, and comparison operator.  This method will fail
+if C<$order_by> contains any non-Str|Array elements, or if it names an
+attribute that C<$topic> doesn't have.  The "is reverse order" direction
+indicator is a boolean value; if it is false/undefined/missing then
+ordering on that attribute will be as per usual for the comparator; if it
+is true then the result is the reverse to what is usual.  This method will
+fail if the comparison operator is defined and is anything other than
+C<cmp> (string compare semantics) or C<< <=> >> (numeric compare
+semantics); if it is undefined then C<cmp> (string) is the default.
+
 =head2 limit
 
 C<method limit of Set::Relation ($topic: Code $ord_func, UInt $min_rank,
@@ -1502,6 +1528,14 @@ tuples and C<$min_rank> matches the rank of a source tuple, then the result
 will always have at least 1 tuple.  Note that C<limit> provides the
 functionality of SQL's "LIMIT/OFFSET" feature in combination with "ORDER
 BY" but that the result tuples of C<limit> do not remain ordered.
+
+=head2 limit_by_attr_names
+
+C<method limit_by_attr_names of Set::Relation ($topic: Array $order_by,
+UInt $min_rank, UInt $max_rank)>
+
+This functional method is to C<limit> what C<rank_by_attr_names> is to
+C<rank>.
 
 =head1 Relational Substitution Functional Methods
 
@@ -1740,7 +1774,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.11..*)|namespace::clean>,
-L<Moose::Role-ver(0.73..*)|Moose::Role>.
+L<Moose::Role-ver(0.74..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 
