@@ -19,6 +19,18 @@
     * (V2.pm, V1.pm)  Added placeholders for implementations of the above
     change item.
 
+    * (Relation.pm, V2.pm, V1.pm)  Changed the "summary" method by renaming
+    its "result_attr_names" parameter to "summ_attr_names" and redefining
+    its functionality more in terms of "extension" rather than "map"; the
+    function given to "summ_func" must now just result in a tuple with
+    attributes to add to a result which now already has all the attributes
+    named by "group_per", rather than resulting in all attributes for the
+    result.  The new version of "summary" should be much easier to use as
+    presumably users always want to keep the attributes they are grouping
+    per, and they now don't have to spell them out every time.  For the
+    rare case where you want the old behaviour, now you have to do it
+    manually with an explicit "cmpl_group" plus "map".
+
 2009-03-24   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.9.0 for Perl 5 is released on CPAN as

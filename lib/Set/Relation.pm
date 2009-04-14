@@ -1202,8 +1202,8 @@ C<$topic>; otherwise it might be multiple invoked.
 
 =head2 summary
 
-C<method summary of Set::Relation ($topic: Array|Str $group_per, Array|Str
-$result_attr_names, Code $summ_func, Bool $allow_dup_tuples?)>
+C<method summary of Set::Relation ($topic: Array|Str $group_per,
+Array|Str $summ_attr_names, Code $summ_func, Bool $allow_dup_tuples?)>
 
 This functional method provides a convenient context for using aggregate
 functions to derive a per-group summary relation, which is its result, from
@@ -1218,8 +1218,10 @@ subroutine given in C<$summ_func> results in a second tuple when the first
 tuple is its C<$_> topic; the C<$_> tuple has the 2 attribute names
 C<summarize> and C<per>, which are valued with the relation-valued
 attribute and tuple-valued attribute, respectively.  As per a subroutine
-that C<map> applies, the subroutine given in C<$summ_func> effectively
-takes a whole post-grouping input tuple and results in a whole tuple; the
+that C<extension> applies, the subroutine given in C<$summ_func>
+effectively takes a whole post-grouping input tuple and results in a
+partial tuple that would be joined by C<summary> with the C<per> tuple to
+get the result tuple; the
 applied subroutine would directly invoke any N-adic / aggregate operators,
 and extract their inputs from (or calculate) C<summarize> as it sees fit.
 Note that C<summary> is not intended to be used to summarize an entire
@@ -1227,14 +1229,14 @@ C<$topic> relation at once (except by chance of it resolving to 1 group);
 you should instead invoke your summarize-all C<$summ_func> directly, or
 inline it, rather than by way of C<summary>, especially if you want a
 single-tuple result on an empty C<$topic> (which C<summary>) won't do.
-Now, C<summary> requires the extra C<$result_attr_names> argument to
+Now, C<summary> requires the extra C<$summ_attr_names> argument to
 prevent ambiguity in the general case where C<$topic> might have zero
 tuples, because in that situation, C<$summ_func> would never be invoked,
-and the names of the attributes of the result are not known (we don't
+and the names of the attributes to add to C<per> are not known (we don't
 generally assume that C<summary> can reverse-engineer C<$summ_func> to see
 what attributes it would have resulted in).  This method will fail if
 C<$topic> has at least 1 tuple and the result of C<$summ_func> does not
-have matching attribute names to those named by C<$result_attr_names>.  If
+have matching attribute names to those named by C<$summ_attr_names>.  If
 this method's C<$allow_dup_tuples> argument is false (the default), then
 C<$summ_func> is guaranteed to be invoked just once per distinct post-group
 tuple; otherwise it might be multiple invoked.

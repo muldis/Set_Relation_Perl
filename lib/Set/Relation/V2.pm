@@ -1714,15 +1714,15 @@ sub map {
 ###########################################################################
 
 sub summary {
-    my ($topic, $group_per, $result_attr_names, $summ_func,
+    my ($topic, $group_per, $summ_attr_names, $summ_func,
         $allow_dup_tuples) = @_;
 
     (my $group_per_h, $group_per)
         = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'summary', '$group_per', $group_per );
-    (my $result_h, $result_attr_names)
+    (my $exten_h, $summ_attr_names)
         = $topic->_atnms_hr_from_assert_valid_atnms_arg(
-            'summary', '$result_attr_names', $result_attr_names );
+            'summary', '$summ_attr_names', $summ_attr_names );
     $topic->_assert_valid_func_arg( 'summary', '$summ_func', $summ_func );
 
     my $topic_h = $topic->_heading();
@@ -1731,25 +1731,20 @@ sub summary {
             . q{ isn't a subset of the invocant's heading.}
         if notall { exists $topic_h->{$_} } @{$group_per};
 
+    confess q{summary(): Bad $summ_attr_names arg; one or more of those}
+            . q{ names for new summary attrs to add to the invocant }
+            . q{ duplicates an attr of the invocant not being grouped.}
+        if any { exists $group_per_h->{$_} } @{$summ_attr_names};
+
     my $inner = [grep { !$group_per_h->{$_} } CORE::keys %{$topic_h}];
     my $inner_h = {CORE::map { $_ => undef } @{$inner}};
 
     my (undef, $topic_attrs_no_gr, undef)
         = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
 
-    if (@{$result_attr_names} == 0) {
-        # Map to zero attrs yields identity relation zero or one.
-        if ($topic->is_empty()) {
-            return $topic->new();
-        }
-        else {
-            return $topic->new( [ {} ] );
-        }
-    }
-
     my $result = $topic->new();
 
-    $result->_heading( $result_h );
+    $result->_heading( {%{$group_per_h}, %{$exten_h}} );
 
     if ($topic->is_empty()) {
         # An empty $topic means an empty result.
@@ -1779,18 +1774,19 @@ sub summary {
         my $group_per_t = {CORE::map { ($_ => $any_mtpt->{$_}) }
             @{$topic_attrs_no_gr}};
 
-        my $result_t;
+        my $exten_t;
         {
             local $_ = {
                 'summarize' => $inner_r,
                 'per' => $topic->_export_nfmt_tuple( $group_per_t ),
             };
-            $result_t = $summ_func->();
+            $exten_t = $summ_func->();
         }
         $topic->_assert_valid_tuple_result_of_func_arg( 'summary',
-            '$summ_func', '$result_attr_names', $result_t, $result_h );
-        $result_t = $topic->_import_nfmt_tuple( $result_t );
+            '$summ_func', '$summ_attr_names', $exten_t, $exten_h );
+        $exten_t = $topic->_import_nfmt_tuple( $exten_t );
 
+        my $result_t = {%{$group_per_t}, %{$exten_t}};
         $result_b->{refaddr $result_t} = $result_t;
     }
 
