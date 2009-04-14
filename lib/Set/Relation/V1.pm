@@ -1751,6 +1751,62 @@ sub summary {
 
 ###########################################################################
 
+sub cardinality_per_group {
+    my ($topic, $group_per, $count_attr_name, $allow_dup_tuples) = @_;
+
+    (my $group_per_h, $group_per)
+        = $topic->_atnms_hr_from_assert_valid_atnms_arg(
+            'cardinality_per_group', '$group_per', $group_per );
+    $topic->_assert_valid_atnm_arg(
+        'cardinality_per_group', '$count_attr_name', $count_attr_name );
+
+    my $topic_h = $topic->_heading();
+
+    confess q{cardinality_per_group(): Bad $group_per arg;}
+            . q{ that attr list isn't a subset of the invocant's heading.}
+        if notall { exists $topic_h->{$_} } @{$group_per};
+
+    confess q{cardinality_per_group(): Bad $count_attr_name arg;}
+            . q{ that name for a new attr to add to the invocant}
+            . q{ duplicates an attr of the invocant not being grouped.}
+        if exists $group_per_h->{$count_attr_name};
+
+    my $inner = [grep { !$group_per_h->{$_} } CORE::keys %{$topic_h}];
+    my $inner_h = {CORE::map { $_ => undef } @{$inner}};
+
+    my (undef, $topic_attrs_no_gr, undef)
+        = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
+
+    my $result = $topic->new();
+
+    $result->_heading( {%{$group_per_h}, $count_attr_name => undef} );
+    $result->_degree( scalar @{$group_per} + 1 );
+
+    if ($topic->is_empty()) {
+        # An empty $topic means an empty result.
+        return $result;
+    }
+
+    my $result_b = $result->_body();
+    my $topic_index = $topic->_want_index( $topic_attrs_no_gr );
+    for my $matched_topic_b (values %{$topic_index}) {
+        my $count = scalar CORE::keys %{$matched_topic_b};
+        my $any_mtpt = (values %{$matched_topic_b})[0];
+        my $group_per_t = {CORE::map { ($_ => $any_mtpt->{$_}) }
+            @{$topic_attrs_no_gr}};
+        my $result_t = {%{$group_per_t}, $count_attr_name => $count};
+        my $result_t_ident_str = $topic->_ident_str( $result_t );
+        if (!exists $result_b->{$result_t_ident_str}) {
+            $result_b->{$result_t_ident_str} = $result_t;
+        }
+    }
+    $result->_cardinality( scalar CORE::keys %{$result_b} );
+
+    return $result;
+}
+
+###########################################################################
+
 sub _atnms_hr_from_assert_valid_atnms_arg {
     my ($self, $rtn_nm, $arg_nm, $atnms) = @_;
 

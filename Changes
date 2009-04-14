@@ -31,6 +31,11 @@
     rare case where you want the old behaviour, now you have to do it
     manually with an explicit "cmpl_group" plus "map".
 
+    * (Relation.pm, V2.pm, V1.pm)  Added, to the Set::Relation role and its
+    composing classes, new method "cardinality_per_group" which is like
+    "summary" but shorthands the common case where people just want a count
+    of tuples per group and not any other information.
+
 2009-03-24   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.9.0 for Perl 5 is released on CPAN as

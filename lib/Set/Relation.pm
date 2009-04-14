@@ -52,6 +52,7 @@ use warnings FATAL => 'all';
     requires 'static_extension';
     requires 'map';
     requires 'summary';
+    requires 'cardinality_per_group';
 
     requires 'is_identical';
     requires 'is_subset';
@@ -1240,6 +1241,18 @@ have matching attribute names to those named by C<$summ_attr_names>.  If
 this method's C<$allow_dup_tuples> argument is false (the default), then
 C<$summ_func> is guaranteed to be invoked just once per distinct post-group
 tuple; otherwise it might be multiple invoked.
+
+=head2 cardinality_per_group
+
+C<method cardinality_per_group of Set::Relation ($topic:
+Array|Str $group_per, Str $count_attr_name, Bool $allow_dup_tuples?)>
+
+This functional method is a convenient shorthand for the common use of
+C<summary> that is just counting the tuples of each group.  This function
+is like C<cmpl_group> but that the single added attribute, rather than an
+RVA of the grouped C<$topic> attributes, has the cardinality that said RVA
+would have had.  The result's heading consists of the attributes named in
+C<$group_per> plus the attribute named in C<$count_attr_name> (a C<UInt>).
 
 =head1 Multiple Input Relation Functional Methods
 
