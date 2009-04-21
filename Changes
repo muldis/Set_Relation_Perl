@@ -7,7 +7,7 @@
     Set-Relation-0.x.x.tar.gz.
 
     * Updated external dependencies: namespace::clean to version 0.11,
-    Moose/etc to version 0.74, Class::MOP to version 0.81.
+    Moose/etc to version 0.75, Class::MOP to version 0.82.
 
     * This release features a number of functional method updates or
     additions in accordance with the latest Muldis D spec (v0.64.0).

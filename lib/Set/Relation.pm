@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
     use version 0.74; our $VERSION = qv('0.9.0');
     # Note: This given version applies to all of this file's packages.
 
-    use Moose::Role 0.74;
+    use Moose::Role 0.75;
 
     use namespace::clean -except => 'meta';
 
@@ -95,7 +95,7 @@ use warnings FATAL => 'all';
 
 { package Set::Relation::Mutable; # role
 
-    use Moose::Role 0.74;
+    use Moose::Role 0.75;
 
     use namespace::clean -except => 'meta';
 
@@ -1252,7 +1252,8 @@ C<summary> that is just counting the tuples of each group.  This function
 is like C<cmpl_group> but that the single added attribute, rather than an
 RVA of the grouped C<$topic> attributes, has the cardinality that said RVA
 would have had.  The result's heading consists of the attributes named in
-C<$group_per> plus the attribute named in C<$count_attr_name> (a C<UInt>).
+C<$group_per> plus the attribute named in C<$count_attr_name> (a positive
+integer).
 
 =head1 Multiple Input Relation Functional Methods
 
@@ -1789,7 +1790,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.11..*)|namespace::clean>,
-L<Moose::Role-ver(0.74..*)|Moose::Role>.
+L<Moose::Role-ver(0.75..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 

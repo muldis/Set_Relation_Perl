@@ -17,9 +17,9 @@ WriteMakefile(
         # These are not bundled with any version of Perl.
         'namespace::clean' => 0.11,
         'List::MoreUtils' => 0.22,
-        'Moose' => 0.74,
-        'Moose::Role' => 0.74,
-        'Class::MOP' => 0.81, # req latest indep of Moose
+        'Moose' => 0.75,
+        'Moose::Role' => 0.75,
+        'Class::MOP' => 0.82, # req latest indep of Moose
         # These are only used by the tests, are not bundled with any Perl.
         'Test::Deep' => 0,
     },
