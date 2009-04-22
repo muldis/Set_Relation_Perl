@@ -10,15 +10,15 @@ use Test::More;
 plan( 'tests' => 6 );
 
 use_ok( 'Set::Relation' );
-is( $Set::Relation::VERSION, qv('0.9.0'),
+is( $Set::Relation::VERSION, qv('0.10.0'),
     'Set::Relation is the correct version' );
 
 use_ok( 'Set::Relation::V1' );
-is( $Set::Relation::V1::VERSION, qv('0.9.0'),
+is( $Set::Relation::V1::VERSION, qv('0.10.0'),
     'Set::Relation::V1 is the correct version' );
 
 use_ok( 'Set::Relation::V2' );
-is( $Set::Relation::V2::VERSION, qv('0.9.0'),
+is( $Set::Relation::V2::VERSION, qv('0.10.0'),
     'Set::Relation::V2 is the correct version' );
 
 1; # Magic true value required at end of a reusable file's code.

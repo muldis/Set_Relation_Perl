@@ -9,7 +9,7 @@ use Set::Relation 0.009000;
 ###########################################################################
 
 { package Set::Relation::V2; # class
-    use version 0.74; our $VERSION = qv('0.9.0');
+    use version 0.74; our $VERSION = qv('0.10.0');
 
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
@@ -3396,7 +3396,7 @@ Bundled second implementation of Set::Relation role
 
 =head1 VERSION
 
-This document describes Set::Relation::V2 version 0.9.0 for Perl 5.
+This document describes Set::Relation::V2 version 0.10.0 for Perl 5.
 
 =head1 SYNOPSIS
 
@@ -3449,7 +3449,7 @@ L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
 L<Moose-ver(0.75..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
-distribution: L<Set::Relation-ver(0.9.0..*)|Set::Relation>.
+distribution: L<Set::Relation-ver(0.10.0..*)|Set::Relation>.
 
 =head1 INCOMPATIBILITIES
 
