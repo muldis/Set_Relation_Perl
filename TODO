@@ -3,12 +3,10 @@
 
 Following is a summary of things that still need doing.
 
-* Implement the 4 "[rank|limit]_by_attr_names" functional methods.
-
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
-* Make the test suite actually run the code, not just compile it; maybe
-start off with running same code examples in documentation, tutorial, etc.
+* Make the test suite actually run all the code, not mostly just compile
+it; maybe start off with running same code examples in docs, tutorial, etc.
 
 * Consider adding support for unique key constraints, and not just
 the introspection of existing candidate keys that the API has now.

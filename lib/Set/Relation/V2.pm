@@ -2817,7 +2817,113 @@ sub rank {
 
 sub rank_by_attr_names {
     my ($topic, $name, $order_by) = @_;
-    confess q{This method isn't implemented by this class yet.};
+
+    my $topic_h = $topic->_heading();
+
+    $topic->_assert_valid_atnm_arg( 'rank_by_attr_names', '$name', $name );
+    confess q{rank_by_attr_names(): Bad $name arg; that name for a new}
+            . q{ attr to add to the invocant, consisting of each tuple's}
+            . q{ numeric rank, duplicates an existing attr of th invocant.}
+        if exists $topic_h->{$name};
+
+    $order_by = $topic->_normalize_order_by_arg(
+        'rank_by_attr_names', '$order_by', $order_by );
+
+    my $result = $topic->new();
+
+    $result->_heading( {%{$topic_h}, $name => undef} );
+
+    if ($topic->is_empty()) {
+        return $result;
+    }
+
+    my $sort_func = $topic->_sort_func_from_order_by( $order_by );
+
+    if (!$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
+    }
+
+    my $result_b = $result->_body();
+
+    my $rank = -1;
+    for my $topic_t (@{$sort_func->( $topic )}) {
+        $rank ++;
+        my $result_t = {$name => $rank, %{$topic_t}};
+        $result_b->{refaddr $result_t} = $result_t;
+    }
+
+    return $result;
+}
+
+###########################################################################
+
+sub _normalize_order_by_arg {
+    my ($topic, $rtn_nm, $arg_nm, $order_by) = @_;
+
+    if (defined $order_by and !ref $order_by) {
+        $order_by = [$order_by];
+    }
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ it must be an array-ref or a defined non-ref.}
+        if ref $order_by ne 'ARRAY';
+
+    $order_by = [CORE::map {
+              (ref $_ ne 'ARRAY') ? [$_, 0, 'cmp']
+            : (@{$_} == 1)        ? [@{$_}, 0, 'cmp']
+            : (@{$_} == 2)        ? [@{$_}, 'cmp']
+            :                       $_
+        } @{$order_by}];
+    confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
+            . q{ it must be a 1-3 elem array-ref or a defined non-ref,}
+            . q{ its first elem must be a valid attr name (defin non-ref),}
+            . q{ and its third elem must be undef or one of 'cmp'|'<=>'.}
+        if notall {
+                ref $_ eq 'ARRAY' and @{$_} == 3
+                and defined $_->[0] and !ref $_->[0]
+                and (!defined $_->[2]
+                    or $_->[2] eq 'cmp' or $_->[2] eq '<=>')
+            } @{$order_by};
+
+    my $atnms = [CORE::map { $_->[0] } @{$order_by}];
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ it specifies a list of}
+            . q{ attr names with at least one duplicated name.}
+        if (uniq @{$atnms}) != @{$atnms};
+
+    my $topic_h = $topic->_heading();
+    confess qq{$rtn_nm(): Bad $arg_nm arg;}
+            . q{ the list of attr names it specifies isn't a subset of the}
+            . q{ heading of the relation defined by the $members arg.}
+        if notall { exists $topic_h->{$_} } @{$atnms};
+
+    return $order_by;
+}
+
+###########################################################################
+
+sub _sort_func_from_order_by {
+    my ($topic, $order_by) = @_;
+    my $sort_func_perl
+    = "sub {\n"
+        . "my (\$topic) = \@_;\n"
+        . "return [sort {\n"
+            . (CORE::join ' || ', '0', CORE::map {
+                    my ($name, $is_reverse_order, $compare_op) = @{$_};
+                    $compare_op ||= 'cmp';
+                    ($is_reverse_order
+                        ? "\$b->{'$name'} $compare_op \$a->{'$name'}"
+                        : "\$a->{'$name'} $compare_op \$b->{'$name'}");
+                } @{$order_by}) . "\n"
+        . "} values \%{\$topic->_body()}];\n"
+    . "}\n"
+    ;
+    my $sort_func = eval $sort_func_perl;
+    if (my $err = $@) {
+        confess qq{Oops, failed to compile Perl sort func from order by;\n}
+            . qq{  error message is [[$err]];\n}
+            . qq{  source code is [[$sort_func_perl]].}
+    }
+    return $sort_func;
 }
 
 ###########################################################################
@@ -2876,7 +2982,37 @@ sub limit {
 
 sub limit_by_attr_names {
     my ($topic, $order_by, $min_rank, $max_rank) = @_;
-    confess q{This method isn't implemented by this class yet.};
+
+    $order_by = $topic->_normalize_order_by_arg(
+        'limit_by_attr_names', '$order_by', $order_by );
+
+    $topic->_assert_valid_nnint_arg(
+        'limit_by_attr_names', '$min_rank', $min_rank );
+    $topic->_assert_valid_nnint_arg(
+        'limit_by_attr_names', '$max_rank', $max_rank );
+    confess q{limit_by_attr_names():}
+            . q{ The $max_rank arg can't be less than the $min_rank.}
+        if $max_rank < $min_rank;
+
+    if ($topic->is_empty()) {
+        return $topic;
+    }
+
+    my $sort_func = $topic->_sort_func_from_order_by( $order_by );
+
+    if (!$topic->_is_known_dup_free()) {
+        $topic->_dup_free_want_index_over_all_attrs();
+    }
+
+    my $result = $topic->empty();
+
+    my $result_b = $result->_body();
+
+    for my $topic_t (@{$sort_func->( $topic )}[$min_rank..$max_rank]) {
+        $result_b->{refaddr $topic_t} = $topic_t;
+    }
+
+    return $result;
 }
 
 ###########################################################################

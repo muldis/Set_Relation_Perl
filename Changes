@@ -12,15 +12,18 @@
     * This release features a number of functional method updates or
     additions in accordance with the latest Muldis D spec (v0.64.0).
 
-    * (Relation.pm)  Added, to the Set::Relation role, 2 new functional
-    methods "[rank|limit]_by_attr_names", which are like "rank|limit" but
-    that rather than taking a closure function to determine relative
-    ordering of each pair of tuples, it takes an array of attribute names
-    to order by; the new methods are more specialized versions of the old
-    ones, and are recommended for use where they are applicable.
-
-    * (V2.pm, V1.pm)  Added placeholders for implementations of the above
-    change item.
+    * (Relation.pm, V2.pm, V1.pm)  Added, to the Set::Relation role and its
+    composing classes, 2 new functional methods
+    "[rank|limit]_by_attr_names", which are like "rank|limit" but that
+    rather than taking a closure function to determine relative ordering of
+    each pair of tuples, it takes an array of attribute names to order by;
+    the new methods are more specialized versions of the old ones, and are
+    recommended for use where they are applicable.  It is significant to
+    note that these are the first Set::Relation routines that make use of
+    the implementation technique of generating and evaling Perl code to do
+    the actual work, which allows us to unroll what would otherwise be
+    loops iterating over the attributes being ordered by; this should
+    further yield better performance; both V2 and V1 have done this.
 
     * (Relation.pm, V2.pm, V1.pm)  Changed the "summary" functional method
     by renaming its "result_attr_names" parameter to "summ_attr_names" and

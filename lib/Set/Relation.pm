@@ -1503,14 +1503,17 @@ over it).
 =head2 rank_by_attr_names
 
 C<method rank_by_attr_names of Set::Relation ($topic: Str $name,
-Array $order_by)>
+Array|Str $order_by)>
 
 This functional method provides a convenient short-hand of C<rank> for the
 common case of ranking tuples of a relation on a sequential list of its
 named attributes; it simply takes a C<$order_by> array argument rather than
 a Perl closure argument, and it ranks each pair of tuples by comparing
 corresponding attribute values in the order that they are named in
-C<$order_by>, stopping once a comparison doesn't result in I<same>.  Each
+C<$order_by>, stopping once a comparison doesn't result in I<same>.  Iff
+C<$order_by> is a Str then it is equivalent to an C<$order_by> that is a
+single-element Array whose element is that Str; the rest of this
+documentation assumes that C<$order_by> is simply an Array.  Each
 element of C<$order_by> is either a Str or a 1-3 element Array; in the
 first case, that is simply the name of the attribute; in the second case,
 the Array has these 1-3 elements in order: attribute name, "is reverse
@@ -1547,7 +1550,7 @@ BY" but that the result tuples of C<limit> do not remain ordered.
 
 =head2 limit_by_attr_names
 
-C<method limit_by_attr_names of Set::Relation ($topic: Array $order_by,
+C<method limit_by_attr_names of Set::Relation ($topic: Array|Str $order_by,
 UInt $min_rank, UInt $max_rank)>
 
 This functional method is to C<limit> what C<rank_by_attr_names> is to
