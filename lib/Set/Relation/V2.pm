@@ -14,7 +14,7 @@ use Set::Relation 0.009000;
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.75;
+    use Moose 0.79;
 
     use namespace::clean -except => 'meta';
 
@@ -107,7 +107,7 @@ sub BUILD {
     my ($self, $args) = @_;
     my ($members, $keys) = @{$args}{'members', 'keys'};
 
-    # Note, $members may be in all of the same formats as a HDMD_Perl5_Tiny
+    # Note, $members may be in all of the same formats as a HDMD_Perl5_STD
     # Relation value literal payload, but with a few extra trivial options.
 
     if (!defined $members) {
@@ -3446,7 +3446,7 @@ L<version-ver(0.74..*)|version>.
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.11..*)|namespace::clean>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.75..*)|Moose>.
+L<Moose-ver(0.79..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.10.0..*)|Set::Relation>.

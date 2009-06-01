@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
     use version 0.74; our $VERSION = qv('0.10.0');
     # Note: This given version applies to all of this file's packages.
 
-    use Moose::Role 0.75;
+    use Moose::Role 0.79;
 
     use namespace::clean -except => 'meta';
 
@@ -95,7 +95,7 @@ use warnings FATAL => 'all';
 
 { package Set::Relation::Mutable; # role
 
-    use Moose::Role 0.75;
+    use Moose::Role 0.79;
 
     use namespace::clean -except => 'meta';
 
@@ -580,9 +580,9 @@ using the multi-dimensional Perl data structure given in its C<$members>
 argument, which defines the member attributes and tuples of the new
 relation.  The allowed formats of a C<$members> argument mostly are those
 defined by the Muldis D language dialect
-L<HDMD_Perl5_Tiny|Muldis::D::Dialect::HDMD_Perl5_Tiny> for a C<QRelation>
+L<HDMD_Perl5_STD|Muldis::D::Dialect::HDMD_Perl5_STD> for a C<QRelation>
 (or C<Relation>) value literal node payload, except that attribute values
-are just ordinary Perl values and not HDMD_Perl5_Tiny value literal nodes.
+are just ordinary Perl values and not HDMD_Perl5_STD value literal nodes.
 Examples are:
 
     sub relation { return $sr_class_name->new( @_ ); }
@@ -1793,7 +1793,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.11..*)|namespace::clean>,
-L<Moose::Role-ver(0.75..*)|Moose::Role>.
+L<Moose::Role-ver(0.79..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 

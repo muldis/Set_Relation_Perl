@@ -1,6 +1,20 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-06-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.x.x for Perl 5 is released on CPAN as
+    Set-Relation-0.x.x.tar.gz.
+
+    * Updated external dependencies: Moose/etc to version 0.79, Class::MOP
+    to version 0.84.
+
+    * This release features a number of functional method updates or
+    additions in accordance with the latest Muldis D spec (v0.75.0).
+
+    * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
+    Muldis D dialect HDMD_Perl5_Tiny was renamed to HDMD_Perl5_STD.
+
 2009-04-21   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.10.0 for Perl 5 is released on CPAN as
