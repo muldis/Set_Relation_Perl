@@ -690,8 +690,8 @@ attributes, essentially the reverse process of an object constructor.
 
 =head2 export_for_new
 
-C<method export_for_new of Hash ($self: Bool|Array $want_ord_attrs?, Bool
-$allow_dup_tuples?)>
+C<method export_for_new of Hash ($self: Bool|Array $want_ord_attrs?,
+Bool $allow_dup_tuples?)>
 
 This method results in a Perl Hash value whose Hash keys and values you can
 give as argument names and values to C<new> such that the latter would
@@ -729,8 +729,8 @@ C<which> (code inside said classes will do conversions as needed).
 
 =head2 members
 
-C<method members of Array ($self: Bool|Array $want_ord_attrs?, Bool
-$allow_dup_tuples?)>
+C<method members of Array ($self: Bool|Array $want_ord_attrs?,
+Bool $allow_dup_tuples?)>
 
 This method results in a Perl Array value as per the 'members' element of
 the Hash that C<export_for_new> would result in with the same invocant and
@@ -752,8 +752,8 @@ method is currently an alias for the C<attr_names> functional method.
 
 =head2 body
 
-C<method body of Array ($self: Bool|Array $want_ord_attrs?, Bool
-$allow_dup_tuples?)>
+C<method body of Array ($self: Bool|Array $want_ord_attrs?,
+Bool $allow_dup_tuples?)>
 
 This method results in a Perl Array value whose elements are the tuples of
 the invocant.  Each tuple is either a Perl Hash or a Perl Array depending
@@ -762,8 +762,8 @@ similarly C<$allow_dup_tuples> affects the result as with C<members>.
 
 =head2 slice
 
-C<method slice of Array ($self: Array|Str $attr_names, Bool
-$want_ord_attrs?, Bool $allow_dup_tuples?)>
+C<method slice of Array ($self: Array|Str $attr_names,
+Bool $want_ord_attrs?, Bool $allow_dup_tuples?)>
 
 This method is like C<body> except that the result has just a subset of the
 attributes of the invocant, those named by C<$attr_names>.  Unlike using
@@ -963,8 +963,8 @@ is the same as a C<$topic> attribute that isn't being wrapped.
 
 =head2 cmpl_wrap
 
-C<method cmpl_wrap of Set::Relation ($topic: Array|Str $cmpl_inner, Str
-$outer)>
+C<method cmpl_wrap of Set::Relation ($topic: Array|Str $cmpl_inner,
+Str $outer)>
 
 This functional method is the same as C<wrap> but that it wraps the
 complementary subset of attributes of C<$topic> to those specified by
@@ -1020,8 +1020,8 @@ C<$outer> is the same as C<$topic> attributes that aren't being grouped.
 
 =head2 cmpl_group
 
-C<method cmpl_group of Set::Relation ($topic: Array|Str $group_per, Str
-$outer)>
+C<method cmpl_group of Set::Relation ($topic: Array|Str $group_per,
+Str $outer)>
 
 This functional method is the same as C<group> but that it groups the
 complementary subset of attributes of C<$topic> to those specified by
@@ -1064,8 +1064,8 @@ at all levels, of some specified part).
 
 =head2 restriction
 
-C<method restriction of Set::Relation ($topic: Callable $func, Bool
-$allow_dup_tuples?)>
+C<method restriction of Set::Relation ($topic: Callable $func,
+Bool $allow_dup_tuples?)>
 
 This functional method results in the relational restriction of its
 C<$topic> invocant as determined by applying the Bool-resulting
@@ -1086,8 +1086,8 @@ tuple of C<$topic>; otherwise it might be multiple invoked.
 
 =head2 restr_and_cmpl
 
-C<method restr_and_cmpl of Array ($topic: Callable $func, Bool
-$allow_dup_tuples?)>
+C<method restr_and_cmpl of Array ($topic: Callable $func,
+Bool $allow_dup_tuples?)>
 
 This functional method performs a 2-way partitioning of all the tuples of
 C<$topic> and results in a 2-element Perl Array whose element values are
@@ -1098,8 +1098,8 @@ when having the same invocant and arguments.
 
 =head2 cmpl_restr
 
-C<method cmpl_restr of Set::Relation ($topic: Callable $func, Bool
-$allow_dup_tuples?)>
+C<method cmpl_restr of Set::Relation ($topic: Callable $func,
+Bool $allow_dup_tuples?)>
 
 This functional method is the same as C<restriction> but that it results in
 the complementary subset of tuples of C<$topic> when given the same
@@ -1107,8 +1107,8 @@ invocant and arguments.  See also the C<semidiff> method.
 
 =head2 classification
 
-C<method classification of Set::Relation ($topic: Callable $func, Str
-$class_attr_name, Str $group_attr_name, Bool $allow_dup_tuples?)>
+C<method classification of Set::Relation ($topic: Callable $func,
+Str $class_attr_name, Str $group_attr_name, Bool $allow_dup_tuples?)>
 
 This functional method conceptually is to C<restriction> what C<group> is
 to C<semijoin>.  It classifies the tuples of C<$topic> into N groups using
@@ -1331,8 +1331,8 @@ legitimately known as I<symmetric difference>.
 
 =head2 intersection
 
-C<method intersection of Set::Relation ($topic: Array|Set::Relation
-$others)>
+C<method intersection of Set::Relation ($topic:
+Array|Set::Relation $others)>
 
 This functional method results in the relational intersection/and of the
 collective N element values of its same-heading invocant and argument,
@@ -1461,8 +1461,8 @@ the inputs.
 
 =head2 join_with_group
 
-C<method join_with_group of Set::Relation ($primary: Set::Relation
-$secondary, Str $group_attr)>
+C<method join_with_group of Set::Relation ($primary:
+Set::Relation $secondary, Str $group_attr)>
 
 This functional method is a short-hand for first taking a (natural inner)
 C<join> of its C<$primary> invocant and C<$secondary> argument, and then
@@ -1638,8 +1638,8 @@ restriction.
 
 =head2 static_subst_in_semijoin
 
-C<method static_subst_in_semijoin of Set::Relation ($topic: Set::Relation
-$restr, Hash $subst)>
+C<method static_subst_in_semijoin of Set::Relation ($topic:
+Set::Relation $restr, Hash $subst)>
 
 This functional method is to C<subst_in_semijoin> what
 C<static_subst> is to C<substitution>.
@@ -1651,8 +1651,8 @@ to supporting outer-joins.
 
 =head2 outer_join_with_group
 
-C<method outer_join_with_group of Set::Relation ($primary: Set::Relation
-$secondary, Str $group_attr)>
+C<method outer_join_with_group of Set::Relation ($primary:
+Set::Relation $secondary, Str $group_attr)>
 
 This functional method is the same as C<join_with_group> except that it
 results in a half-outer natural join rather than an inner natural join;
@@ -1662,8 +1662,8 @@ named by C<$group_attr> contains zero tuples rather than 1+.
 
 =head2 outer_join_with_undefs
 
-C<method outer_join_with_undefs of Set::Relation ($primary: Set::Relation
-$secondary)>
+C<method outer_join_with_undefs of Set::Relation ($primary:
+Set::Relation $secondary)>
 
 This functional method results in a plain half-outer natural join of its
 C<$primary> invocant and C<$secondary> argument where, for all result
@@ -1686,8 +1686,8 @@ those missing attribute values.
 
 =head2 outer_join_with_exten
 
-C<method outer_join_with_exten of Set::Relation ($primary: Set::Relation
-$secondary, Callable $exten_func, Bool $allow_dup_tuples?)>
+C<method outer_join_with_exten of Set::Relation ($primary:
+Set::Relation $secondary, Callable $exten_func, Bool $allow_dup_tuples?)>
 
 This functional method is the same as C<outer_join_with_static_exten> but
 that the result tuples from non-matches are the result of performing a
