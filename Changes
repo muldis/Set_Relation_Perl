@@ -20,6 +20,12 @@
     have one or more parameters whose declared Perl 6 type was "Code", so
     that the more modern Perl 6 type name of "Callable" is used instead.
 
+    * (Relation.pm)  Updated the docs on 3 functional methods to use more
+    correct terminology with respect to symmetric dyadic functions, so that
+    it now calls each a "symmetric function" rather than a "function with 2
+    mutually commutative main parameters": "is_identical", "is_disjoint",
+    "composition".
+
     * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
     Muldis D dialect HDMD_Perl5_Tiny was renamed to HDMD_Perl5_STD.
 

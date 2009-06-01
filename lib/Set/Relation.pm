@@ -1272,7 +1272,7 @@ Some of them also result in a Set::Relation object while others do not.
 
 C<method is_identical of Bool ($topic: Set::Relation $other)>
 
-This functional method results in true iff its (mutually commutative)
+This symmetric functional method results in true iff its
 invocant and argument are exactly the same value (that is, Set::Relation
 considers them to have the same value identity), and false otherwise.
 
@@ -1295,10 +1295,10 @@ results in false if C<$look_in> and C<$look_for> are identical.
 
 C<method is_disjoint of Bool ($topic: Set::Relation $other)>
 
-This functional method results in true iff the set of tuples comprising
-each of its same-heading mutually commutative invocant and argument are
-mutually disjoint, that is, iff the intersection of the invocant and
-argument is empty; it results in false otherwise.
+This symmetric functional method results in true iff the set of tuples
+comprising each of its same-heading invocant and argument are mutually
+disjoint, that is, iff the intersection of the invocant and argument is
+empty; it results in false otherwise.
 
 =head2 union
 
@@ -1451,13 +1451,12 @@ C<{Y}> appearing in C<B>; that is, C<A / B> is shorthand for C<A{X} -
 
 C<method composition of Set::Relation ($topic: Set::Relation $other)>
 
-This functional method results in the relational composition of its
-mutually commutative invocant and argument.  It is conceptually a
-short-hand for first doing an ordinary relational join between the input
-relations, and then performing a relational projection on all of the
-attributes that only one of the arguments has; that is, the result has all
-of and just the attributes that were not involved in matching the tuples of
-the inputs.
+This symmetric functional method results in the relational composition of
+its invocant and argument.  It is conceptually a short-hand for first doing
+an ordinary relational join between the input relations, and then
+performing a relational projection on all of the attributes that only one
+of the arguments has; that is, the result has all of and just the
+attributes that were not involved in matching the tuples of the inputs.
 
 =head2 join_with_group
 
