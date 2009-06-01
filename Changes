@@ -15,6 +15,14 @@
     * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
     Muldis D dialect HDMD_Perl5_Tiny was renamed to HDMD_Perl5_STD.
 
+    * (Relation.pm, V2.pm, V1.pm)  Renamed these 8 public functional
+    methods to terser versions of themselves mainly for the purpose of
+    making them easier to type: "cmpl_projection" -> "cmpl_proj",
+    "transitive_closure" -> "tclose", "restriction_and_cmpl" ->
+    "restr_and_cmpl", "cmpl_restriction" -> "cmpl_restr",
+    "static_extension" -> "static_exten", "[|semi]difference" ->
+    "[|semi]diff", "static_substitution" -> "static_subst".
+
 2009-04-21   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.10.0 for Perl 5 is released on CPAN as

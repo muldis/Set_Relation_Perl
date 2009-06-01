@@ -39,7 +39,7 @@ body optionally a 2-element array, one element pointing to the body of
 another relation object, and the second element having new tuples that were
 added (or a 3-element, where the third having tuples that were deleted),
 S::R could realistically do that, so to make
-union/difference/insertion/deletion/etc initially faster; the first element
+union/diff/insertion/deletion/etc initially faster; the first element
 would be undef if there is no other object being based on.  Hopefully
 something like this will not make other parts of S::R too complicated.
 
