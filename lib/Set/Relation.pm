@@ -1064,7 +1064,7 @@ at all levels, of some specified part).
 
 =head2 restriction
 
-C<method restriction of Set::Relation ($topic: Code $func, Bool
+C<method restriction of Set::Relation ($topic: Callable $func, Bool
 $allow_dup_tuples?)>
 
 This functional method results in the relational restriction of its
@@ -1086,7 +1086,7 @@ tuple of C<$topic>; otherwise it might be multiple invoked.
 
 =head2 restr_and_cmpl
 
-C<method restr_and_cmpl of Array ($topic: Code $func, Bool
+C<method restr_and_cmpl of Array ($topic: Callable $func, Bool
 $allow_dup_tuples?)>
 
 This functional method performs a 2-way partitioning of all the tuples of
@@ -1098,7 +1098,7 @@ when having the same invocant and arguments.
 
 =head2 cmpl_restr
 
-C<method cmpl_restr of Set::Relation ($topic: Code $func, Bool
+C<method cmpl_restr of Set::Relation ($topic: Callable $func, Bool
 $allow_dup_tuples?)>
 
 This functional method is the same as C<restriction> but that it results in
@@ -1107,7 +1107,7 @@ invocant and arguments.  See also the C<semidiff> method.
 
 =head2 classification
 
-C<method classification of Set::Relation ($topic: Code $func, Str
+C<method classification of Set::Relation ($topic: Callable $func, Str
 $class_attr_name, Str $group_attr_name, Bool $allow_dup_tuples?)>
 
 This functional method conceptually is to C<restriction> what C<group> is
@@ -1132,8 +1132,8 @@ invoked.
 
 =head2 extension
 
-C<method extension of Set::Relation ($topic: Array|Str $attr_names, Code
-$func, Bool $allow_dup_tuples?)>
+C<method extension of Set::Relation ($topic: Array|Str $attr_names,
+Callable $func, Bool $allow_dup_tuples?)>
 
 This functional method results in the relational extension of its C<topic>
 invocant as determined by applying the tuple/Hash-resulting zero-parameter
@@ -1170,8 +1170,8 @@ are given in the C<$attrs> argument.
 
 =head2 map
 
-C<method map of Set::Relation ($topic: Array|Str $result_attr_names, Code
-$func, Bool $allow_dup_tuples?)>
+C<method map of Set::Relation ($topic: Array|Str $result_attr_names,
+Callable $func, Bool $allow_dup_tuples?)>
 
 This functional method provides a convenient one-place generalization of
 per-tuple transformations that otherwise might require the chaining of up
@@ -1204,7 +1204,7 @@ C<$topic>; otherwise it might be multiple invoked.
 =head2 summary
 
 C<method summary of Set::Relation ($topic: Array|Str $group_per,
-Array|Str $summ_attr_names, Code $summ_func, Bool $allow_dup_tuples?)>
+Array|Str $summ_attr_names, Callable $summ_func, Bool $allow_dup_tuples?)>
 
 This functional method provides a convenient context for using aggregate
 functions to derive a per-group summary relation, which is its result, from
@@ -1482,7 +1482,7 @@ to supporting ranking and quotas.
 
 =head2 rank
 
-C<method rank of Set::Relation ($topic: Str $name, Code $ord_func)>
+C<method rank of Set::Relation ($topic: Str $name, Callable $ord_func)>
 
 This functional method results in the relational extension of its C<$topic>
 invocant by a single nonnegative-integer-typed attribute whose name is
@@ -1529,8 +1529,8 @@ semantics); if it is undefined then C<cmp> (string) is the default.
 
 =head2 limit
 
-C<method limit of Set::Relation ($topic: Code $ord_func, UInt $min_rank,
-UInt $max_rank)>
+C<method limit of Set::Relation ($topic: Callable $ord_func,
+UInt $min_rank, UInt $max_rank)>
 
 This functional method results in the relational restriction of its
 C<$topic> argument as determined by first ranking its tuples as per C<rank>
@@ -1563,8 +1563,8 @@ to supporting substitutions.
 
 =head2 substitution
 
-C<method substitution of Set::Relation ($topic: Array|Str $attr_names, Code
-$func, Bool $allow_dup_tuples?)>
+C<method substitution of Set::Relation ($topic: Array|Str $attr_names,
+Callable $func, Bool $allow_dup_tuples?)>
 
 This functional method is similar to C<extension> except that it
 substitutes values of existing relation attributes rather than adding new
@@ -1603,8 +1603,9 @@ attributes; the new attribute values are given in the C<$attrs> argument.
 
 =head2 subst_in_restr
 
-C<method subst_in_restr of Set::Relation ($topic: Code $restr_func,
-Array|Str $subst_attr_names, Code $subst_func, Bool $allow_dup_tuples?)>
+C<method subst_in_restr of Set::Relation ($topic: Callable $restr_func,
+Array|Str $subst_attr_names, Callable $subst_func,
+Bool $allow_dup_tuples?)>
 
 This functional method is like C<substitution> except that it only
 transforms a subset of the tuples of C<$topic> rather than all of them.  It
@@ -1618,8 +1619,8 @@ are composed simply of anded or ored tests for attribute value equality.
 
 =head2 static_subst_in_restr
 
-C<method static_subst_in_restr of Set::Relation ($topic: Code $restr_func,
-Hash $subst, Bool $allow_dup_tuples?)>
+C<method static_subst_in_restr of Set::Relation ($topic:
+Callable $restr_func, Hash $subst, Bool $allow_dup_tuples?)>
 
 This functional method is to C<subst_in_restr> what C<static_subst>
 is to C<substitution>.  See also the C<static_subst_in_semijoin> method.
@@ -1627,7 +1628,8 @@ is to C<substitution>.  See also the C<static_subst_in_semijoin> method.
 =head2 subst_in_semijoin
 
 C<method subst_in_semijoin of Set::Relation ($topic: Set::Relation $restr,
-Array|Str $subst_attr_names, Code $subst_func, Bool $allow_dup_tuples?)>
+Array|Str $subst_attr_names, Callable $subst_func,
+Bool $allow_dup_tuples?)>
 
 This functional method is like C<subst_in_restr> except that the subset of
 the tuples of C<$topic> to be transformed is determined by those matched by
@@ -1685,7 +1687,7 @@ those missing attribute values.
 =head2 outer_join_with_exten
 
 C<method outer_join_with_exten of Set::Relation ($primary: Set::Relation
-$secondary, Code $exten_func, Bool $allow_dup_tuples?)>
+$secondary, Callable $exten_func, Bool $allow_dup_tuples?)>
 
 This functional method is the same as C<outer_join_with_static_exten> but
 that the result tuples from non-matches are the result of performing a

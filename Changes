@@ -12,6 +12,10 @@
     * This release features a number of functional method updates or
     additions in accordance with the latest Muldis D spec (v0.75.0).
 
+    * (Relation.pm)  Updated the docs for all 14 functional methods that
+    have one or more parameters whose declared Perl 6 type was "Code", so
+    that the more modern Perl 6 type name of "Callable" is used instead.
+
     * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
     Muldis D dialect HDMD_Perl5_Tiny was renamed to HDMD_Perl5_STD.
 
