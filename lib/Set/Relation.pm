@@ -1308,7 +1308,8 @@ This functional method results in the relational union/inclusive-or of the
 collective N element values of its same-heading invocant and argument,
 hereafter referred to as C<$inputs>; it is a reduction operator that
 recursively takes each pair of input values and relationally unions (which
-is both commutative and associative) them together until just one is left,
+is commutative,
+associative, and idempotent) them together until just one is left,
 which is the result.  The result relation has the same heading as all of
 its input relations, and its body contains every tuple that is in any of
 the input relations.  The identity value of relational union is the
@@ -1338,7 +1339,8 @@ This functional method results in the relational intersection/and of the
 collective N element values of its same-heading invocant and argument,
 hereafter referred to as C<$inputs>; it is a reduction operator that
 recursively takes each pair of input values and relationally intersects
-(which is both commutative and associative) them together until just one is
+(which is commutative,
+associative, and idempotent) them together until just one is
 left, which is the result.  The result relation has the same heading as all
 of its input relations, and its body contains only the tuples that are in
 every one of the input relations.  The identity value of relational
@@ -1402,8 +1404,9 @@ C<method join of Set::Relation ($topic: Array|Set::Relation $others)>
 This functional method results in the relational join (natural inner join)
 of the collective N element values of its invocant and argument, hereafter
 referred to as C<$inputs>; it is a reduction operator that recursively
-takes each pair of input values and relationally joins (which is both
-commutative and associative) them together until just one is left, which is
+takes each pair of input values and relationally joins (which is
+commutative,
+associative, and idempotent) them together until just one is left, which is
 the result.  The result relation has a heading that is a union of all of
 the headings of its input relations, and its body is the result of first
 pairwise-matching every tuple of each input relation with every tuple of

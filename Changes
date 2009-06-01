@@ -26,6 +26,14 @@
     mutually commutative main parameters": "is_identical", "is_disjoint",
     "composition".
 
+    * (Relation.pm)  Annotated the docs on 3 of the functional methods that
+    previously were directly described with "commutative and associative"
+    to now also say "idempotent" when the main inputs were supplied
+    conceptually as a set argument and not a bag: "union", "intersection",
+    "join".  Now "product" is also idempotent, but its description just
+    says "like join".  The only N-adic functional method that isn't
+    idempotent is "exclusion".
+
     * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
     Muldis D dialect HDMD_Perl5_Tiny was renamed to HDMD_Perl5_STD.
 
