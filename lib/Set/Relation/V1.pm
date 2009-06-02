@@ -1918,22 +1918,22 @@ sub _is_identical {
 ###########################################################################
 
 sub is_subset {
-    my ($look_in, $look_for) = @_;
-    $look_for = $look_in->_normalize_same_heading_relation_arg(
-        'is_subset', '$look_for', $look_for );
-    my $look_in_b = $look_in->_body();
-    return all { exists $look_in_b->{$_} }
-        CORE::keys %{$look_for->_body()};
+    my ($topic, $other) = @_;
+    $other = $topic->_normalize_same_heading_relation_arg(
+        'is_subset', '$other', $other );
+    my $other_b = $other->_body();
+    return all { exists $other_b->{$_} }
+        CORE::keys %{$topic->_body()};
 }
 
 sub is_proper_subset {
-    my ($look_in, $look_for) = @_;
-    $look_for = $look_in->_normalize_same_heading_relation_arg(
-        'is_proper_subset', '$look_for', $look_for );
-    my $look_in_b = $look_in->_body();
-    return ($look_for->cardinality() < $look_in->cardinality()
-        and all { exists $look_in_b->{$_} }
-            CORE::keys %{$look_for->_body()});
+    my ($topic, $other) = @_;
+    $other = $topic->_normalize_same_heading_relation_arg(
+        'is_proper_subset', '$other', $other );
+    my $other_b = $other->_body();
+    return ($topic->cardinality() < $other->cardinality()
+        and all { exists $other_b->{$_} }
+            CORE::keys %{$topic->_body()});
 }
 
 sub is_disjoint {

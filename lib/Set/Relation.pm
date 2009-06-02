@@ -1276,18 +1276,18 @@ considers them to have the same value identity), and false otherwise.
 
 =head2 is_subset
 
-C<method is_subset of Bool ($look_in: Set::Relation $look_for)>
+C<method is_subset of Bool ($topic: Set::Relation $other)>
 
 This functional method results in true iff the set of tuples comprising
-C<$look_for> is a subset of the set of tuples comprising C<$look_in> (both
+C<$topic> is a subset of the set of tuples comprising C<$other> (both
 must have the same heading regardless), and false otherwise.
 
 =head2 is_proper_subset
 
-C<method is_proper_subset of Bool ($look_in: Set::Relation $look_for)>
+C<method is_proper_subset of Bool ($topic: Set::Relation $other)>
 
 This functional method is exactly the same as C<is_subset> except that it
-results in false if C<$look_in> and C<$look_for> are identical.
+results in false if its invocant and argument are identical.
 
 =head2 is_disjoint
 

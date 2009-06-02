@@ -12,6 +12,34 @@
     * This release features a number of functional method updates or
     additions in accordance with the latest Muldis D spec (v0.75.0).
 
+    * (Relation.pm, V2.pm, V1.pm)  WARNING: INCOMPATIBLE CHANGE:  Updated
+    each of the 2 "is[|_proper]_subset" public functional methods so that
+    the canonical sequence of its invocant and parameter is reversed, so
+    that the method's name, used infix as normal, would read correctly;
+    also renamed said 2 inputs so that "look_for" is now "topic" and
+    "look_in" is now "other".  This change is silently incompatible and old
+    user code will continue to run without changes, but would give the
+    wrong answers; any old code like "$foo->is_subset($bar)" will need to
+    be changed to "$bar->is_subset($foo)" to keep its semantics, or
+    alternately be changed to "$foo->is_superset($bar)" (see next item).
+
+NEXT ITEM TODO ... ADDING SUPERSET ...
+
+    * (Relation.pm, V2.pm, V1.pm)  Renamed the public functional method
+    "is_member" to "has_member" so that the methods's name, used infix as
+    normal, reads correctly.
+
+    * (Relation.pm, V2.pm, V1.pm)  Renamed these 8 public functional
+    methods to terser versions of themselves mainly for the purpose of
+    making them easier to type: "cmpl_projection" -> "cmpl_proj",
+    "transitive_closure" -> "tclose", "restriction_and_cmpl" ->
+    "restr_and_cmpl", "cmpl_restriction" -> "cmpl_restr",
+    "static_extension" -> "static_exten", "[|semi]difference" ->
+    "[|semi]diff", "static_substitution" -> "static_subst".
+
+    * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
+    Muldis D dialect HDMD_Perl5_Tiny was renamed to HDMD_Perl5_STD.
+
     * (Relation.pm)  Some POD reformatting:  Updated every method signature
     having a param "FooType $bar_param" with a linebreak between the paired
     type name and param name so that each pair is entirely on one line.
@@ -33,20 +61,6 @@
     "join".  Now "product" is also idempotent, but its description just
     says "like join".  The only N-adic functional method that isn't
     idempotent is "exclusion".
-
-    * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
-    Muldis D dialect HDMD_Perl5_Tiny was renamed to HDMD_Perl5_STD.
-
-    * (Relation.pm, V2.pm, V1.pm)  Renamed these 8 public functional
-    methods to terser versions of themselves mainly for the purpose of
-    making them easier to type: "cmpl_projection" -> "cmpl_proj",
-    "transitive_closure" -> "tclose", "restriction_and_cmpl" ->
-    "restr_and_cmpl", "cmpl_restriction" -> "cmpl_restr",
-    "static_extension" -> "static_exten", "[|semi]difference" ->
-    "[|semi]diff", "static_substitution" -> "static_subst".
-
-    * (Relation.pm, V2.pm, V1.pm)  Renamed the public functional method
-    "is_member" to "has_member" so that the methods's name reads correctly.
 
 2009-04-21   Darren Duncan <perl@DarrenDuncan.net>
 

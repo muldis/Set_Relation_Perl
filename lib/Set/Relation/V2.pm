@@ -1962,23 +1962,22 @@ sub _is_identical {
 ###########################################################################
 
 sub is_subset {
-    my ($look_in, $look_for) = @_;
-    $look_for = $look_in->_normalize_same_heading_relation_arg(
-        'is_subset', '$look_for', $look_for );
-    my $look_in_i = $look_in->_dup_free_want_index_over_all_attrs();
-    return all { exists $look_in_i->{$_} }
-        CORE::keys %{$look_for->_dup_free_want_index_over_all_attrs()};
+    my ($topic, $other) = @_;
+    $other = $topic->_normalize_same_heading_relation_arg(
+        'is_subset', '$other', $other );
+    my $other_i = $other->_dup_free_want_index_over_all_attrs();
+    return all { exists $other_i->{$_} }
+        CORE::keys %{$topic->_dup_free_want_index_over_all_attrs()};
 }
 
 sub is_proper_subset {
-    my ($look_in, $look_for) = @_;
-    $look_for = $look_in->_normalize_same_heading_relation_arg(
-        'is_proper_subset', '$look_for', $look_for );
-    my $look_in_i = $look_in->_dup_free_want_index_over_all_attrs();
-    return ($look_for->cardinality() < $look_in->cardinality()
-        and all { exists $look_in_i->{$_} }
-            CORE::keys %{$look_for
-                ->_dup_free_want_index_over_all_attrs()});
+    my ($topic, $other) = @_;
+    $other = $topic->_normalize_same_heading_relation_arg(
+        'is_proper_subset', '$other', $other );
+    my $other_i = $other->_dup_free_want_index_over_all_attrs();
+    return ($topic->cardinality() < $other->cardinality()
+        and all { exists $other_i->{$_} }
+            CORE::keys %{$topic->_dup_free_want_index_over_all_attrs()});
 }
 
 sub is_disjoint {
