@@ -1936,6 +1936,15 @@ sub is_subset {
         CORE::keys %{$topic->_body()};
 }
 
+sub is_superset {
+    my ($topic, $other) = @_;
+    $other = $topic->_normalize_same_heading_relation_arg(
+        'is_superset', '$other', $other );
+    my $topic_b = $topic->_body();
+    return all { exists $topic_b->{$_} }
+        CORE::keys %{$other->_body()};
+}
+
 sub is_proper_subset {
     my ($topic, $other) = @_;
     $other = $topic->_normalize_same_heading_relation_arg(
@@ -1944,15 +1953,6 @@ sub is_proper_subset {
     return ($topic->cardinality() < $other->cardinality()
         and all { exists $other_b->{$_} }
             CORE::keys %{$topic->_body()});
-}
-
-sub is_superset {
-    my ($topic, $other) = @_;
-    $other = $topic->_normalize_same_heading_relation_arg(
-        'is_superset', '$other', $other );
-    my $topic_b = $topic->_body();
-    return all { exists $topic_b->{$_} }
-        CORE::keys %{$other->_body()};
 }
 
 sub is_proper_superset {

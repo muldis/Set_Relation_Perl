@@ -1980,6 +1980,15 @@ sub is_subset {
         CORE::keys %{$topic->_dup_free_want_index_over_all_attrs()};
 }
 
+sub is_superset {
+    my ($topic, $other) = @_;
+    $other = $topic->_normalize_same_heading_relation_arg(
+        'is_superset', '$other', $other );
+    my $topic_i = $topic->_dup_free_want_index_over_all_attrs();
+    return all { exists $topic_i->{$_} }
+        CORE::keys %{$other->_dup_free_want_index_over_all_attrs()};
+}
+
 sub is_proper_subset {
     my ($topic, $other) = @_;
     $other = $topic->_normalize_same_heading_relation_arg(
@@ -1988,15 +1997,6 @@ sub is_proper_subset {
     return ($topic->cardinality() < $other->cardinality()
         and all { exists $other_i->{$_} }
             CORE::keys %{$topic->_dup_free_want_index_over_all_attrs()});
-}
-
-sub is_superset {
-    my ($topic, $other) = @_;
-    $other = $topic->_normalize_same_heading_relation_arg(
-        'is_superset', '$other', $other );
-    my $topic_i = $topic->_dup_free_want_index_over_all_attrs();
-    return all { exists $topic_i->{$_} }
-        CORE::keys %{$other->_dup_free_want_index_over_all_attrs()};
 }
 
 sub is_proper_superset {

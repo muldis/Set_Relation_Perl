@@ -58,8 +58,8 @@ use warnings FATAL => 'all';
 
     requires 'is_identical';
     requires 'is_subset';
-    requires 'is_proper_subset';
     requires 'is_superset';
+    requires 'is_proper_subset';
     requires 'is_proper_superset';
     requires 'is_disjoint';
     requires 'union';
@@ -857,7 +857,7 @@ the count of tuples its body has).  If this method's C<$allow_dup_tuples>
 argument is false (the default), then the result is guaranteed to only
 count the number of distinct tuples of C<$topic>; otherwise, the result may
 be higher, unless the invocant is empty, in which case the result is still
-exactly zero.
+exactly zero.  Note that this operation is also known as I<count> or C<R#>.
 
 =head2 count
 
@@ -878,7 +878,8 @@ C<method has_member of Bool ($r: Array|Hash $t)>
 
 This functional method results in true iff all of the tuples of its C<$t>
 argument match tuples of its invocant (that is, iff conceptually C<$t> is a
-member of C<$r>), and false otherwise.
+member of C<$r>), and false otherwise.  Note that this operation is also
+known as C<∋>.
 
 =head2 has_key
 
@@ -1087,7 +1088,7 @@ topic.  As a trivial case, if C<$func> is defined to
 unconditionally result in true, then this method results simply in
 C<$topic>; or, for an unconditional false, this method results in the empty
 relation with the same heading.  Note that this operation is also
-legitimately known as I<where>.  See also the C<semijoin> method, which is
+known as I<where>.  See also the C<semijoin> method, which is
 a simpler-syntax alternative for C<restriction> in its typical usage where
 restrictions are composed simply of anded or ored tests for attribute value
 equality.  If this method's C<$allow_dup_tuples> argument is false (the
@@ -1291,7 +1292,8 @@ C<method is_identical of Bool ($topic: Set::Relation $other)>
 
 This symmetric functional method results in true iff its
 invocant and argument are exactly the same value (that is, Set::Relation
-considers them to have the same value identity), and false otherwise.
+considers them to have the same value identity), and false otherwise.  Note
+that this operation is also known as I<is equal> or C<=>.
 
 =head2 is_subset
 
@@ -1299,14 +1301,8 @@ C<method is_subset of Bool ($topic: Set::Relation $other)>
 
 This functional method results in true iff the set of tuples comprising
 C<$topic> is a subset of the set of tuples comprising C<$other> (both
-must have the same heading regardless), and false otherwise.
-
-=head2 is_proper_subset
-
-C<method is_proper_subset of Bool ($topic: Set::Relation $other)>
-
-This functional method is exactly the same as C<is_subset> except that it
-results in false if its invocant and argument are identical.
+must have the same heading regardless), and false otherwise.  Note that
+this operation is also known as C<⊆>.
 
 =head2 is_superset
 
@@ -1316,7 +1312,16 @@ This functional method is an alias for C<is_subset> except that it
 transposes the C<$topic> invocant and C<$other> argument.  This functional
 method results in true iff the set of tuples comprising C<$topic> is a
 superset of the set of tuples comprising C<$other> (both must have the same
-heading regardless), and false otherwise.
+heading regardless), and false otherwise.  Note that this operation is also
+known as C<⊇>.
+
+=head2 is_proper_subset
+
+C<method is_proper_subset of Bool ($topic: Set::Relation $other)>
+
+This functional method is exactly the same as C<is_subset> except that it
+results in false if its invocant and argument are identical. Note that this
+operation is also known as C<⊂>.
 
 =head2 is_proper_superset
 
@@ -1325,7 +1330,8 @@ C<method is_proper_superset of Bool ($topic: Set::Relation $other)>
 This functional method is an alias for C<is_proper_subset> except that it
 transposes the C<$topic> invocant and C<$other> argument.  This functional
 method is exactly the same as C<is_superset> except that it results in
-false if its invocant and argument are identical.
+false if its invocant and argument are identical.  Note that this operation
+is also known as C<⊃>.
 
 =head2 is_disjoint
 
@@ -1344,12 +1350,12 @@ This functional method results in the relational union/inclusive-or of the
 collective N element values of its same-heading invocant and argument,
 hereafter referred to as C<$inputs>; it is a reduction operator that
 recursively takes each pair of input values and relationally unions (which
-is commutative,
-associative, and idempotent) them together until just one is left,
-which is the result.  The result relation has the same heading as all of
-its input relations, and its body contains every tuple that is in any of
-the input relations.  The identity value of relational union is the
-same-heading empty relation value (having zero tuples).
+is commutative, associative, and idempotent) them together until just one
+is left, which is the result.  The result relation has the same heading as
+all of its input relations, and its body contains every tuple that is in
+any of the input relations.  The identity value of relational union is the
+same-heading empty relation value (having zero tuples).  Note that this
+operation is also known as C<∪>.
 
 =head2 exclusion
 
@@ -1364,7 +1370,7 @@ left, which is the result.  The result relation has the same heading as all
 of its input relations, and its body contains every tuple that is in just
 an odd number of the input relations.  The identity value of relational
 exclusion is the same as for C<union>.  Note that this operation is also
-legitimately known as I<symmetric difference>.
+known as I<symmetric difference> or C<∆>.
 
 =head2 symmetric_diff
 
@@ -1382,19 +1388,19 @@ This functional method results in the relational intersection/and of the
 collective N element values of its same-heading invocant and argument,
 hereafter referred to as C<$inputs>; it is a reduction operator that
 recursively takes each pair of input values and relationally intersects
-(which is commutative,
-associative, and idempotent) them together until just one is
-left, which is the result.  The result relation has the same heading as all
-of its input relations, and its body contains only the tuples that are in
-every one of the input relations.  The identity value of relational
-intersection is the same-heading universal relation value (having all the
-tuples that could possible exist together in a common relation value with
-that heading; this is impossibly large to represent in the general case,
-except perhaps lazily).  Note that this C<intersection> method is
-conceptually a special case of C<join>, applicable when the headings of the
-inputs are the same, and C<join> will produce the same result as this when
-given the same inputs, but with the exception that relational intersection
-has a different identity value for zero inputs than relational join has.
+(which is commutative, associative, and idempotent) them together until
+just one is left, which is the result.  The result relation has the same
+heading as all of its input relations, and its body contains only the
+tuples that are in every one of the input relations.  The identity value of
+relational intersection is the same-heading universal relation value
+(having all the tuples that could possible exist together in a common
+relation value with that heading; this is impossibly large to represent in
+the general case, except perhaps lazily).  Note that this C<intersection>
+method is conceptually a special case of C<join>, applicable when the
+headings of the inputs are the same, and C<join> will produce the same
+result as this when given the same inputs, but with the exception that
+relational intersection has a different identity value for zero inputs than
+relational join has.  Note that this operation is also known as C<∩>.
 
 =head2 diff
 
@@ -1406,7 +1412,8 @@ invocant.  The result relation has the same heading as the input relations,
 and its body contains only the tuples that are in C<$source> and are not in
 C<$filter>.  Note that this I<diff> operator is conceptually a
 special case of I<semidiff>, applicable when the headings of the
-inputs are the same.
+inputs are the same.  Note that this operation is also known as I<minus> or
+I<except> or C<∖>.
 
 =head2 semidiff
 
@@ -1414,8 +1421,8 @@ C<method semidiff of Set::Relation ($source: Set::Relation $filter)>
 
 This functional method is the same as C<semijoin> but that it results in
 the complementary subset of tuples of C<$source> when given the same
-arguments.  Note that this operation is also legitimately known as
-I<antijoin> or I<anti-semijoin>.
+arguments.  Note that this operation is also known as I<antijoin> or
+I<anti-semijoin> or I<semiminus> or I<not matching> or C<⊿>.
 
 =head2 antijoin
 
@@ -1444,7 +1451,8 @@ its body contains the subset of C<$source> tuples that match those of
 C<$filter> as per C<join>.  Note that relational semijoin is conceptually a
 short-hand for first doing an ordinary relational join between C<$source>
 and C<$filter>, and then performing a relational projection on all of the
-attributes that just C<$source> has.
+attributes that just C<$source> has.  Note that this operation is also
+known as I<matching> or C<⋉>.
 
 =head2 join
 
@@ -1472,7 +1480,8 @@ just those 2 is a cartesian product; or, if any 2 inputs have all attribute
 names in common, then the join of just those 2 is an intersection; or, if
 for 2 inputs, one's set of attribute names is a proper subset of another's,
 then the join of just those two is a semijoin with the former filtering the
-latter.
+latter.  Note that this operation is also known as I<natural inner join> or
+C<⋈>.
 
 =head2 product
 
@@ -1483,6 +1492,7 @@ the collective N element values of its invocant and argument, hereafter
 referred to as C<$inputs>; it is conceptually a special case of C<join>
 where all input relations have mutually distinct attribute names; unlike
 C<join>, C<product> will fail if any inputs have attribute names in common.
+Note that this operation is also known as I<cartesian/cross join> or C<×>.
 
 =head2 quotient
 
@@ -1496,8 +1506,9 @@ C<{X,Y}> and C<{Y}>, then the result relation has a heading composed of
 attributes C<{X}> (so the result and C<$divisor> headings are both
 complementary subsets of the C<$dividend> heading); the result has all
 tuples C<{X}> such that a tuple C<{X,Y}> appears in C<A> for all tuples
-C<{Y}> appearing in C<B>; that is, C<A / B> is shorthand for C<A{X} -
-((A{X} * B) - A){X}>.
+C<{Y}> appearing in C<B>; that is, C<A ÷ B> is shorthand for C<A{X} ∖
+((A{X} × B) ∖ A){X}>.  Note that this operation is also known as
+I<divideby> or C<÷>.
 
 =head2 composition
 

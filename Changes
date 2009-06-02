@@ -71,6 +71,11 @@
     says "like join".  The only N-adic functional method that isn't
     idempotent is "exclusion".
 
+    * (Relation.pm)  Updated the descriptions of 16 functional methods to
+    add or update notes about alternate names that the function or its
+    operation are known as, in particular adding the various math/etc
+    symbols they represent.
+
 2009-04-21   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.10.0 for Perl 5 is released on CPAN as
