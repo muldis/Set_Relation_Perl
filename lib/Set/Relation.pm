@@ -29,7 +29,7 @@ use warnings FATAL => 'all';
     requires 'attr_names';
     requires 'cardinality';
     requires 'is_empty';
-    requires 'is_member';
+    requires 'has_member';
     requires 'has_key';
     requires 'empty';
     requires 'insertion';
@@ -860,15 +860,13 @@ C<method is_empty of Bool ($topic:)>
 This functional method results in true iff its invocant has a cardinality
 of zero (that is, it has zero tuples), and false otherwise.
 
-=head2 is_member
+=head2 has_member
 
-C<method is_member of Bool ($r: Array|Hash $t)>
+C<method has_member of Bool ($r: Array|Hash $t)>
 
 This functional method results in true iff all of the tuples of its C<$t>
 argument match tuples of its invocant (that is, iff conceptually C<$t> is a
-member of C<$r>), and false otherwise.  This method is like C<is_subset>
-except that the tuples being looked for don't have to be wrapped in a
-relation.
+member of C<$r>), and false otherwise.
 
 =head2 has_key
 

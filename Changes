@@ -45,6 +45,9 @@
     "static_extension" -> "static_exten", "[|semi]difference" ->
     "[|semi]diff", "static_substitution" -> "static_subst".
 
+    * (Relation.pm, V2.pm, V1.pm)  Renamed the public functional method
+    "is_member" to "has_member" so that the methods's name reads correctly.
+
 2009-04-21   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.10.0 for Perl 5 is released on CPAN as

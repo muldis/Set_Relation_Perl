@@ -683,9 +683,9 @@ sub is_empty {
     return $topic->cardinality( 1 ) == 0;
 }
 
-sub is_member {
+sub has_member {
     my ($r, $t) = @_;
-    $t = $r->_normalize_same_heading_tuples_arg( 'is_member', '$t', $t );
+    $t = $r->_normalize_same_heading_tuples_arg( 'has_member', '$t', $t );
     my $r_i = $r->_dup_free_want_index_over_all_attrs();
     return all {
             exists $r_i->{$r->_ident_str( $r->_import_nfmt_tuple( $_ ) )}
