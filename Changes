@@ -3,8 +3,8 @@
 
 2009-06-xx   Darren Duncan <perl@DarrenDuncan.net>
 
-    * Set::Relation version 0.x.x for Perl 5 is released on CPAN as
-    Set-Relation-0.x.x.tar.gz.
+    * Set::Relation version 0.11.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.11.0.tar.gz.
 
     * Updated external dependencies: Moose/etc to version 0.79, Class::MOP
     to version 0.84.
@@ -21,9 +21,12 @@
     user code will continue to run without changes, but would give the
     wrong answers; any old code like "$foo->is_subset($bar)" will need to
     be changed to "$bar->is_subset($foo)" to keep its semantics, or
-    alternately be changed to "$foo->is_superset($bar)" (see next item).
+    alternately be changed to "$foo->is_superset($bar)" (see next chg itm).
 
-NEXT ITEM TODO ... ADDING SUPERSET ...
+    * (Relation.pm, V2.pm, V1.pm)  Added the 2 public functional methods
+    (in the Set::Relation role) "is[|_proper]_superset", where each is an
+    alias for another function, "is[|_proper]_subset", save that its
+    invocant and argument are transposed.
 
     * (Relation.pm, V2.pm, V1.pm)  Renamed the public functional method
     "is_member" to "has_member" so that the methods's name, used infix as

@@ -3,7 +3,7 @@ use utf8;
 use strict;
 use warnings FATAL => 'all';
 
-use Set::Relation 0.009000;
+use Set::Relation 0.010000;
 
 ###########################################################################
 ###########################################################################
@@ -1978,6 +1978,25 @@ sub is_proper_subset {
     return ($topic->cardinality() < $other->cardinality()
         and all { exists $other_i->{$_} }
             CORE::keys %{$topic->_dup_free_want_index_over_all_attrs()});
+}
+
+sub is_superset {
+    my ($topic, $other) = @_;
+    $other = $topic->_normalize_same_heading_relation_arg(
+        'is_superset', '$other', $other );
+    my $topic_i = $topic->_dup_free_want_index_over_all_attrs();
+    return all { exists $topic_i->{$_} }
+        CORE::keys %{$other->_dup_free_want_index_over_all_attrs()};
+}
+
+sub is_proper_superset {
+    my ($topic, $other) = @_;
+    $other = $topic->_normalize_same_heading_relation_arg(
+        'is_proper_superset', '$other', $other );
+    my $topic_i = $topic->_dup_free_want_index_over_all_attrs();
+    return ($other->cardinality() < $topic->cardinality()
+        and all { exists $topic_i->{$_} }
+            CORE::keys %{$other->_dup_free_want_index_over_all_attrs()});
 }
 
 sub is_disjoint {

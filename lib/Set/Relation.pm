@@ -57,6 +57,8 @@ use warnings FATAL => 'all';
     requires 'is_identical';
     requires 'is_subset';
     requires 'is_proper_subset';
+    requires 'is_superset';
+    requires 'is_proper_superset';
     requires 'is_disjoint';
     requires 'union';
     requires 'exclusion';
@@ -1288,6 +1290,25 @@ C<method is_proper_subset of Bool ($topic: Set::Relation $other)>
 
 This functional method is exactly the same as C<is_subset> except that it
 results in false if its invocant and argument are identical.
+
+=head2 is_superset
+
+C<method is_superset of Bool ($topic: Set::Relation $other)>
+
+This functional method is an alias for C<is_subset> except that it
+transposes the C<$topic> invocant and C<$other> argument.  This functional
+method results in true iff the set of tuples comprising C<$topic> is a
+superset of the set of tuples comprising C<$other> (both must have the same
+heading regardless), and false otherwise.
+
+=head2 is_proper_superset
+
+C<method is_proper_superset of Bool ($topic: Set::Relation $other)>
+
+This functional method is an alias for C<is_proper_subset> except that it
+transposes the C<$topic> invocant and C<$other> argument.  This functional
+method is exactly the same as C<is_superset> except that it results in
+false if its invocant and argument are identical.
 
 =head2 is_disjoint
 
