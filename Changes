@@ -15,7 +15,7 @@
     * (Relation.pm, V2.pm, V1.pm)  WARNING: INCOMPATIBLE CHANGE:  Updated
     each of the 2 "is[|_proper]_subset" public functional methods so that
     the canonical sequence of its invocant and parameter is reversed, so
-    that the method's name, used infix as normal, would read correctly;
+    the method's name, used infix as normal for OO, would read correctly;
     also renamed said 2 inputs so that "look_for" is now "topic" and
     "look_in" is now "other".  This change is silently incompatible and old
     user code will continue to run without changes, but would give the
@@ -30,7 +30,7 @@
 
     * (Relation.pm, V2.pm, V1.pm)  Renamed the public functional method
     "is_member" to "has_member" so that the methods's name, used infix as
-    normal, reads correctly.
+    normal for OO, reads correctly.
 
     * (Relation.pm, V2.pm, V1.pm)  Renamed these 8 public functional
     methods to terser versions of themselves mainly for the purpose of
@@ -39,6 +39,12 @@
     "restr_and_cmpl", "cmpl_restriction" -> "cmpl_restr",
     "static_extension" -> "static_exten", "[|semi]difference" ->
     "[|semi]diff", "static_substitution" -> "static_subst".
+
+    * (Relation.pm, V2.pm, V1.pm)  Added the 4 public functional methods
+    (in the Set::Relation role) "count", "count_per_group",
+    "symmetric_diff", "antijoin", where each is a simple alias for another
+    functional method, "cardinality", "cardinality_per_group", "exclusion",
+    "semidiff".
 
     * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
     Muldis D dialect HDMD_Perl5_Tiny was renamed to HDMD_Perl5_STD.

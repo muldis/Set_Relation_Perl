@@ -28,6 +28,7 @@ use warnings FATAL => 'all';
     requires 'has_attrs';
     requires 'attr_names';
     requires 'cardinality';
+    requires 'count';
     requires 'is_empty';
     requires 'has_member';
     requires 'has_key';
@@ -53,6 +54,7 @@ use warnings FATAL => 'all';
     requires 'map';
     requires 'summary';
     requires 'cardinality_per_group';
+    requires 'count_per_group';
 
     requires 'is_identical';
     requires 'is_subset';
@@ -62,9 +64,11 @@ use warnings FATAL => 'all';
     requires 'is_disjoint';
     requires 'union';
     requires 'exclusion';
+    requires 'symmetric_diff';
     requires 'intersection';
     requires 'diff';
     requires 'semidiff';
+    requires 'antijoin';
     requires 'semijoin_and_diff';
     requires 'semijoin';
     requires 'join';
@@ -855,6 +859,12 @@ count the number of distinct tuples of C<$topic>; otherwise, the result may
 be higher, unless the invocant is empty, in which case the result is still
 exactly zero.
 
+=head2 count
+
+C<method count of UInt ($topic: Bool $allow_dup_tuples?)>
+
+This functional method is an alias for C<cardinality>.
+
 =head2 is_empty
 
 C<method is_empty of Bool ($topic:)>
@@ -1255,6 +1265,13 @@ would have had.  The result's heading consists of the attributes named in
 C<$group_per> plus the attribute named in C<$count_attr_name> (a positive
 integer).
 
+=head2 count_per_group
+
+C<method count_per_group of Set::Relation ($topic:
+Array|Str $group_per, Str $count_attr_name, Bool $allow_dup_tuples?)>
+
+This functional method is an alias for C<cardinality_per_group>.
+
 =head1 Multiple Input Relation Functional Methods
 
 These Set::Relation object methods are pure functional, each one whose
@@ -1349,6 +1366,13 @@ an odd number of the input relations.  The identity value of relational
 exclusion is the same as for C<union>.  Note that this operation is also
 legitimately known as I<symmetric difference>.
 
+=head2 symmetric_diff
+
+C<method symmetric_diff of Set::Relation ($topic:
+Array|Set::Relation $others)>
+
+This functional method is an alias for C<exclusion>.
+
 =head2 intersection
 
 C<method intersection of Set::Relation ($topic:
@@ -1392,6 +1416,12 @@ This functional method is the same as C<semijoin> but that it results in
 the complementary subset of tuples of C<$source> when given the same
 arguments.  Note that this operation is also legitimately known as
 I<antijoin> or I<anti-semijoin>.
+
+=head2 antijoin
+
+C<method antijoin of Set::Relation ($source: Set::Relation $filter)>
+
+This functional method is an alias for C<semidiff>.
 
 =head2 semijoin_and_diff
 

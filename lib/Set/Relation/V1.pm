@@ -671,6 +671,11 @@ sub attr_names {
 
 ###########################################################################
 
+sub count {
+    my ($self, @args) = @_;
+    return $self->cardinality( @args );
+}
+
 sub is_empty {
     my ($topic) = @_;
     return $topic->cardinality() == 0;
@@ -1804,6 +1809,11 @@ sub cardinality_per_group {
     return $result;
 }
 
+sub count_per_group {
+    my ($self, @args) = @_;
+    return $self->cardinality_per_group( @args );
+}
+
 ###########################################################################
 
 sub _atnms_hr_from_assert_valid_atnms_arg {
@@ -2058,6 +2068,11 @@ sub exclusion {
     return $result;
 }
 
+sub symmetric_diff {
+    my ($self, @args) = @_;
+    return $self->exclusion( @args );
+}
+
 ###########################################################################
 
 sub intersection {
@@ -2210,6 +2225,11 @@ sub semidiff {
         return $source;
     }
     return $source->_regular_diff( $source->_semijoin( $filter ) );
+}
+
+sub antijoin {
+    my ($self, @args) = @_;
+    return $self->semidiff( @args );
 }
 
 sub semijoin_and_diff {
