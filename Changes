@@ -1,6 +1,24 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-06-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.x.x for Perl 5 is released on CPAN as
+    Set-Relation-0.x.x.tar.gz.
+
+    * Updated external dependencies: Moose/etc to version 0.80, Class::MOP
+    to version 0.85.
+
+    * (Relation.pm)  In accordance with the latest Muldis D spec (v0.77.0),
+    the Muldis D concept or type a Set::Relation object represents is now
+    simply called "relation", which was renamed from "quasi-relation" in
+    the spec.  Accordingly, removed the DESCRIPTION paragraph saying that a
+    Set::Relation isn't quite a relational model relation; rather I am now
+    claiming that it is exactly the same, though it is most like the less
+    strict version where it is like every relation attribute may have a
+    declared type of the universal set of values.  There are no actual code
+    changes in the Set::Relation distro associated with this update.
+
 2009-06-01   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.11.0 for Perl 5 is released on CPAN as

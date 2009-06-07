@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
     use version 0.74; our $VERSION = qv('0.11.0');
     # Note: This given version applies to all of this file's packages.
 
-    use Moose::Role 0.79;
+    use Moose::Role 0.80;
 
     use namespace::clean -except => 'meta';
 
@@ -101,7 +101,7 @@ use warnings FATAL => 'all';
 
 { package Set::Relation::Mutable; # role
 
-    use Moose::Role 0.79;
+    use Moose::Role 0.80;
 
     use namespace::clean -except => 'meta';
 
@@ -180,7 +180,7 @@ whole separate sub-language (such as L<Muldis Rosetta|Muldis::Rosetta>
 does).  Rather, it is integrated a lot more into the Perl way of doing
 things, and you use it much like a Perl array or hash, or like some other
 third-party Set:: modules available for Perl.  This module defines a Perl 5
-object role that represents a L<Muldis D|Muldis::D> quasi-relation value,
+object role that represents a L<Muldis D|Muldis::D> relation value,
 whose methods implement all the Muldis D relational operators.  Or more
 specifically, it defines several such roles (immutable and mutable
 variants) and there are several bundled implementing Perl 5 classes.
@@ -387,17 +387,6 @@ Set::Relation-doing classes as relation values, it treats ordinary
 un-blessed Perl hash-refs as tuple values, and it treats all other Perl
 values (and Perl undef) as scalar values.
 
-Or strictly speaking, a Set::Relation object doesn't just represent a
-relation as its allowed structure is more liberal than a true relation;
-rather, a Set::Relation object directly represents the concept of a
-"quasi-relation" value as defined by the L<Muldis D|Muldis::D> language,
-which is more natural for integration with Perl's liberal way of doing
-things and is also simpler to implement.  But if your use of the module is
-appropriately more restricted than what the module itself allows, then you
-can be working with just true relation values.  For simplicity, the rest of
-this documentation will refer to the concept of "quasi-relation" less
-formally as just "relation".
-
 This documentation section outlines how Set::Relation considers every kind
 of Perl value in regards to its value identity, which has a large role to
 play in the semantics of Set::Relation's routines.  Since a tuple is a set
@@ -586,8 +575,8 @@ using the multi-dimensional Perl data structure given in its C<$members>
 argument, which defines the member attributes and tuples of the new
 relation.  The allowed formats of a C<$members> argument mostly are those
 defined by the Muldis D language dialect
-L<HDMD_Perl5_STD|Muldis::D::Dialect::HDMD_Perl5_STD> for a C<QRelation>
-(or C<Relation>) value literal node payload, except that attribute values
+L<HDMD_Perl5_STD|Muldis::D::Dialect::HDMD_Perl5_STD> for a C<Relation>
+value literal node payload, except that attribute values
 are just ordinary Perl values and not HDMD_Perl5_STD value literal nodes.
 Examples are:
 
@@ -1857,7 +1846,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.11..*)|namespace::clean>,
-L<Moose::Role-ver(0.79..*)|Moose::Role>.
+L<Moose::Role-ver(0.80..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 
