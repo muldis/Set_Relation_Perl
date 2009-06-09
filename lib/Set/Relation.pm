@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # role
-    use version 0.74; our $VERSION = qv('0.11.0');
+    use version 0.74; our $VERSION = qv('0.11.1');
     # Note: This given version applies to all of this file's packages.
 
     use Moose::Role 0.81;
@@ -134,7 +134,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.11.0 for Perl 5.
+This document describes Set::Relation version 0.11.1 for Perl 5.
 
 =head1 SYNOPSIS
 
@@ -576,9 +576,8 @@ argument, which defines the member attributes and tuples of the new
 relation.  The allowed formats of a C<$members> argument mostly are those
 defined by the Muldis D language dialect
 L<HDMD_Perl5_STD|Muldis::D::Dialect::HDMD_Perl5_STD> for a C<Relation>
-value literal node payload, except that attribute values
-are just ordinary Perl values and not HDMD_Perl5_STD value literal nodes.
-Examples are:
+value literal node payload, except that attribute values are just ordinary
+Perl values and not HDMD_Perl5_STD value literal nodes.  Examples are:
 
     sub relation { return $sr_class_name->new( @_ ); }
 
