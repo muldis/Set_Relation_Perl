@@ -6,7 +6,7 @@
     * Set::Relation version 0.x.x for Perl 5 is released on CPAN as
     Set-Relation-0.x.x.tar.gz.
 
-    * Updated external dependencies: Moose/etc to version 0.80, Class::MOP
+    * Updated external dependencies: Moose/etc to version 0.81, Class::MOP
     to version 0.85.
 
     * (Relation.pm)  In accordance with the latest Muldis D spec (v0.77.0),

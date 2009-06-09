@@ -14,7 +14,7 @@ use Set::Relation 0.011000;
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.80;
+    use Moose 0.81;
 
     use namespace::clean -except => 'meta';
 
@@ -3481,7 +3481,7 @@ L<version-ver(0.74..*)|version>.
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::clean-ver(0.11..*)|namespace::clean>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.80..*)|Moose>.
+L<Moose-ver(0.81..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.11.0..*)|Set::Relation>.
