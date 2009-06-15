@@ -1174,7 +1174,7 @@ Callable $func, Bool $allow_dup_tuples?)>
 
 This functional method provides a convenient one-place generalization of
 per-tuple transformations that otherwise might require the chaining of up
-to a half-dozen other operators like restriction, extension, and rename.
+to a half-dozen other operators like projection, extension, and rename.
 This method results in a relation each of whose tuples is the result of
 applying, to each of the tuples of its C<$topic> invocant, the
 tuple/Hash-resulting zero-parameter Perl subroutine reference given in its
