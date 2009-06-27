@@ -11,12 +11,12 @@ use Set::Relation 0.011001;
 { package Set::Relation::V2; # class
     use version 0.74; our $VERSION = qv('0.11.1');
 
+    use namespace::autoclean 0.08;
+
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.82;
-
-    use namespace::clean -except => 'meta';
+    use Moose 0.85;
 
     with 'Set::Relation';
 
@@ -3479,9 +3479,9 @@ installation by users of earlier Perl versions:
 L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<namespace::clean-ver(0.11..*)|namespace::clean>,
+L<namespace::autoclean-ver(0.08..*)|namespace::autoclean>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.82..*)|Moose>.
+L<Moose-ver(0.85..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.11.1..*)|Set::Relation>.

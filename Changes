@@ -6,8 +6,16 @@
     * Set::Relation version 0.x.x for Perl 5 is released on CPAN as
     Set-Relation-0.x.x.tar.gz.
 
-    * Updated external dependencies: Moose/etc to version 0.82, Class::MOP
-    to version 0.87.
+    * As of this release, Set::Relation for Perl 5 uses the
+    namespace::autoclean pragma instead of the namespace::clean pragma,
+    because it is easier to use and not so contrived in how it works and is
+    a generally recommended upgrade by savvy people.  Note that the newer
+    dependency has a larger not-bundled dependency chain, including
+    Class::MOP, but this isn't a problem because Set::Relation for Perl 5
+    already uses Moose anyway.
+
+    * Updated external dependencies: Moose/etc to version 0.85, Class::MOP
+    to version 0.88.
 
     * (Relation.pm)  Minor docs fix.
 
