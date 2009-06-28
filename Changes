@@ -14,6 +14,9 @@
     Class::MOP, but this isn't a problem because Set::Relation for Perl 5
     already uses Moose anyway.
 
+    * This distribution has gained a new direct external dependency on the
+    Carp::Always module, which currently is only used by the 3 test files.
+
     * Updated external dependencies: Moose/etc to version 0.85, Class::MOP
     to version 0.88.
 

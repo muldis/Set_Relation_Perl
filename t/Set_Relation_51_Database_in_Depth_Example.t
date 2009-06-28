@@ -7,6 +7,7 @@ use 5.008001;
 use utf8;
 use strict;
 use warnings FATAL => 'all';
+use Carp::Always 0.09;
 
 use version 0.74;
 
