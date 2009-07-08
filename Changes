@@ -1,7 +1,7 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
-2009-06-xx   Darren Duncan <perl@DarrenDuncan.net>
+2009-07-xx   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.x.x for Perl 5 is released on CPAN as
     Set-Relation-0.x.x.tar.gz.
@@ -17,8 +17,8 @@
     * This distribution has gained a new direct external dependency on the
     Carp::Always module, which currently is only used by the 3 test files.
 
-    * Updated external dependencies: Moose/etc to version 0.85, Class::MOP
-    to version 0.88.
+    * Updated external dependencies: Moose/etc to version 0.87, Class::MOP
+    to version 0.89.
 
     * (Relation.pm)  Minor docs fix.
 

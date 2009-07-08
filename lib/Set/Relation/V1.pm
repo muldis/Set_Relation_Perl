@@ -16,7 +16,7 @@ use Set::Relation 0.011001;
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.85;
+    use Moose 0.87;
 
     has '_heading' => (
         is      => 'rw',
@@ -3608,7 +3608,7 @@ L<version-ver(0.74..*)|version>.
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::autoclean-ver(0.08..*)|namespace::autoclean>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.85..*)|Moose>.
+L<Moose-ver(0.87..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.11.1..*)|Set::Relation>.
