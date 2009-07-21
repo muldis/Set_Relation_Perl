@@ -21,6 +21,7 @@ WriteMakefile(
         'Moose::Role' => 0.87,
         'Class::MOP' => 0.89, # req latest indep of Moose
         # These are only used by the tests, are not bundled with any Perl.
+        'Test::More' => 0.88, # but upd later to v that perl 5.10.1 bundles
         'Carp::Always' => 0.09,
         'Test::Deep' => 0,
     },

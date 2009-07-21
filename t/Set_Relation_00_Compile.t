@@ -6,9 +6,7 @@ use Carp::Always 0.09;
 
 use version 0.74;
 
-use Test::More;
-
-plan( 'tests' => 6 );
+use Test::More 0.88;
 
 use_ok( 'Set::Relation' );
 is( $Set::Relation::VERSION, qv('0.11.2'),
@@ -21,5 +19,7 @@ is( $Set::Relation::V1::VERSION, qv('0.11.2'),
 use_ok( 'Set::Relation::V2' );
 is( $Set::Relation::V2::VERSION, qv('0.11.2'),
     'Set::Relation::V2 is the correct version' );
+
+done_testing();
 
 1; # Magic true value required at end of a reusable file's code.

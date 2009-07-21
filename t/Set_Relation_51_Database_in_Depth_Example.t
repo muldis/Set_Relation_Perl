@@ -11,10 +11,8 @@ use Carp::Always 0.09;
 
 use version 0.74;
 
-use Test::More;
+use Test::More 0.88;
 use Test::Deep;
-
-plan( 'tests' => 2*33 );
 
 my $sr_class_name;
 sub relation { return $sr_class_name->new( @_ ); }
@@ -26,6 +24,8 @@ validate_sr_class();
 use Set::Relation::V2;
 $sr_class_name = 'Set::Relation::V2';
 validate_sr_class();
+
+done_testing();
 
 ###########################################################################
 

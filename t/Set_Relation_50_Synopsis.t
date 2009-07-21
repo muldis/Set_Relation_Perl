@@ -6,9 +6,7 @@ use Carp::Always 0.09;
 
 use version 0.74;
 
-use Test::More;
-
-plan( 'tests' => 2*18 );
+use Test::More 0.88;
 
 my $sr_class_name;
 sub relation { return $sr_class_name->new( @_ ); }
@@ -20,6 +18,8 @@ validate_sr_class();
 use Set::Relation::V2;
 $sr_class_name = 'Set::Relation::V2';
 validate_sr_class();
+
+done_testing();
 
 ###########################################################################
 
