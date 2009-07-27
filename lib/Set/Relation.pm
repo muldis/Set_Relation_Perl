@@ -12,7 +12,7 @@ use warnings FATAL => 'all';
 
     use namespace::autoclean 0.08;
 
-    use Moose::Role 0.87;
+    use Moose::Role 0.88;
 
     requires 'export_for_new';
     requires 'which';
@@ -103,7 +103,7 @@ use warnings FATAL => 'all';
 
     use namespace::autoclean 0.08;
 
-    use Moose::Role 0.87;
+    use Moose::Role 0.88;
 
     with 'Set::Relation';
 
@@ -1845,7 +1845,7 @@ L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::autoclean-ver(0.08..*)|namespace::autoclean>,
-L<Moose::Role-ver(0.87..*)|Moose::Role>.
+L<Moose::Role-ver(0.88..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 
