@@ -9,12 +9,14 @@
     * Updated external dependencies: Moose/etc to version 0.88, Class::MOP
     to version 0.91.
 
-    * (Relation.pm, V2.pm, V1.pm)  WARNING: INCOMPATIBLE CHANGE:  In
-    accordance with the latest Muldis D spec (v0.82.0), updated each of the
-    3 public functional methods "[|cmpl_]wrap", "unwrap" to swap the
-    canonical order of its 2 "outer", "[|cmpl_]inner" parameters so that
-    the one applying to the method's result appears first / on the left.
-    Likewise with each of the 5 public functional methods
+    * This release features a number of functional method updates in
+    accordance with the latest Muldis D spec (v0.82.0).
+
+    * (Relation.pm, V2.pm, V1.pm)  WARNING: INCOMPATIBLE CHANGE:  Updated
+    each of the 3 public functional methods "[|cmpl_]wrap", "unwrap" to
+    swap the canonical order of its 2 "outer", "[|cmpl_]inner" parameters
+    so that the one applying to the method's result appears first / on the
+    left. Likewise with each of the 5 public functional methods
     "[|cmpl_|un|[cardinality|count]_per_]group" and its 2
     "[outer|count_attr_name]", "[inner|group_per]" parameters.  Also
     updated the 1 "rename" public functional method's "map" parameter to
@@ -23,6 +25,11 @@
 
     * (Set_Relation_51_Database_in_Depth_Example.t)  Updated the tests of
     the "rename" method to conform to its updated API.
+
+    * (Relation.pm)  Updated the descriptions of 10 functional methods to
+    add notes about alternate names that the function or its operation are
+    known as.  The alternate names are symbolic and use combinations of
+    these: '{', '}', '<-', '@'.  Used for rename/projection/wrap/group/etc.
 
 2009-07-21   Darren Duncan <perl@DarrenDuncan.net>
 
