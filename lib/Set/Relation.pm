@@ -913,7 +913,7 @@ This functional method results in a relation value that is the same as its
 C<$topic> invocant but that some of its attributes have different names.
 Each element of the Hash argument C<$map> specifies how to rename one
 C<$topic> attribute, with the element's Hash key and Hash value
-representing the old and new names of a C<$topic> attribute, respectively.
+representing the new and old names of a C<$topic> attribute, respectively.
 As a trivial case, this method's result is C<$topic> if C<$map> has no
 elements.  This method supports renaming attributes to each others' names.
 This method will fail if C<$map> specifies any old names that C<$topic>
@@ -942,7 +942,7 @@ argument.
 
 =head2 wrap
 
-C<method wrap of Set::Relation ($topic: Array|Str $inner, Str $outer)>
+C<method wrap of Set::Relation ($topic: Str $outer, Array|Str $inner)>
 
 This functional method results in a relation value that is the same as its
 C<$topic> invocant but that, for each of its member tuples, some of its
@@ -962,8 +962,8 @@ is the same as a C<$topic> attribute that isn't being wrapped.
 
 =head2 cmpl_wrap
 
-C<method cmpl_wrap of Set::Relation ($topic: Array|Str $cmpl_inner,
-Str $outer)>
+C<method cmpl_wrap of Set::Relation ($topic: Str $outer,
+Array|Str $cmpl_inner)>
 
 This functional method is the same as C<wrap> but that it wraps the
 complementary subset of attributes of C<$topic> to those specified by
@@ -971,7 +971,7 @@ C<$cmpl_inner>.
 
 =head2 unwrap
 
-C<method unwrap of Set::Relation ($topic: Str $outer, Array|Str $inner)>
+C<method unwrap of Set::Relation ($topic: Array|Str $inner, Str $outer)>
 
 This functional method is the inverse of C<wrap>, such that it will unwrap
 a tuple-type attribute into its member attributes.  This method will fail
@@ -990,7 +990,7 @@ C<$topic>.
 
 =head2 group
 
-C<method group of Set::Relation ($topic: Array|Str $inner, Str $outer)>
+C<method group of Set::Relation ($topic: Str $outer, Array|Str $inner)>
 
 This functional method is similar to C<wrap> but that the C<$topic>
 attribute-wrapping transformations result in new relation-typed attributes
@@ -1019,8 +1019,8 @@ C<$outer> is the same as C<$topic> attributes that aren't being grouped.
 
 =head2 cmpl_group
 
-C<method cmpl_group of Set::Relation ($topic: Array|Str $group_per,
-Str $outer)>
+C<method cmpl_group of Set::Relation ($topic: Str $outer,
+Array|Str $group_per)>
 
 This functional method is the same as C<group> but that it groups the
 complementary subset of attributes of C<$topic> to those specified by
@@ -1028,7 +1028,7 @@ C<$group_per>.
 
 =head2 ungroup
 
-C<method ungroup of Set::Relation ($topic: Str $outer, Array|Str $inner)>
+C<method ungroup of Set::Relation ($topic: Array|Str $inner, Str $outer)>
 
 This functional method is the inverse of C<group> as C<unwrap> is to
 C<wrap>; it will ungroup a relation-type attribute into its member
@@ -1244,7 +1244,7 @@ tuple; otherwise it might be multiple invoked.
 =head2 cardinality_per_group
 
 C<method cardinality_per_group of Set::Relation ($topic:
-Array|Str $group_per, Str $count_attr_name, Bool $allow_dup_tuples?)>
+Str $count_attr_name, Array|Str $group_per, Bool $allow_dup_tuples?)>
 
 This functional method is a convenient shorthand for the common use of
 C<summary> that is just counting the tuples of each group.  This function
@@ -1257,7 +1257,7 @@ integer).
 =head2 count_per_group
 
 C<method count_per_group of Set::Relation ($topic:
-Array|Str $group_per, Str $count_attr_name, Bool $allow_dup_tuples?)>
+Str $count_attr_name, Array|Str $group_per, Bool $allow_dup_tuples?)>
 
 This functional method is an alias for C<cardinality_per_group>.
 

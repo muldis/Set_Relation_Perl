@@ -159,10 +159,10 @@ my @shipment_tuples =
 {
     diag('rename');
     my $map = {
-        sno    => 'a',
-        sname  => 'b',
-        status => 'c',
-        city   => 'd',
+        a => 'sno',
+        b => 'sname',
+        c => 'status',
+        d => 'city',
     };
     my $s1 = $s->rename($map);
     cmp_ok( $s->cardinality, '==', $s1->cardinality,

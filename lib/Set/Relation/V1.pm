@@ -769,20 +769,20 @@ sub rename {
             . q{ attr names with at least one duplicated name.}
         if (uniq values %{$map}) != (CORE::keys %{$map});
 
-    my ($topic_attrs_to_ren, $topic_attrs_no_ren, $map_hkeys_not_in_topic)
-        = $topic->_ptn_conj_and_disj( $topic->_heading(), $map );
-    confess q{rename(): Bad $map arg; that list of attrs to be renamed,}
-            . q{ the hash keys, isn't a subset of the invocant's heading.}
-        if @{$map_hkeys_not_in_topic} > 0;
-
-    my ($map_hvals_same_as_topic_no_ren, undef, undef)
+    my ($topic_attrs_to_ren, $topic_attrs_no_ren, $map_hvals_not_in_topic)
         = $topic->_ptn_conj_and_disj(
-            {CORE::map { ($_ => undef) } @{$topic_attrs_no_ren}},
-            {reverse %{$map}} );
-    confess q{rename(): Bad $map arg; at least one value of that hash,}
+            $topic->_heading(), {reverse %{$map}} );
+    confess q{rename(): Bad $map arg; that list of attrs to be renamed,}
+            . q{ the hash values, isn't a subset of th invocant's heading.}
+        if @{$map_hvals_not_in_topic} > 0;
+
+    my ($map_hkeys_same_as_topic_no_ren, undef, undef)
+        = $topic->_ptn_conj_and_disj(
+            {CORE::map { ($_ => undef) } @{$topic_attrs_no_ren}}, $map );
+    confess q{rename(): Bad $map arg; at least one key of that hash,}
             . q{ a new name for an attr of the invocant to rename,}
             . q{ duplicates an attr of the invocant not being renamed.}
-        if @{$map_hvals_same_as_topic_no_ren} > 0;
+        if @{$map_hkeys_same_as_topic_no_ren} > 0;
 
     return $topic->_rename( $map );
 }
@@ -800,21 +800,22 @@ sub _rename {
     }
 
     # Expand map to specify all topic attrs being renamed to something.
-    $map = {CORE::map { ($_ => (
-            exists $map->{$_} ? $map->{$_} : $_
-        )) } CORE::keys %{$topic->_heading()}};
+    my $inv_map = {reverse %{$map}};
+    $map = {CORE::map { ((
+            exists $inv_map->{$_} ? $inv_map->{$_} : $_
+        ) => $_) } CORE::keys %{$topic->_heading()}};
 
     my $result = $topic->new();
 
-    $result->_heading( {CORE::map { ($_ => undef) } values %{$map}} );
+    $result->_heading( {CORE::map { ($_ => undef) } CORE::keys %{$map}} );
     $result->_degree( $topic->degree() );
 
     my $result_b = $result->_body();
 
     for my $topic_t (values %{$topic->_body()}) {
         my $result_t = {CORE::map {
-                ($map->{$_} => $topic_t->{$_})
-            } CORE::keys %{$topic_t}};
+                ($_ => $topic_t->{$map->{$_}})
+            } CORE::keys %{$map}};
         my $result_t_ident_str = $topic->_ident_str( $result_t );
         $result_b->{$result_t_ident_str} = $result_t;
     }
@@ -898,11 +899,11 @@ sub cmpl_proj {
 ###########################################################################
 
 sub wrap {
-    my ($topic, $inner, $outer) = @_;
+    my ($topic, $outer, $inner) = @_;
 
+    $topic->_assert_valid_atnm_arg( 'wrap', '$outer', $outer );
     (my $inner_h, $inner) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'wrap', '$inner', $inner );
-    $topic->_assert_valid_atnm_arg( 'wrap', '$outer', $outer );
 
     my (undef, $topic_attrs_no_wr, $inner_attrs_not_in_topic)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $inner_h );
@@ -914,11 +915,11 @@ sub wrap {
             . q{ duplicates an attr of the invocant not being wrapped.}
         if any { $_ eq $outer } @{$topic_attrs_no_wr};
 
-    return $topic->_wrap( $inner, $outer, $topic_attrs_no_wr );
+    return $topic->_wrap( $outer, $inner, $topic_attrs_no_wr );
 }
 
 sub _wrap {
-    my ($topic, $inner, $outer, $topic_attrs_no_wr) = @_;
+    my ($topic, $outer, $inner, $topic_attrs_no_wr) = @_;
 
     my $result = $topic->new();
 
@@ -972,12 +973,12 @@ sub _wrap {
 }
 
 sub cmpl_wrap {
-    my ($topic, $cmpl_inner, $outer) = @_;
+    my ($topic, $outer, $cmpl_inner) = @_;
 
+    $topic->_assert_valid_atnm_arg( 'cmpl_wrap', '$outer', $outer );
     (my $cmpl_inner_h, $cmpl_inner)
         = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'cmpl_wrap', '$cmpl_inner', $cmpl_inner );
-    $topic->_assert_valid_atnm_arg( 'cmpl_wrap', '$outer', $outer );
 
     my $topic_h = $topic->_heading();
 
@@ -995,17 +996,17 @@ sub cmpl_wrap {
             . q{ duplicates an attr of the invocant not being wrapped.}
         if any { $_ eq $outer } @{$topic_attrs_no_wr};
 
-    return $topic->_wrap( $inner, $outer, $topic_attrs_no_wr );
+    return $topic->_wrap( $outer, $inner, $topic_attrs_no_wr );
 }
 
 ###########################################################################
 
 sub unwrap {
-    my ($topic, $outer, $inner) = @_;
+    my ($topic, $inner, $outer) = @_;
 
-    $topic->_assert_valid_atnm_arg( 'unwrap', '$outer', $outer );
     (my $inner_h, $inner) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'unwrap', '$inner', $inner );
+    $topic->_assert_valid_atnm_arg( 'unwrap', '$outer', $outer );
 
     my $topic_h = $topic->_heading();
 
@@ -1083,11 +1084,11 @@ sub unwrap {
 ###########################################################################
 
 sub group {
-    my ($topic, $inner, $outer) = @_;
+    my ($topic, $outer, $inner) = @_;
 
+    $topic->_assert_valid_atnm_arg( 'group', '$outer', $outer );
     (my $inner_h, $inner) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'group', '$inner', $inner );
-    $topic->_assert_valid_atnm_arg( 'group', '$outer', $outer );
 
     my (undef, $topic_attrs_no_gr, $inner_attrs_not_in_topic)
         = $topic->_ptn_conj_and_disj( $topic->_heading(), $inner_h );
@@ -1099,11 +1100,11 @@ sub group {
             . q{ duplicates an attr of the invocant not being grouped.}
         if any { $_ eq $outer } @{$topic_attrs_no_gr};
 
-    return $topic->_group( $inner, $outer, $topic_attrs_no_gr, $inner_h );
+    return $topic->_group( $outer, $inner, $topic_attrs_no_gr, $inner_h );
 }
 
 sub _group {
-    my ($topic, $inner, $outer, $topic_attrs_no_gr, $inner_h) = @_;
+    my ($topic, $outer, $inner, $topic_attrs_no_gr, $inner_h) = @_;
 
     my $result = $topic->new();
 
@@ -1171,12 +1172,12 @@ sub _group {
 }
 
 sub cmpl_group {
-    my ($topic, $group_per, $outer) = @_;
+    my ($topic, $outer, $group_per) = @_;
 
+    $topic->_assert_valid_atnm_arg( 'cmpl_group', '$outer', $outer );
     (my $group_per_h, $group_per)
         = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'cmpl_group', '$group_per', $group_per );
-    $topic->_assert_valid_atnm_arg( 'cmpl_group', '$outer', $outer );
 
     my $topic_h = $topic->_heading();
 
@@ -1194,17 +1195,17 @@ sub cmpl_group {
             . q{ duplicates an attr of the invocant not being grouped.}
         if any { $_ eq $outer } @{$topic_attrs_no_gr};
 
-    return $topic->_group( $inner, $outer, $topic_attrs_no_gr, $inner_h );
+    return $topic->_group( $outer, $inner, $topic_attrs_no_gr, $inner_h );
 }
 
 ###########################################################################
 
 sub ungroup {
-    my ($topic, $outer, $inner) = @_;
+    my ($topic, $inner, $outer) = @_;
 
-    $topic->_assert_valid_atnm_arg( 'ungroup', '$outer', $outer );
     (my $inner_h, $inner) = $topic->_atnms_hr_from_assert_valid_atnms_arg(
         'ungroup', '$inner', $inner );
+    $topic->_assert_valid_atnm_arg( 'ungroup', '$outer', $outer );
 
     my $topic_h = $topic->_heading();
 
@@ -1306,9 +1307,9 @@ sub tclose {
 
     my ($atnm1, $atnm2) = sort (CORE::keys %{$topic->_heading()});
 
-    return $topic->_rename( { $atnm1 => 'x', $atnm2 => 'y' } )
+    return $topic->_rename( { 'x' => $atnm1, 'y' => $atnm2 } )
         ->_tclose_of_xy()
-        ->_rename( { 'x' => $atnm1, 'y' => $atnm2 } );
+        ->_rename( { $atnm1 => 'x', $atnm2 => 'y' } );
 }
 
 # TODO: Reimplement tclose to do all the work internally rather
@@ -1318,7 +1319,7 @@ sub tclose {
 sub _tclose_of_xy {
     my ($xy) = @_;
 
-    my $xyz = $xy->_rename( { 'x' => 'y', 'y' => 'z' } )
+    my $xyz = $xy->_rename( { 'y' => 'x', 'z' => 'y' } )
         ->_regular_join( $xy, ['y'], ['z'], ['x'] );
 
     if ($xyz->is_empty()) {
@@ -1330,7 +1331,7 @@ sub _tclose_of_xy {
     # to form a longer path.
 
     my $ttt = $xyz->_projection( ['x', 'z'] )
-        ->_rename( { 'z' => 'y' } )
+        ->_rename( { 'y' => 'z' } )
         ->_union( [$xy] );
 
     if ($ttt->_is_identical( $xy )) {
@@ -1756,13 +1757,13 @@ sub summary {
 ###########################################################################
 
 sub cardinality_per_group {
-    my ($topic, $group_per, $count_attr_name, $allow_dup_tuples) = @_;
+    my ($topic, $count_attr_name, $group_per, $allow_dup_tuples) = @_;
 
+    $topic->_assert_valid_atnm_arg(
+        'cardinality_per_group', '$count_attr_name', $count_attr_name );
     (my $group_per_h, $group_per)
         = $topic->_atnms_hr_from_assert_valid_atnms_arg(
             'cardinality_per_group', '$group_per', $group_per );
-    $topic->_assert_valid_atnm_arg(
-        'cardinality_per_group', '$count_attr_name', $count_attr_name );
 
     my $topic_h = $topic->_heading();
 
@@ -2690,7 +2691,7 @@ sub join_with_group {
 
     return $primary
         ->_join( [$secondary] )
-        ->_group( $inner, $group_attr, [CORE::keys %{$primary_h}],
+        ->_group( $group_attr, $inner, [CORE::keys %{$primary_h}],
             $inner_h );
 }
 
@@ -3189,7 +3190,7 @@ sub outer_join_with_group {
 
     my $result_matched = $pri_matched
         ->_join( [$secondary] )
-        ->_group( $inner, $group_attr, [CORE::keys %{$primary_h}],
+        ->_group( $group_attr, $inner, [CORE::keys %{$primary_h}],
             $inner_h );
 
     my $result_nonmatched = $pri_nonmatched
