@@ -9,8 +9,6 @@ use strict;
 use warnings FATAL => 'all';
 use Carp::Always 0.09;
 
-use version 0.74;
-
 use Test::More 0.88;
 use Test::Deep;
 

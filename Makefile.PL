@@ -12,8 +12,6 @@ WriteMakefile(
     'AUTHOR' => 'Darren Duncan <perl@DarrenDuncan.net>',
     'LICENSE' => 'lgpl',
     'PREREQ_PM' => {
-        # These are bundled with Perls 5.10.x but not Perls 5.8.x.
-        'version' => 0.74,
         # These are not bundled with any version of Perl.
         'namespace::autoclean' => 0.08,
         'List::MoreUtils' => 0.22,

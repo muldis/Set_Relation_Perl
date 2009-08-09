@@ -3,6 +3,13 @@
 
 Following is a summary of things that still need doing.
 
+* Updated external dependency on Test::Deep to version 0.105_02, which
+currently is only used by the 1 test file
+Set_Relation_51_Database_in_Depth_Example.t, because earlier versions
+of Test::Deep fail their tests under Perl 5.10.1 (rc1).
+
+* Consider using Dist::Zilla for packaging.
+
 * Add code examples, tutorial, cookbook, FAQ, etc.
 
 * Make the test suite actually run all the code, not mostly just compile

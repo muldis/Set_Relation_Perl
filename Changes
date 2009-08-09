@@ -1,6 +1,20 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-08-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.12.1 for Perl 5 is released on CPAN as
+    Set-Relation-0.12.1.tar.gz.
+
+    * This distribution has excised its direct external dependency on the
+    "version" module (bundled with Perl versions 5.10.0+), which was used
+    in all .pm files and a .t file.  And so, the modules in this
+    distribution now declare floating point version numbers of format
+    X.00Y00Z in their code (0.012001 for example); however, all module
+    documentation, and the distribution itself, still uses 3-part version
+    numbers of format X.Y.Z (0.12.1 for example) as before.  The main
+    reason for this change is to gain simplicity and reduce possible bugs.
+
 2009-08-03   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.12.0 for Perl 5 is released on CPAN as

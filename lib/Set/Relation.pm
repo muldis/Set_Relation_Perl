@@ -7,7 +7,8 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # role
-    use version 0.74; our $VERSION = qv('0.12.0');
+    our $VERSION = '0.012000';
+    $VERSION = eval $VERSION;
     # Note: This given version applies to all of this file's packages.
 
     use namespace::autoclean 0.08;
@@ -1841,11 +1842,6 @@ I<This documentation is pending.>
 
 This file requires any version of Perl 5.x.y that is at least 5.8.1, and
 recommends one that is at least 5.10.0.
-
-It also requires these Perl 5 packages that are bundled with any version of
-Perl 5.x.y that is at least 5.10.0, and are also on CPAN for separate
-installation by users of earlier Perl versions:
-L<version-ver(0.74..*)|version>.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::autoclean-ver(0.08..*)|namespace::autoclean>,
