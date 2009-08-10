@@ -10,7 +10,7 @@ use warnings FATAL => 'all';
 use Carp::Always 0.09;
 
 use Test::More 0.88;
-use Test::Deep;
+use Test::Deep 0.106;
 
 my $sr_class_name;
 sub relation { return $sr_class_name->new( @_ ); }
