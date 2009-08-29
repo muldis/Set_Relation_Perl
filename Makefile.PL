@@ -12,14 +12,20 @@ WriteMakefile(
     'AUTHOR' => 'Darren Duncan <perl@DarrenDuncan.net>',
     'LICENSE' => 'lgpl',
     'PREREQ_PM' => {
+        # ALWAYS REQUIRES:
+
         # These are not bundled with any version of Perl.
         'namespace::autoclean' => 0.08,
-        'List::MoreUtils' => 0.22,
-        'Moose' => 0.88,
-        'Moose::Role' => 0.88,
-        'Class::MOP' => 0.91, # req latest indep of Moose
-        # These are only used by the tests, are not bundled with any Perl.
-        'Test::More' => 0.88, # but upd later to v that perl 5.10.1 bundles
+        'List::MoreUtils' => 0.22, # but req 0.25_02+ under Perl 5.10.1+
+        'Moose' => 0.89,
+        'Moose::Role' => 0.89,
+        'Class::MOP' => 0.92, # req latest indep of Moose
+
+        # BUILD REQUIRES:
+
+        # These are bundled with Perls 5.10.1+ but not earlier Perls.
+        'Test::More' => 0.92,
+        # These are not bundled with any version of Perl.
         'Carp::Always' => 0.09,
         'Test::Deep' => 0.106,
     },

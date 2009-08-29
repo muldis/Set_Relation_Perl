@@ -4,7 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 use Carp::Always 0.09;
 
-use Test::More 0.88;
+use Test::More 0.92;
 
 use_ok( 'Set::Relation' );
 is( $Set::Relation::VERSION, 0.012001,

@@ -5,11 +5,17 @@
 
     * Set::Relation version 0.12.2 for Perl 5 is released on CPAN as
     Set-Relation-0.12.2.tar.gz.
-    
+
+    * Updated external dependency on Test::More to version 0.92, which is
+    the version bundled with Perl 5.10.1.
+
     * Updated external dependency on Test::Deep to version 0.106, which
     currently is only used by the 1 test file
     Set_Relation_51_Database_in_Depth_Example.t, because earlier versions
-    of Test::Deep fail their tests under Perl 5.10.1 (rc1).
+    of Test::Deep (0.104) fail their tests under Perl 5.10.1.
+
+    * Updated external dependencies: Moose/etc to version 0.89, Class::MOP
+    to version 0.92.
 
 2009-08-08   Darren Duncan <perl@DarrenDuncan.net>
 
