@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # role
-    our $VERSION = '0.012001';
+    our $VERSION = '0.012002';
     $VERSION = eval $VERSION;
     # Note: This given version applies to all of this file's packages.
 
@@ -135,7 +135,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.12.1 for Perl 5.
+This document describes Set::Relation version 0.12.2 for Perl 5.
 
 =head1 SYNOPSIS
 
@@ -1415,7 +1415,8 @@ C<method semidiff of Set::Relation ($source: Set::Relation $filter)>
 This functional method is the same as C<semijoin> but that it results in
 the complementary subset of tuples of C<$source> when given the same
 arguments.  Note that this operation is also known as I<antijoin> or
-I<anti-semijoin> or I<semiminus> or I<not matching> or C<⊿>.
+I<anti-semijoin> or I<semiminus> or C<!matching> or C<not matching> or
+C<⊿>.
 
 =head2 antijoin
 
@@ -1445,7 +1446,7 @@ C<$filter> as per C<join>.  Note that relational semijoin is conceptually a
 short-hand for first doing an ordinary relational join between C<$source>
 and C<$filter>, and then performing a relational projection on all of the
 attributes that just C<$source> has.  Note that this operation is also
-known as I<matching> or C<⋉>.
+known as C<matching> or C<⋉>.
 
 =head2 join
 
