@@ -12,12 +12,12 @@ use Set::Relation 0.012002;
     our $VERSION = '0.012002';
     $VERSION = eval $VERSION;
 
-    use namespace::autoclean 0.08;
+    use namespace::autoclean 0.09;
 
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.89;
+    use Moose 0.90;
 
     with 'Set::Relation';
 
@@ -3476,9 +3476,9 @@ This file requires any version of Perl 5.x.y that is at least 5.8.1, and
 recommends one that is at least 5.10.1.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<namespace::autoclean-ver(0.08..*)|namespace::autoclean>,
+L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.89..*)|Moose>.
+L<Moose-ver(0.90..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.12.2..*)|Set::Relation>.
