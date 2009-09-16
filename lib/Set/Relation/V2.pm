@@ -124,7 +124,7 @@ sub BUILD {
             and !$members->isa( __PACKAGE__ )) {
         # We got a $members that is a Set::Relation-doing class where that
         # class isn't us; so clone it from a dump using public interface.
-        $members = $self->new( $members->export_for_new() );
+        $members = $self->_new( $members->export_for_new() );
     }
     confess q{new(): Bad :$members arg; it must be either undefined}
             . q{ or an array-ref or a non-ref or a Set::Relation object.}
@@ -283,6 +283,13 @@ sub BUILD {
     }
 
     return;
+}
+
+###########################################################################
+
+sub _new {
+    my ($self, @args) = @_;
+    return (blessed $self)->new( @args );
 }
 
 ###########################################################################
@@ -585,7 +592,7 @@ sub _import_nfmt_tuple {
         elsif (blessed $atvl and $atvl->isa( 'Moose::Object' )
                 and $atvl->does( 'Set::Relation' )
                 and !$atvl->isa( __PACKAGE__ )) {
-            $atvl = $self->new( $atvl );
+            $atvl = $self->_new( $atvl );
         }
         ($atnm => $atvl);
     } CORE::keys %{$tuple}};
@@ -614,7 +621,7 @@ sub _import_ofmt_tuple {
         elsif (blessed $atvl and $atvl->isa( 'Moose::Object' )
                 and $atvl->does( 'Set::Relation' )
                 and !$atvl->isa( __PACKAGE__ )) {
-            $atvl = $self->new( $atvl );
+            $atvl = $self->_new( $atvl );
         }
         ($atnm => $atvl);
     } 0..$#{$atnms}};
@@ -737,7 +744,7 @@ sub empty {
     if ($topic->is_empty()) {
         return $topic;
     }
-    my $result = $topic->new();
+    my $result = $topic->_new();
     $result->_heading( $topic->_heading() );
     return $result;
 }
@@ -846,7 +853,7 @@ sub _rename {
             exists $inv_map->{$_} ? $inv_map->{$_} : $_
         ) => $_) } CORE::keys %{$topic->_heading()}};
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {CORE::map { ($_ => undef) } CORE::keys %{$map}} );
 
@@ -889,10 +896,10 @@ sub _projection {
     if (@{$attr_names} == 0) {
         # Projection of zero attrs yields identity relation zero or one.
         if ($topic->is_empty()) {
-            return $topic->new();
+            return $topic->_new();
         }
         else {
-            return $topic->new( [ {} ] );
+            return $topic->_new( [ {} ] );
         }
     }
     if (@{$attr_names} == $topic->degree()) {
@@ -900,7 +907,7 @@ sub _projection {
         return $topic;
     }
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {CORE::map { ($_ => undef) } @{$attr_names}} );
 
@@ -958,7 +965,7 @@ sub wrap {
 sub _wrap {
     my ($topic, $outer, $inner, $topic_attrs_no_wr) = @_;
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading(
         {CORE::map { ($_ => undef) } @{$topic_attrs_no_wr}, $outer} );
@@ -1069,7 +1076,7 @@ sub unwrap {
                 or !$topic->_is_identical_hkeys( $inner_h, $inner_t );
     }
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$topic_h_except_outer}, %{$inner_h}} );
 
@@ -1139,7 +1146,7 @@ sub group {
 sub _group {
     my ($topic, $outer, $inner, $topic_attrs_no_gr, $inner_h) = @_;
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading(
         {CORE::map { ($_ => undef) } @{$topic_attrs_no_gr}, $outer} );
@@ -1152,7 +1159,7 @@ sub _group {
         # Group zero $topic attrs as new attr.
         # So this is a simple static extension of $topic w static $outer.
         my $result_b = $result->_body();
-        my $inner_r = $topic->new( [ {} ] );
+        my $inner_r = $topic->_new( [ {} ] );
         for my $topic_t (values %{$topic->_body()}) {
             my $result_t = {$outer => $inner_r, {%{$topic_t}}};
             $result_b->{refaddr $result_t} = $result_t;
@@ -1170,7 +1177,7 @@ sub _group {
         my $topic_index = $topic->_want_index( $topic_attrs_no_gr );
         for my $matched_topic_b (values %{$topic_index}) {
 
-            my $inner_r = $topic->new();
+            my $inner_r = $topic->_new();
             $inner_r->_heading( $inner_h );
             my $inner_b = $inner_r->_body();
             for my $topic_t (values %{$matched_topic_b}) {
@@ -1264,13 +1271,13 @@ sub ungroup {
     if ($topic->degree() == 1) {
         # Ungroup of a unary relation is the N-adic union of its sole
         # attribute's value across all tuples.
-        return $topic->new( $inner )
+        return $topic->_new( $inner )
             ->_union( [CORE::map { $_->{$outer} } values %{$topic_b}] );
     }
 
     # If we get here, the input relation is not unary.
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$topic_h_except_outer}, %{$inner_h}} );
 
@@ -1506,7 +1513,7 @@ sub classification {
     $topic->_assert_valid_atnm_arg(
         'classification', '$group_attr_name', $group_attr_name );
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading(
         {$class_attr_name => undef, $group_attr_name => undef} );
@@ -1544,7 +1551,7 @@ sub classification {
         my ($class, $tuples_in_class)
             = @{$tuples_per_class->{$class_ident_str}};
 
-        my $inner_r = $topic->new();
+        my $inner_r = $topic->_new();
         $inner_r->_heading( $topic_h );
         $inner_r->_body(
             {CORE::map { (refaddr $_ => $_) } @{$tuples_in_class}} );
@@ -1595,7 +1602,7 @@ sub _extension {
         $topic->_dup_free_want_index_over_all_attrs();
     }
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$topic->_heading()}, %{$exten_h}} );
 
@@ -1653,7 +1660,7 @@ sub _static_exten {
 
     $attrs = $topic->_import_nfmt_tuple( $attrs );
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$topic->_heading()},
         CORE::map { ($_ => undef) } CORE::keys %{$attrs}} );
@@ -1685,10 +1692,10 @@ sub map {
     if (@{$result_attr_names} == 0) {
         # Map to zero attrs yields identity relation zero or one.
         if ($topic->is_empty()) {
-            return $topic->new();
+            return $topic->_new();
         }
         else {
-            return $topic->new( [ {} ] );
+            return $topic->_new( [ {} ] );
         }
     }
 
@@ -1696,7 +1703,7 @@ sub map {
         $topic->_dup_free_want_index_over_all_attrs();
     }
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( $result_h );
 
@@ -1748,7 +1755,7 @@ sub summary {
     my (undef, $topic_attrs_no_gr, undef)
         = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$group_per_h}, %{$exten_h}} );
 
@@ -1768,7 +1775,7 @@ sub summary {
     my $topic_index = $topic->_want_index( $topic_attrs_no_gr );
     for my $matched_topic_b (values %{$topic_index}) {
 
-        my $inner_r = $topic->new();
+        my $inner_r = $topic->_new();
         $inner_r->_heading( $inner_h );
         my $inner_b = $inner_r->_body();
         for my $topic_t (values %{$matched_topic_b}) {
@@ -1827,7 +1834,7 @@ sub cardinality_per_group {
     my (undef, $topic_attrs_no_gr, undef)
         = $topic->_ptn_conj_and_disj( $topic_h, $inner_h );
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$group_per_h}, $count_attr_name => undef} );
 
@@ -1927,7 +1934,7 @@ sub _normalize_same_heading_relation_arg {
     if (blessed $other and $other->isa( 'Moose::Object' )
             and $other->does( 'Set::Relation' )
             and !$other->isa( __PACKAGE__ )) {
-        $other = $self->new( $other );
+        $other = $self->_new( $other );
     }
     confess qq{$rtn_nm(): Bad $arg_nm arg; it isn't a Set::Relation}
             . q{ object, or it doesn't have exactly the}
@@ -1943,7 +1950,7 @@ sub _normalize_relation_arg {
     if (blessed $other and $other->isa( 'Moose::Object' )
             and $other->does( 'Set::Relation' )
             and !$other->isa( __PACKAGE__ )) {
-        $other = $self->new( $other );
+        $other = $self->_new( $other );
     }
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it isn't a Set::Relation object.}
@@ -2182,7 +2189,7 @@ sub _normalize_same_heading_relations_arg {
         if (blessed $other and $other->isa( 'Moose::Object' )
                 and $other->does( 'Set::Relation' )
                 and !$other->isa( __PACKAGE__ )) {
-            $other = $self->new( $other );
+            $other = $self->_new( $other );
         }
         confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
                 . q{ it isn't a Set::Relation object, or it doesn't have}
@@ -2211,7 +2218,7 @@ sub _normalize_relations_arg {
         if (blessed $other and $other->isa( 'Moose::Object' )
                 and $other->does( 'Set::Relation' )
                 and !$other->isa( __PACKAGE__ )) {
-            $other = $self->new( $other );
+            $other = $self->_new( $other );
         }
         confess qq{$rtn_nm(): Bad $arg_nm arg elem;}
                 . q{ it isn't a Set::Relation object.}
@@ -2388,7 +2395,7 @@ sub _join {
 
     if (any { $_->is_empty() } @{$inputs}) {
         # At least one input has zero tuples; so does result.
-        my $result = $topic->new();
+        my $result = $topic->_new();
         my $result_h = {CORE::map { %{$_->_heading()} } @{$inputs}};
         $result->_heading( $result_h );
         return $result;
@@ -2461,7 +2468,7 @@ sub _join {
 sub _regular_join {
     my ($topic, $other, $both, $topic_only, $other_only) = @_;
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {CORE::map { ($_ => undef) }
         @{$both}, @{$topic_only}, @{$other_only}} );
@@ -2518,7 +2525,7 @@ sub product {
 
     if (any { $_->is_empty() } @{$inputs}) {
         # At least one input has zero tuples; so does result.
-        my $result = $topic->new();
+        my $result = $topic->_new();
         $result->_heading( {CORE::map { ($_ => undef) } @{$attr_names}} );
         return $result;
     }
@@ -2551,7 +2558,7 @@ sub product {
 sub _regular_product {
     my ($topic, $other) = @_;
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$topic->_heading()}, %{$other->_heading()}} );
 
@@ -2631,7 +2638,7 @@ sub composition {
 
     if ($topic->is_empty() or $other->is_empty()) {
         # At least one input has zero tuples; so does result.
-        return $topic->new( [@{$topic_only}, @{$other_only}] );
+        return $topic->_new( [@{$topic_only}, @{$other_only}] );
     }
 
     # If we get here, both inputs have at least one tuple.
@@ -2653,7 +2660,7 @@ sub composition {
     }
     if (@{$topic_only} == 0 and @{$other_only} == 0) {
         # The inputs have identical headings; result is ident-one relation.
-        return $topic->new( [ {} ] );
+        return $topic->_new( [ {} ] );
     }
 
     # If we get here, the inputs also have overlapping non-ident headings.
@@ -2813,7 +2820,7 @@ sub rank {
 
     $topic->_assert_valid_func_arg( 'rank', '$ord_func', $ord_func );
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$topic_h}, $name => undef} );
 
@@ -2868,7 +2875,7 @@ sub rank_by_attr_names {
     $order_by = $topic->_normalize_order_by_arg(
         'rank_by_attr_names', '$order_by', $order_by );
 
-    my $result = $topic->new();
+    my $result = $topic->_new();
 
     $result->_heading( {%{$topic_h}, $name => undef} );
 
@@ -3291,7 +3298,7 @@ sub outer_join_with_group {
             $inner_h );
 
     my $result_nonmatched = $pri_nonmatched
-        ->_static_exten( {$group_attr => $primary->new( $inner )} );
+        ->_static_exten( {$group_attr => $primary->_new( $inner )} );
 
     my $result = $result_matched->_union( [$result_nonmatched] );
 

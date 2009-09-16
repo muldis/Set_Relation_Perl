@@ -9,6 +9,12 @@
     * Updated external dependencies: namespace::autoclean to version 0.09,
     Moose/etc to version 0.90, Class::MOP to version 0.93.
 
+    * (V2.pm, V1.pm)  Internals update to remain compatible with the latest
+    Moose/Class::MOP, which has deprecated the ability for one to say
+    "$obj->new(...)", which we had been doing internally rather than
+    "ClassName->new(...)" so that we still work when we're subclassed; so
+    now we use "(blessed $obj)->new(...)" to make new objects instead.
+
 2009-08-29   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.12.2 for Perl 5 is released on CPAN as
