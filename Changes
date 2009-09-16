@@ -15,6 +15,11 @@
     "ClassName->new(...)" so that we still work when we're subclassed; so
     now we use "(blessed $obj)->new(...)" to make new objects instead.
 
+    * (Relation.pm)  In accordance with the Muldis D spec v0.87.0+, updated
+    the descriptions of the 10 functional methods that do
+    rename/projection/wrap/group/etc to update notes about alternate names
+    that each function or its operation are known as.
+
 2009-08-29   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.12.2 for Perl 5 is released on CPAN as
