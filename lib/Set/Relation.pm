@@ -135,7 +135,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.12.2 for Perl 5.
+This document describes Set::Relation version 0.12.3 for Perl 5.
 
 =head1 SYNOPSIS
 

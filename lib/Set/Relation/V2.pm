@@ -3440,7 +3440,7 @@ Bundled second implementation of Set::Relation role
 
 =head1 VERSION
 
-This document describes Set::Relation::V2 version 0.12.2 for Perl 5.
+This document describes Set::Relation::V2 version 0.12.3 for Perl 5.
 
 =head1 SYNOPSIS
 
@@ -3488,7 +3488,7 @@ L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
 L<Moose-ver(0.90..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
-distribution: L<Set::Relation-ver(0.12.2..*)|Set::Relation>.
+distribution: L<Set::Relation-ver(0.12.3..*)|Set::Relation>.
 
 =head1 INCOMPATIBILITIES
 
