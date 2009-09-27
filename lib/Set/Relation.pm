@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # role
-    our $VERSION = '0.012002';
+    our $VERSION = '0.012003';
     $VERSION = eval $VERSION;
     # Note: This given version applies to all of this file's packages.
 

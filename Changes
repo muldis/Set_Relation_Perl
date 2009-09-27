@@ -6,6 +6,9 @@
     * Set::Relation version 0.12.4 for Perl 5 is released on CPAN as
     Set-Relation-0.12.4.tar.gz.
 
+    * Oops, the previous release 0.12.3 shipped with code all declared as
+    version 0.012002 rather than 0.012003; the metadata was correct though.
+
     * Updated external dependencies: Moose/etc to version 0.92, Class::MOP
     to version 0.94.
 

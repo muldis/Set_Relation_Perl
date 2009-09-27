@@ -3,13 +3,13 @@ use utf8;
 use strict;
 use warnings FATAL => 'all';
 
-use Set::Relation 0.012002;
+use Set::Relation 0.012003;
 
 ###########################################################################
 ###########################################################################
 
 { package Set::Relation::V1; # class
-    our $VERSION = '0.012002';
+    our $VERSION = '0.012003';
     $VERSION = eval $VERSION;
 
     use namespace::autoclean 0.09;
