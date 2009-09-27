@@ -13,7 +13,7 @@ use warnings FATAL => 'all';
 
     use namespace::autoclean 0.09;
 
-    use Moose::Role 0.90;
+    use Moose::Role 0.92;
 
     requires 'export_for_new';
     requires 'which';
@@ -104,7 +104,7 @@ use warnings FATAL => 'all';
 
     use namespace::autoclean 0.09;
 
-    use Moose::Role 0.90;
+    use Moose::Role 0.92;
 
     with 'Set::Relation';
 
@@ -1752,7 +1752,7 @@ said result tuple is determined by applying the Perl subroutine given in
 C<$exten_func> to each said C<$primary> tuple.  If this method's
 C<$allow_dup_tuples> argument is false (the default), then C<$exten_func>
 is guaranteed to be invoked just once per un-matched tuple of
-C<$secondary>; otherwise it might be multiple invoked.
+C<$primary>; otherwise it might be multiple invoked.
 
 =head1 THE Set::Relation::Mutable ROLE
 
@@ -1846,7 +1846,7 @@ recommends one that is at least 5.10.1.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
-L<Moose::Role-ver(0.90..*)|Moose::Role>.
+L<Moose::Role-ver(0.92..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 

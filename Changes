@@ -1,6 +1,18 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-09-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.12.4 for Perl 5 is released on CPAN as
+    Set-Relation-0.12.4.tar.gz.
+
+    * Updated external dependencies: Moose/etc to version 0.92, Class::MOP
+    to version 0.94.
+
+    * (Relation.pm)  Fixed a doc typo; the wrong param was referenced.
+
+    * Updated the README file to mention the new Muldis-D-Manual distro.
+
 2009-09-15   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.12.3 for Perl 5 is released on CPAN as
