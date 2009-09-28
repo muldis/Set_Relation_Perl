@@ -61,13 +61,13 @@ of these modules are also linked to through my business website,
 For those of you that are interested in the bleeding edge of development, I
 have all parts of the Set::Relation project in one or more public
 repositories.  The Perl 5 Set::Relation project is in a Git repository
-whose Git read-access url is "git://utsl.gen.nz/Set-Relation" and whose
-Gitweb information url is at "http://utsl.gen.nz/gitweb/?p=Set-Relation".
-The Perl 6 Set::Relation project is in a Subversion repository at
+whose public clone url is "git://github.com/muldis/Set-Relation.git" and
+whose web information url is at "http://github.com/muldis/Set-Relation".
+It is also in a Git repository whose public clone url is
+"git://utsl.gen.nz/Set-Relation" and whose web information url is at
+"http://utsl.gen.nz/gitweb/?p=Set-Relation".  The Perl 6 Set::Relation
+project is in a Subversion repository at
 "http://svn.pugscode.org/pugs/ext/Set-Relation/".
-
-In the near future I will also be using a GitHub public repository, under
-"http://github.com/muldis/", to host this project.
 
 You can download slightly older versions of all of my modules from the
 public CPAN archives at "http://www.cpan.org/authors/id/D/DU/DUNCAND/", or

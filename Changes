@@ -9,6 +9,9 @@
     * Oops, the previous release 0.12.3 shipped with code all declared as
     version 0.012002 rather than 0.012003; the metadata was correct though.
 
+    * Updated the README file to indicate that this distribution now has 2
+    public Git repositories, one on GitHub.com and one on utsl.gen.nz.
+
     * Updated external dependencies: Moose/etc to version 0.92, Class::MOP
     to version 0.94.
 
