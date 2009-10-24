@@ -1415,7 +1415,7 @@ C<method semidiff of Set::Relation ($source: Set::Relation $filter)>
 This functional method is the same as C<semijoin> but that it results in
 the complementary subset of tuples of C<$source> when given the same
 arguments.  Note that this operation is also known as I<antijoin> or
-I<anti-semijoin> or I<semiminus> or C<!matching> or C<not matching> or
+I<anti-semijoin> or I<semiminus> or C<!matching> or C<not-matching> or
 C<⊿>.
 
 =head2 antijoin
@@ -1486,7 +1486,8 @@ the collective N element values of its invocant and argument, hereafter
 referred to as C<$inputs>; it is conceptually a special case of C<join>
 where all input relations have mutually distinct attribute names; unlike
 C<join>, C<product> will fail if any inputs have attribute names in common.
-Note that this operation is also known as I<cartesian/cross join> or C<×>.
+Note that this operation is also known as I<cartesian join> or
+C<cross-join> or C<×>.
 
 =head2 quotient
 
