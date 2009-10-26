@@ -3484,6 +3484,7 @@ recommends one that is at least 5.10.1.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
+L<Scalar::Util-ver(1.21..*)|Scalar::Util>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
 L<Moose-ver(0.92..*)|Moose>.
 

@@ -3,6 +3,9 @@
 
 Following is a summary of things that still need doing.
 
+* Update the Makefile.PL so that the generated YAML.yml would list the
+required minimum Perl version; the current Makefile.PL fails at that.
+
 * Consider using Dist::Zilla for packaging.
 
 * Add code examples, tutorial, cookbook, FAQ, etc.

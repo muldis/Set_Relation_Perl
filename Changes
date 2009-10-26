@@ -22,6 +22,18 @@
 
     * Updated the README file to mention the new Muldis-D-Manual distro.
 
+    * (Makefile.PL, V2.pm, V1.pm)  Added explicit dependency on
+    Scalar::Util in both the Makefile.PL and in the "DEPENDENCIES" pod,
+    because it is a best practice to name all direct dependencies
+    regardless of whether any of them are normally bundled with Perl.
+
+    * Major update to the Makefile.PL (and META.yml) to make its format
+    more modern, in particular by distinguishing between dependencies that
+    are needed to use the Set::Relation modules and those needed only for
+    testing them or for configuring the distribution; previously, the
+    dependencies needed only for testing were treated as if necessary to
+    use Set::Relation itself; also added a list of "resources" urls.
+
 2009-09-15   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.12.3 for Perl 5 is released on CPAN as
