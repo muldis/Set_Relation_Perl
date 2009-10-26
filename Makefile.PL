@@ -13,7 +13,7 @@ sub OPTIONAL {
 
 WriteMakefile(
    NAME => 'Set::Relation',
-   VERSION => '0.12.3',
+   VERSION => '0.12.4',
    ABSTRACT => 'Relation data type for Perl',
    PREREQ_PM => {
       # This list is a copy of "META_ADD:[configure_|build_|]requires"
