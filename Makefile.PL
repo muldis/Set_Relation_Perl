@@ -1,7 +1,6 @@
-use 5.008001;
-use utf8;
+use 5.006;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 use ExtUtils::MakeMaker;
 
@@ -15,6 +14,7 @@ WriteMakefile(
    NAME => 'Set::Relation',
    VERSION => '0.12.4',
    ABSTRACT => 'Relation data type for Perl',
+   AUTHOR => 'Darren Duncan <perl@DarrenDuncan.net>',
    PREREQ_PM => {
       # This list is a copy of "META_ADD:[configure_|build_|]requires"
       # where the other is canonical; this list is for use by MakeMaker
@@ -37,9 +37,6 @@ WriteMakefile(
    OPTIONAL( '6.31',
       LICENSE => 'lgpl',
    ),
-   OPTIONAL( '6.11',
-      AUTHOR => 'Darren Duncan <perl@DarrenDuncan.net>',
-   ),
    OPTIONAL( '6.46',
       # Use META_ADD instead of META_MERGE so that we can remove
       # any build-time dependencies that MakeMaker will put into
@@ -57,6 +54,7 @@ WriteMakefile(
             'Test::Deep' => '0.106',
          },
          requires => {
+            'perl' => '5.8.1', # since MIN_PERL_VERSION no affect META.yml
             # These are bundled with Perls 5.10.1+ but not earlier Perls.
             'Scalar::Util' => '1.21',
             # These are not bundled with any version of Perl.

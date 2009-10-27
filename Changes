@@ -3,6 +3,19 @@
 
 2009-10-26   Darren Duncan <perl@DarrenDuncan.net>
 
+    * Set::Relation version 0.12.5 for Perl 5 is released on CPAN as
+    Set-Relation-0.12.5.tar.gz.
+
+    * Updated the distro's Makefile.PL so it will now run under older Perls
+    than the distro's payload modules would, so that users are informed
+    more gracefully about their need to upgrade.  Rather than having the
+    same boilerplate use 5.8/utf8/strict/warningsFatal as the modules, the
+    Makefile.PL now has a more liberal 5.6/strict/warnings.  Also added
+    explicit 'perl' requires-item to force mentioning of the Perl version
+    in the generated META.yml, since MIN_PERL_VERSION doesn't cause this.
+
+2009-10-26   Darren Duncan <perl@DarrenDuncan.net>
+
     * Set::Relation version 0.12.4 for Perl 5 is released on CPAN as
     Set-Relation-0.12.4.tar.gz.
 
