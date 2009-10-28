@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # role
-    our $VERSION = '0.012004';
+    our $VERSION = '0.012005';
     $VERSION = eval $VERSION;
     # Note: This given version applies to all of this file's packages.
 
@@ -135,7 +135,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.12.4 for Perl 5.
+This document describes Set::Relation version 0.12.5 for Perl 5.
 
 =head1 SYNOPSIS
 
