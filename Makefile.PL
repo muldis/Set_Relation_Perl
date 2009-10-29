@@ -1,4 +1,5 @@
-use 5.006;
+use 5.008001;
+use utf8;
 use strict;
 use warnings;
 
@@ -54,7 +55,7 @@ WriteMakefile(
             'Test::Deep' => '0.106',
          },
          requires => {
-            'perl' => '5.8.1', # since MIN_PERL_VERSION no affect META.yml
+            'perl' => '5.008001', # as MIN_PERL_VERSION no affect META.yml
             # These are bundled with Perls 5.10.1+ but not earlier Perls.
             'Scalar::Util' => '1.21',
             # These are not bundled with any version of Perl.
@@ -74,4 +75,4 @@ WriteMakefile(
    ),
 );
 
-1; # Magic true value required at end of a reusable file's code.
+1;

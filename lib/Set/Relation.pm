@@ -1971,6 +1971,6 @@ intended, but not yet started.
 
 Alternately, you can purchase more advanced commercial support for various
 Muldis D implementations, particularly Muldis Rosetta, from its author by
-way of Muldis Data Systems; see (L<http://www.muldis.com/>) for details.
+way of Muldis Data Systems; see L<http://www.muldis.com/> for details.
 
 =cut

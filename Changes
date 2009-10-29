@@ -1,6 +1,23 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
+2009-10-xx   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Set::Relation version 0.12.6 for Perl 5 is released on CPAN as
+    Set-Relation-0.12.6.tar.gz.
+
+    * More small Makefile.PL enhancements.  Reverted part of the 0.12.5
+    change, in that the Makefile.PL now starts with use 5.8 rather than 5.6
+    but kept the 0.12.5 change in that warnings is still not fatal.  This
+    was done since apparently there is no better way, under MakeMaker or
+    otherwise, to be more graceful about required perl version than what
+    results from the plain use-5.8 at the top of Makefile.PL.  As the
+    0.12.5 Makefile.PL was, a Perl 5.6.2 was simply having errors at the
+    "make test" stage due to that requiring 5.8, rather than at the
+    Makefile.PL stage where it should have.  Also in Makefile.PL, updated
+    the 'requires' item 'perl' to use X.00Y00Z format rather than X.Y.Z
+    since the upcoming META.yml spec would be stricter about the format.
+
 2009-10-26   Darren Duncan <perl@DarrenDuncan.net>
 
     * Set::Relation version 0.12.5 for Perl 5 is released on CPAN as
