@@ -13,7 +13,7 @@ sub OPTIONAL {
 
 WriteMakefile(
    NAME => 'Set::Relation',
-   VERSION => '0.12.5',
+   VERSION => '0.12.6',
    ABSTRACT => 'Relation data type for Perl',
    AUTHOR => 'Darren Duncan <perl@DarrenDuncan.net>',
    PREREQ_PM => {
