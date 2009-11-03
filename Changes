@@ -1,7 +1,15 @@
                                Set::Relation
 ---------------------------------------------------------------------------
 
-2009-10-29   Darren Duncan <perl@DarrenDuncan.net>
+2009-11-xx   Darren Duncan <darren@DarrenDuncan.net>
+
+    * Set::Relation version 0.12.7 for Perl 5 is released on CPAN as
+    Set-Relation-0.12.7.tar.gz.
+
+    * Updated all author references to change Darren Duncan's stated email
+    address from "perl@DarrenDuncan.net" to "darren@DarrenDuncan.net".
+
+2009-10-29   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.12.6 for Perl 5 is released on CPAN as
     Set-Relation-0.12.6.tar.gz.
@@ -18,7 +26,7 @@
     the 'requires' item 'perl' to use X.00Y00Z format rather than X.Y.Z
     since the upcoming META.yml spec would be stricter about the format.
 
-2009-10-26   Darren Duncan <perl@DarrenDuncan.net>
+2009-10-26   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.12.5 for Perl 5 is released on CPAN as
     Set-Relation-0.12.5.tar.gz.
@@ -31,7 +39,7 @@
     explicit 'perl' requires-item to force mentioning of the Perl version
     in the generated META.yml, since MIN_PERL_VERSION doesn't cause this.
 
-2009-10-26   Darren Duncan <perl@DarrenDuncan.net>
+2009-10-26   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.12.4 for Perl 5 is released on CPAN as
     Set-Relation-0.12.4.tar.gz.
@@ -64,7 +72,7 @@
     dependencies needed only for testing were treated as if necessary to
     use Set::Relation itself; also added a list of "resources" urls.
 
-2009-09-15   Darren Duncan <perl@DarrenDuncan.net>
+2009-09-15   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.12.3 for Perl 5 is released on CPAN as
     Set-Relation-0.12.3.tar.gz.
@@ -83,7 +91,7 @@
     rename/projection/wrap/group/etc to update notes about alternate names
     that each function or its operation are known as.
 
-2009-08-29   Darren Duncan <perl@DarrenDuncan.net>
+2009-08-29   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.12.2 for Perl 5 is released on CPAN as
     Set-Relation-0.12.2.tar.gz.
@@ -101,7 +109,7 @@
 
     * (Relation.pm)  Other minor docs updates.
 
-2009-08-08   Darren Duncan <perl@DarrenDuncan.net>
+2009-08-08   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.12.1 for Perl 5 is released on CPAN as
     Set-Relation-0.12.1.tar.gz.
@@ -115,7 +123,7 @@
     numbers of format X.Y.Z (0.12.1 for example) as before.  The main
     reason for this change is to gain simplicity and reduce possible bugs.
 
-2009-08-03   Darren Duncan <perl@DarrenDuncan.net>
+2009-08-03   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.12.0 for Perl 5 is released on CPAN as
     Set-Relation-0.12.0.tar.gz.
@@ -145,7 +153,7 @@
     known as.  The alternate names are symbolic and use combinations of
     these: '{', '}', '<-', '@'.  Used for rename/projection/wrap/group/etc.
 
-2009-07-21   Darren Duncan <perl@DarrenDuncan.net>
+2009-07-21   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.11.3 for Perl 5 is released on CPAN as
     Set-Relation-0.11.3.tar.gz.
@@ -160,7 +168,7 @@
     change should help make further simultaneous development and merging by
     multiple developers less error prone.
 
-2009-07-08   Darren Duncan <perl@DarrenDuncan.net>
+2009-07-08   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.11.2 for Perl 5 is released on CPAN as
     Set-Relation-0.11.2.tar.gz.
@@ -181,7 +189,7 @@
 
     * (Relation.pm)  Minor docs fix.
 
-2009-06-08   Darren Duncan <perl@DarrenDuncan.net>
+2009-06-08   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.11.1 for Perl 5 is released on CPAN as
     Set-Relation-0.11.1.tar.gz.
@@ -199,7 +207,7 @@
     declared type of the universal set of values.  There are no actual code
     changes in the Set::Relation distro associated with this update.
 
-2009-06-01   Darren Duncan <perl@DarrenDuncan.net>
+2009-06-01   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.11.0 for Perl 5 is released on CPAN as
     Set-Relation-0.11.0.tar.gz.
@@ -274,7 +282,7 @@
     operation are known as, in particular adding the various math/etc
     symbols they represent.
 
-2009-04-21   Darren Duncan <perl@DarrenDuncan.net>
+2009-04-21   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.10.0 for Perl 5 is released on CPAN as
     Set-Relation-0.10.0.tar.gz.
@@ -315,7 +323,7 @@
     is like "summary" but shorthands the common case where people just want
     a count of tuples per group and not any other information.
 
-2009-03-24   Darren Duncan <perl@DarrenDuncan.net>
+2009-03-24   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.9.0 for Perl 5 is released on CPAN as
     Set-Relation-0.9.0.tar.gz.
@@ -357,7 +365,7 @@
     or 'new' or relational operations will start out with no 'keys' for
     simplicity; presumably an upcoming V2 will be different.
 
-2009-03-23   Darren Duncan <perl@DarrenDuncan.net>
+2009-03-23   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.8.0 for Perl 5 is released on CPAN as
     Set-Relation-0.8.0.tar.gz.
@@ -438,7 +446,7 @@
     tuples are internally represented by Perl Hashes.  Also V2 just has a
     short DESCRIPTION pod section to start out, while V1's is longer.
 
-2009-02-13   Darren Duncan <perl@DarrenDuncan.net>
+2009-02-13   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.7.0 for Perl 5 is released on CPAN as
     Set-Relation-0.7.0.tar.gz.
@@ -466,7 +474,7 @@
     * Updated the TODO file to outline plans for a near future ::V2 class
     which represents tuples using Perl Array rather than Perl Hash.
 
-2009-02-09   Darren Duncan <perl@DarrenDuncan.net>
+2009-02-09   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.6.0 for Perl 5 is released on CPAN as
     Set-Relation-0.6.0.tar.gz.
@@ -500,7 +508,7 @@
     the module has a thorough test suite which passes, Set::Relation can be
     moved to beta or released status.
 
-2009-02-09   Darren Duncan <perl@DarrenDuncan.net>
+2009-02-09   Darren Duncan <darren@DarrenDuncan.net>
 
     Record update in the PAUSE modules database:
 
@@ -515,7 +523,7 @@
        chapterid: [6]
         mlstatus: [list]
 
-2009-02-06   Darren Duncan <perl@DarrenDuncan.net>
+2009-02-06   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.5.0 for Perl 5 is released on CPAN as
     Set-Relation-0.5.0.tar.gz.
@@ -527,7 +535,7 @@
 
     * (Relation.pm)  Other minor updates and fixes.
 
-2009-02-05   Darren Duncan <perl@DarrenDuncan.net>
+2009-02-05   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.4.0 for Perl 5 is released on CPAN as
     Set-Relation-0.4.0.tar.gz.
@@ -588,7 +596,7 @@
     section to change the Copyright declaration from "Darren Duncan" to
     "Muldis Data Systems, Inc." (which is wholly owned by Darren Duncan).
 
-2009-02-02   Darren Duncan <perl@DarrenDuncan.net>
+2009-02-02   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.3.0 for Perl 5 is released on CPAN as
     Set-Relation-0.3.0.tar.gz.
@@ -598,7 +606,7 @@
 
     * (Relation.pm)  Other minor updates and fixes.
 
-2009-02-01   Darren Duncan <perl@DarrenDuncan.net>
+2009-02-01   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.2.0 for Perl 5 is released on CPAN as
     Set-Relation-0.2.0.tar.gz.
@@ -616,7 +624,7 @@
 
     * (Relation.pm)  Other minor code updates.
 
-2009-01-31   Darren Duncan <perl@DarrenDuncan.net>
+2009-01-31   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.1.0 for Perl 5 is released on CPAN as
     Set-Relation-0.1.0.tar.gz.
@@ -690,7 +698,7 @@
 
     * (Relation.pm)  Minor code and POD updates and fixes.
 
-2009-01-26   Darren Duncan <perl@DarrenDuncan.net>
+2009-01-26   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.0.2 for Perl 5 is released on CPAN as
     Set-Relation-0.0.2.tar.gz.
@@ -708,7 +716,7 @@
 
     * (Relation.pm)  Minor code comment fixes and POD updates.
 
-2009-01-21   Darren Duncan <perl@DarrenDuncan.net>
+2009-01-21   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.0.1 for Perl 5 is released on CPAN as
     Set-Relation-0.0.1.tar.gz.
@@ -723,7 +731,7 @@
     have it; added documentation about where the Set::Relation version
     control and support forums are.
 
-2009-01-19   Darren Duncan <perl@DarrenDuncan.net>
+2009-01-19   Darren Duncan <darren@DarrenDuncan.net>
 
     * Set::Relation version 0.0.0 for Perl 5 is released on CPAN as
     Set-Relation-0.0.0.tar.gz.
@@ -769,7 +777,7 @@
     "union", "exclusion", "intersection", "difference", "semidifference",
     "semijoin", "join", "product", "quotient", "composition".
 
-2009-01-04   Darren Duncan <perl@DarrenDuncan.net>
+2009-01-04   Darren Duncan <darren@DarrenDuncan.net>
 
     The next version of the Module List will list the following module:
 

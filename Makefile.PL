@@ -15,7 +15,7 @@ WriteMakefile(
    NAME => 'Set::Relation',
    VERSION => '0.12.6',
    ABSTRACT => 'Relation data type for Perl',
-   AUTHOR => 'Darren Duncan <perl@DarrenDuncan.net>',
+   AUTHOR => 'Darren Duncan <darren@DarrenDuncan.net>',
    PREREQ_PM => {
       # This list is a copy of "META_ADD:[configure_|build_|]requires"
       # where the other is canonical; this list is for use by MakeMaker
