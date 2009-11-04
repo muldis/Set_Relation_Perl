@@ -1153,7 +1153,7 @@ sub _group {
 
             my $inner_r = $topic->_new();
             $inner_r->_heading( $inner_h );
-            $inner_r->_degree( @{$inner} );
+            $inner_r->_degree( scalar @{$inner} );
             my $inner_b = $inner_r->_body();
             for my $topic_t (values %{$matched_topic_b}) {
                 my $inner_t
@@ -1559,7 +1559,7 @@ sub _extension {
     my $result = $topic->_new();
 
     $result->_heading( {%{$topic->_heading()}, %{$exten_h}} );
-    $result->_degree( $topic->degree() + scalar @{$attr_names} );
+    $result->_degree( $topic->degree() + @{$attr_names} );
 
     my $result_b = $result->_body();
 
@@ -1711,7 +1711,7 @@ sub summary {
     my $result = $topic->_new();
 
     $result->_heading( {%{$group_per_h}, %{$exten_h}} );
-    $result->_degree( scalar @{$group_per} + scalar @{$summ_attr_names} );
+    $result->_degree( @{$group_per} + @{$summ_attr_names} );
 
     if ($topic->is_empty()) {
         # An empty $topic means an empty result.
@@ -1727,7 +1727,7 @@ sub summary {
 
         my $inner_r = $topic->_new();
         $inner_r->_heading( $inner_h );
-        $inner_r->_degree( @{$inner} );
+        $inner_r->_degree( scalar @{$inner} );
         my $inner_b = $inner_r->_body();
         for my $topic_t (values %{$matched_topic_b}) {
             my $inner_t = {CORE::map { ($_ => $topic_t->{$_}) } @{$inner}};
@@ -1793,7 +1793,7 @@ sub cardinality_per_group {
     my $result = $topic->_new();
 
     $result->_heading( {%{$group_per_h}, $count_attr_name => undef} );
-    $result->_degree( scalar @{$group_per} + 1 );
+    $result->_degree( @{$group_per} + 1 );
 
     if ($topic->is_empty()) {
         # An empty $topic means an empty result.

@@ -94,6 +94,7 @@ my @shipment_tuples =
 
 # test identity
 {
+    diag('is_identical');
     isa_ok( $s, $sr_class_name );
     ok( $s->is_identical($s), 'relation is === to itself' );
     ok( $s->is_identical( relation( [@supplier_tuples] ) ),
@@ -247,6 +248,45 @@ my @shipment_tuples =
     }
     ok( $j->is_identical($expect), 'join' );
     cmp_bag( $j->members, $expect->members, 'same members' );
+}
+
+# group
+{
+    diag('group');
+    my $sg = $s->group( 'the_rest', [qw(sno sname status)] );
+    is( $sg->degree, 2, 'degree of group' );
+    is_deeply( $sg->heading, [qw(city the_rest)], 'heading of group' );
+    cmp_bag( $sg->attr('city'), [qw(London Paris Athens)],
+        'values for nongrouped attribute' );
+
+    my $london = $sg->restriction( sub { $_->{city} eq 'London' } )
+        ->attr('the_rest')->[0];
+    my $london_expect = relation( [
+            [ qw(sno sname status) ], [
+            [ qw(S1  Smith 20    ) ],
+            [ qw(S4  Clark 20    ) ],
+        ],
+    ] );
+    ok( $london->is_identical($london_expect), 'grouped attribute' );
+
+    my $paris = $sg->restriction( sub { $_->{city} eq 'Paris' } )
+        ->attr('the_rest')->[0];
+    my $paris_expect = relation( [
+            [ qw(sno sname status ) ], [
+            [ qw(S2  Jones 10     ) ],
+            [ qw(S3  Blake 30     ) ],
+        ],
+    ] );
+    ok( $paris->is_identical($paris_expect), 'grouped attribute' );
+
+    my $athens = $sg->restriction( sub { $_->{city} eq 'Athens' } )
+        ->attr('the_rest')->[0];
+    my $athens_expect = relation( [
+            [ qw(sno sname status ) ], [
+            [ qw(S5  Adams 30     ) ],
+        ],
+    ] );
+    ok( $athens->is_identical($athens_expect), 'grouped attribute' );
 }
 
 ####

@@ -6,6 +6,17 @@
     * Set::Relation version 0.12.7 for Perl 5 is released on CPAN as
     Set-Relation-0.12.7.tar.gz.
 
+    * (V1.pm)  Fixed two instances of a bug, one in the private method
+    "_group" that manifests in all 4 public methods "[|cmpl_]group",
+    "[|outer_]join_with_group", and one in the "summary" public method.
+    There were no corresponding bugs in V2.pm.  Thanks to Todd Hepler for
+    spotting the bug in "_group" and providing a patch.
+
+    * (Set_Relation_51_Database_in_Depth_Example.t)  Added another test
+    block which exercises the "group" method, which previously had no
+    tests; this test exposed the "_group" bug.  Thanks to Todd Hepler who
+    authored and contributed the new tests.
+
     * Updated all author references to change Darren Duncan's stated email
     address from "perl@DarrenDuncan.net" to "darren@DarrenDuncan.net".
 
