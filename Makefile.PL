@@ -22,7 +22,7 @@ WriteMakefile(
       # itself, which in general wouldn't see the info in the other lists,
       # as the other lists are primarily used when generating the META.yml.
       'Carp::Always' => '0.09',
-      'Class::MOP' => '0.95',
+      'Class::MOP' => '0.97',
       'ExtUtils::MakeMaker' => '6.48',
       'List::MoreUtils' => '0.22',
       'Moose' => '0.93',
@@ -59,7 +59,7 @@ WriteMakefile(
             # These are bundled with Perls 5.10.1+ but not earlier Perls.
             'Scalar::Util' => '1.21',
             # These are not bundled with any version of Perl.
-            'Class::MOP' => '0.95', # req latest indep of Moose
+            'Class::MOP' => '0.97', # req latest indep of Moose
             'List::MoreUtils' => '0.22', # but req 0.25_02+ w Perl 5.10.1+
             'Moose' => '0.93',
             'Moose::Role' => '0.93',
