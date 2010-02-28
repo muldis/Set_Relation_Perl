@@ -13,7 +13,7 @@ use warnings FATAL => 'all';
 
     use namespace::autoclean 0.09;
 
-    use Moose::Role 0.93;
+    use Moose::Role 0.98;
 
     requires 'export_for_new';
     requires 'which';
@@ -104,7 +104,7 @@ use warnings FATAL => 'all';
 
     use namespace::autoclean 0.09;
 
-    use Moose::Role 0.93;
+    use Moose::Role 0.98;
 
     with 'Set::Relation';
 
@@ -714,7 +714,7 @@ serialization of all the invocant's attribute names and tuple values, all
 of which are encoded and sorted in such a way that any 2 Set::Relation
 values having the same attributes and tuples are guaranteed to have the
 same value identity, and any 2 with different attributes or tuples are
-guaranteed to have different ones.  This method is analagous to the special
+guaranteed to have different ones.  This method is analogous to the special
 C<WHICH> method of Perl 6 and lets you treat Set::Relation as a "value
 type".  That all being said, currently the details of the serialization
 format are implementation dependent, and it is assumed that an application
@@ -868,7 +868,7 @@ C<method has_member of Bool ($r: Array|Hash $t)>
 This functional method results in true iff all of the tuples of its C<$t>
 argument match tuples of its invocant (that is, iff conceptually C<$t> is a
 member of C<$r>), and false otherwise.  Note that this operation is also
-known as C<∋>.
+known as C<∋> or C<hmem>.
 
 =head2 has_key
 
@@ -1295,7 +1295,7 @@ C<method is_subset of Bool ($topic: Set::Relation $other)>
 This functional method results in true iff the set of tuples comprising
 C<$topic> is a subset of the set of tuples comprising C<$other> (both
 must have the same heading regardless), and false otherwise.  Note that
-this operation is also known as C<⊆>.
+this operation is also known as C<⊆> or C<sub>.
 
 =head2 is_superset
 
@@ -1306,7 +1306,7 @@ transposes the C<$topic> invocant and C<$other> argument.  This functional
 method results in true iff the set of tuples comprising C<$topic> is a
 superset of the set of tuples comprising C<$other> (both must have the same
 heading regardless), and false otherwise.  Note that this operation is also
-known as C<⊇>.
+known as C<⊇> or C<super>.
 
 =head2 is_proper_subset
 
@@ -1314,7 +1314,7 @@ C<method is_proper_subset of Bool ($topic: Set::Relation $other)>
 
 This functional method is exactly the same as C<is_subset> except that it
 results in false if its invocant and argument are identical. Note that this
-operation is also known as C<⊂>.
+operation is also known as C<⊂> or C<psub>.
 
 =head2 is_proper_superset
 
@@ -1324,7 +1324,7 @@ This functional method is an alias for C<is_proper_subset> except that it
 transposes the C<$topic> invocant and C<$other> argument.  This functional
 method is exactly the same as C<is_superset> except that it results in
 false if its invocant and argument are identical.  Note that this operation
-is also known as C<⊃>.
+is also known as C<⊃> or C<psuper>.
 
 =head2 is_disjoint
 
@@ -1847,7 +1847,7 @@ recommends one that is at least 5.10.1.
 
 It also requires these Perl 5 packages that are on CPAN:
 L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
-L<Moose::Role-ver(0.93..*)|Moose::Role>.
+L<Moose::Role-ver(0.98..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 
@@ -1887,7 +1887,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2009, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2010, Muldis Data Systems, Inc.
 
 L<http://www.muldis.com/>
 

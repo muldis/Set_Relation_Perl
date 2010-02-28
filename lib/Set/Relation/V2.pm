@@ -17,7 +17,7 @@ use Set::Relation 0.012007;
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.93;
+    use Moose 0.98;
 
     with 'Set::Relation';
 
@@ -3486,7 +3486,7 @@ It also requires these Perl 5 packages that are on CPAN:
 L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
 L<Scalar::Util-ver(1.21..*)|Scalar::Util>,
 L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.93..*)|Moose>.
+L<Moose-ver(0.98..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.12.7..*)|Set::Relation>.
@@ -3510,7 +3510,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2009, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2010, Muldis Data Systems, Inc.
 
 See the LICENSE AND COPYRIGHT of L<Set::Relation> for details.
 
