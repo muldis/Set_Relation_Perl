@@ -1,7 +1,14 @@
                                Set::Relation
+                                   TODO
 ---------------------------------------------------------------------------
 
 Following is a summary of things that still need doing.
+
+* Update any idempotent routines such as "union" and "intersection" to
+short-cut if any 2 input relations are equal, or at least the Set::Relation
+objects are both Perl refs to the same object, so just return one of those.
+
+* Add "first_rank" param to "rank[|_by_attr_names]" as per spec v0.120.0.
 
 * Consider using Dist::Zilla for packaging.
 
@@ -19,6 +26,11 @@ implement more operators?
 
 * Consider adding disjoint insertion, union operators (same as normal but
 fails on a duplicate).
+
+* With V2, consider tracking some operations in more detail so that, if it
+turns out that the result is equal to any operand, the operand is returned
+instead of a new object, same as with some of the more trivial operand
+combinations; this could make subsequent use of the operands faster.
 
 * Consider exploiting the candidate keys feature to improve performance of
 S::R objects by generally only comparing tuples for uniqueness on their

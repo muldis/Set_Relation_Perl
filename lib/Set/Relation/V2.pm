@@ -1,4 +1,4 @@
-use 5.008001;
+use 5.008003;
 use utf8;
 use strict;
 use warnings FATAL => 'all';
@@ -12,14 +12,14 @@ use Set::Relation 0.012007;
     our $VERSION = '0.012007';
     $VERSION = eval $VERSION;
 
-    use namespace::autoclean 0.09;
+    use namespace::autoclean 0.12;
 
     use Scalar::Util 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.98;
+    use Moose 2.0000;
 
-    with 'Set::Relation';
+    with 'Set::Relation' => { -version => 0.012007 };
 
     has '_heading' => (
         is      => 'rw',
@@ -3479,14 +3479,14 @@ I<This documentation is pending.>
 
 =head1 DEPENDENCIES
 
-This file requires any version of Perl 5.x.y that is at least 5.8.1, and
-recommends one that is at least 5.10.1.
+This file requires any version of Perl 5.x.y that is at least 5.8.3, and
+recommends one that is at least 5.12.3.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
-L<Scalar::Util-ver(1.21..*)|Scalar::Util>,
-L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.98..*)|Moose>.
+L<namespace::autoclean-ver(0.11..*)|namespace::autoclean>,
+L<Scalar::Util-ver(1.22..*)|Scalar::Util>,
+L<List::MoreUtils-ver(0.28..*)|List::MoreUtils>,
+L<Moose-ver(2.0000..*)|Moose>.
 
 It also requires these Perl 5 packages that are in the current
 distribution: L<Set::Relation-ver(0.12.7..*)|Set::Relation>.
@@ -3510,7 +3510,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2010, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2011, Muldis Data Systems, Inc.
 
 See the LICENSE AND COPYRIGHT of L<Set::Relation> for details.
 

@@ -1,16 +1,16 @@
 # This file was initially written by Todd Hepler (thepler@employees.org).
 
 # This is trying to use the running example data from
-# "Database in Depth" by C. J. Date.
+# "Database in Depth" by C.J. Date.
 
-use 5.008001;
+use 5.008003;
 use utf8;
 use strict;
 use warnings FATAL => 'all';
 use Carp::Always 0.09;
 
-use Test::More 0.92;
-use Test::Deep 0.106;
+use Test::More 0.94;
+use Test::Deep 0.108;
 
 my $sr_class_name;
 sub relation { return $sr_class_name->new( @_ ); }

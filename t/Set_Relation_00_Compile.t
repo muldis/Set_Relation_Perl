@@ -1,10 +1,10 @@
-use 5.008001;
+use 5.008003;
 use utf8;
 use strict;
 use warnings FATAL => 'all';
 use Carp::Always 0.09;
 
-use Test::More 0.92;
+use Test::More 0.94;
 
 use_ok( 'Set::Relation' );
 is( $Set::Relation::VERSION, 0.012007,

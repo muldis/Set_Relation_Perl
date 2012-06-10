@@ -1,4 +1,4 @@
-use 5.008001;
+use 5.008003;
 use utf8;
 use strict;
 use warnings FATAL => 'all';
@@ -9,11 +9,10 @@ use warnings FATAL => 'all';
 { package Set::Relation; # role
     our $VERSION = '0.012007';
     $VERSION = eval $VERSION;
-    # Note: This given version applies to all of this file's packages.
 
-    use namespace::autoclean 0.09;
+    use namespace::autoclean 0.12;
 
-    use Moose::Role 0.98;
+    use Moose::Role 2.0000;
 
     requires 'export_for_new';
     requires 'which';
@@ -101,12 +100,14 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation::Mutable; # role
+    our $VERSION = '0.012007';
+    $VERSION = eval $VERSION;
 
-    use namespace::autoclean 0.09;
+    use namespace::autoclean 0.12;
 
-    use Moose::Role 0.98;
+    use Moose::Role 2.0000;
 
-    with 'Set::Relation';
+    with 'Set::Relation' => { -version => 0.012007 };
 
     requires 'clone';
     requires 'has_frozen_identity';
@@ -846,7 +847,7 @@ the count of tuples its body has).  If this method's C<$allow_dup_tuples>
 argument is false (the default), then the result is guaranteed to only
 count the number of distinct tuples of C<$topic>; otherwise, the result may
 be higher, unless the invocant is empty, in which case the result is still
-exactly zero.  Note that this operation is also known as I<count> or C<R#>.
+exactly zero.  Note that this operation is also known as I<count> or C<#>.
 
 =head2 count
 
@@ -868,7 +869,7 @@ C<method has_member of Bool ($r: Array|Hash $t)>
 This functional method results in true iff all of the tuples of its C<$t>
 argument match tuples of its invocant (that is, iff conceptually C<$t> is a
 member of C<$r>), and false otherwise.  Note that this operation is also
-known as C<∋> or C<hmem>.
+known as C<@∋> or C<holds>.
 
 =head2 has_key
 
@@ -920,7 +921,7 @@ elements.  This method supports renaming attributes to each others' names.
 This method will fail if C<$map> specifies any old names that C<$topic>
 doesn't have, or any new names that are the same as C<$topic> attributes
 that aren't being renamed.  Note that this operation is also known as C<<
-@{<-} >>.
+{<-} >>.
 
 =head2 projection
 
@@ -932,7 +933,7 @@ which are named in its C<$attr_names> argument.  As a trivial case, this
 method's result is C<$topic> if C<$attr_names> lists all attributes of
 C<$topic>; or, it is a nullary relation if C<$attr_names> is empty.  This
 method will fail if C<$attr_names> specifies any attribute names that
-C<$topic> doesn't have.  Note that this operation is also known as C<@{}>.
+C<$topic> doesn't have.  Note that this operation is also known as C<{}>.
 
 =head2 cmpl_proj
 
@@ -940,7 +941,7 @@ C<method cmpl_proj of Set::Relation ($topic: Array|Str $attr_names)>
 
 This functional method is the same as C<projection> but that it results in
 the complementary subset of attributes of its invocant when given the same
-argument.  Note that this operation is also known as C<@{!}>.
+argument.  Note that this operation is also known as C<{!}>.
 
 =head2 wrap
 
@@ -961,7 +962,7 @@ same as C<TT>.  This method supports the new attribute having the same name
 as an old one being wrapped into it.  This method will fail if C<$inner>
 specifies any attribute names that C<$topic> doesn't have, or if C<$outer>
 is the same as a C<$topic> attribute that isn't being wrapped.  Note that
-this operation is also known as C<< @{%<-} >>.
+this operation is also known as C<< {%<-} >>.
 
 =head2 cmpl_wrap
 
@@ -970,7 +971,7 @@ Array|Str $cmpl_inner)>
 
 This functional method is the same as C<wrap> but that it wraps the
 complementary subset of attributes of C<$topic> to those specified by
-C<$cmpl_inner>.  Note that this operation is also known as C<< @{%<-!} >>.
+C<$cmpl_inner>.  Note that this operation is also known as C<< {%<-!} >>.
 
 =head2 unwrap
 
@@ -989,7 +990,7 @@ situation the names of the attributes to add to C<$topic> in place of
 C<$topic{$outer}> can not be determined from C<$topic{$outer}>.  This
 method will fail if C<$topic> has at least 1 tuple and C<$inner> does not
 match the names of the attributes of C<$topic{$outer}> for every tuple of
-C<$topic>.  Note that this operation is also known as C<< @{<-%} >>.
+C<$topic>.  Note that this operation is also known as C<< {<-%} >>.
 
 =head2 group
 
@@ -1019,7 +1020,7 @@ C<$topic> does).  This method supports the new attribute having the same
 name as an old one being grouped into it.  This method will fail if
 C<$inner> specifies any attribute names that C<$topic> doesn't have, or if
 C<$outer> is the same as C<$topic> attributes that aren't being grouped.
-Note that this operation is also known as I<nest> or C<< @{@<-} >>.
+Note that this operation is also known as I<nest> or C<< {@<-} >>.
 
 =head2 cmpl_group
 
@@ -1028,7 +1029,7 @@ Array|Str $group_per)>
 
 This functional method is the same as C<group> but that it groups the
 complementary subset of attributes of C<$topic> to those specified by
-C<$group_per>.  Note that this operation is also known as C<< @{@<-!} >>.
+C<$group_per>.  Note that this operation is also known as C<< {@<-!} >>.
 
 =head2 ungroup
 
@@ -1046,7 +1047,7 @@ have, or if C<$topic{$outer}> does not have a same-heading relation value
 for every tuple of C<$topic> (because then there would be no consistent set
 of attribute names to extend C<$topic> with), or if an attribute of
 C<$topic{$outer}> has the same name as another C<$topic> attribute.  Note
-that this operation is also known as I<unnest> or C<< @{<-@} >>.
+that this operation is also known as I<unnest> or C<< {<-@} >>.
 
 =head2 tclose
 
@@ -1257,7 +1258,7 @@ is like C<cmpl_group> but that the single added attribute, rather than an
 RVA of the grouped C<$topic> attributes, has the cardinality that said RVA
 would have had.  The result's heading consists of the attributes named in
 C<$group_per> plus the attribute named in C<$count_attr_name> (a positive
-integer).  Note that this operation is also known as C<< @{#@<-!} >>.
+integer).  Note that this operation is also known as C<< {#@<-!} >>.
 
 =head2 count_per_group
 
@@ -1295,7 +1296,7 @@ C<method is_subset of Bool ($topic: Set::Relation $other)>
 This functional method results in true iff the set of tuples comprising
 C<$topic> is a subset of the set of tuples comprising C<$other> (both
 must have the same heading regardless), and false otherwise.  Note that
-this operation is also known as C<⊆> or C<sub>.
+this operation is also known as C<⊆> or C<< {<=} >>.
 
 =head2 is_superset
 
@@ -1306,7 +1307,7 @@ transposes the C<$topic> invocant and C<$other> argument.  This functional
 method results in true iff the set of tuples comprising C<$topic> is a
 superset of the set of tuples comprising C<$other> (both must have the same
 heading regardless), and false otherwise.  Note that this operation is also
-known as C<⊇> or C<super>.
+known as C<⊇> or C<< {>=} >>.
 
 =head2 is_proper_subset
 
@@ -1314,7 +1315,7 @@ C<method is_proper_subset of Bool ($topic: Set::Relation $other)>
 
 This functional method is exactly the same as C<is_subset> except that it
 results in false if its invocant and argument are identical. Note that this
-operation is also known as C<⊂> or C<psub>.
+operation is also known as C<⊂> or C<< {<} >>.
 
 =head2 is_proper_superset
 
@@ -1324,7 +1325,7 @@ This functional method is an alias for C<is_proper_subset> except that it
 transposes the C<$topic> invocant and C<$other> argument.  This functional
 method is exactly the same as C<is_superset> except that it results in
 false if its invocant and argument are identical.  Note that this operation
-is also known as C<⊃> or C<psuper>.
+is also known as C<⊃> or C<< {>} >>.
 
 =head2 is_disjoint
 
@@ -1842,12 +1843,12 @@ I<This documentation is pending.>
 
 =head1 DEPENDENCIES
 
-This file requires any version of Perl 5.x.y that is at least 5.8.1, and
-recommends one that is at least 5.10.1.
+This file requires any version of Perl 5.x.y that is at least 5.8.3, and
+recommends one that is at least 5.12.3.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
-L<Moose::Role-ver(0.98..*)|Moose::Role>.
+L<namespace::autoclean-ver(0.11..*)|namespace::autoclean>,
+L<Moose::Role-ver(2.0000..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 
@@ -1858,7 +1859,7 @@ None reported.
 The separate all-documentation distribution L<Muldis::D> is the formal
 definition of the Muldis D language, a portion of which Set::Relation is
 mainly based on.  The Muldis D language in turn has as a primary influence
-the work of Christopher J. Date and Hugh Darwen whose home website is
+the work of Chris Date (C.J. Date) and Hugh Darwen whose home website is
 L<http://www.thethirdmanifesto.com/>.
 
 These Perl 5 packages that are in the current distribution are classes that
@@ -1887,7 +1888,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2010, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2011, Muldis Data Systems, Inc.
 
 L<http://www.muldis.com/>
 
@@ -1932,37 +1933,49 @@ providing files for the test suite, and giving other constructive input.
 
 =head1 FORUMS
 
-Several public email-based forums exist whose main topic is all
-implementations of the L<Muldis D|Muldis::D> language, especially the
-L<Muldis Rosetta|Muldis::Rosetta> reference implementation, but also the
-L<Set::Relation> module.  All of these you can reach via
-L<http://mm.DarrenDuncan.net/mailman/listinfo>; go there to manage your
+Several public email-based forums exist whose main topic is
+the L<Muldis D|Muldis::D> language and its implementations, especially
+the L<Muldis Rosetta|Muldis::Rosetta> reference implementation, but also
+the L<Set::Relation> module.  They exist so that users of Muldis D or
+Muldis Rosetta can help each other, or so that help coming from the
+projects' developers can be said once to many people, rather than
+necessarily to each individually.  All of these you can reach via
+L<http://mm.darrenduncan.net/mailman/listinfo>; go there to manage your
 subscriptions to, or view the archives of, the following:
 
 =over
 
-=item C<muldis-db-announce@mm.DarrenDuncan.net>
+=item C<muldis-db-announce@mm.darrenduncan.net>
 
-This low-volume list is mainly for official announcements from the Muldis
-Rosetta developers, though developers of Muldis Rosetta extensions can also
+This low-volume list is mainly for official announcements from Muldis D or
+Muldis Rosetta developers, though developers of related projects can also
 post their announcements here.  This is not a discussion list.
 
-=item C<muldis-db-users@mm.DarrenDuncan.net>
+=item C<muldis-db-users@mm.darrenduncan.net>
 
-This list is for general discussion among people who are using Muldis
-Rosetta, which is not concerned with the implementation of Muldis Rosetta
-itself.  This is the best place to ask for basic help in getting Muldis
-Rosetta installed on your machine or to make it do what you want.  You
-could also submit feature requests or report perceived bugs here, if you
-don't want to use CPAN's RT system.
+This list is for general discussion among people who are using Muldis D or
+any of its implementations, especially the Muldis Rosetta reference
+implementation.  This is the best place to ask for basic help in getting
+Muldis Rosetta installed on your machine or to make it do what you want.
+If you are in doubt on which list to use, then use this one by default.
+You could also submit feature requests for Muldis Rosetta or report
+perceived bugs here, if you don't want to use CPAN's RT system.
 
-=item C<muldis-db-devel@mm.DarrenDuncan.net>
+=item C<muldis-d-language@mm.darrenduncan.net>
+
+This list is mainly for discussion among people who are designing the
+Muldis D language specification, or who are implementing or adapting Muldis
+D in some form, or who are writing Muldis D documentation, tests, or
+examples.  It is not the main forum for any Muldis D implementations, nor
+is it the place for non-implementers to get help in using said.
+
+=item C<muldis-db-devel@mm.darrenduncan.net>
 
 This list is for discussion among people who are designing or implementing
-the Muldis Rosetta core API (including Muldis D language design), or who
-are implementing Muldis Rosetta Engines, or who are writing core
-documentation, tests, or examples.  It is not the place for
-non-implementers to get help in using said.
+the Muldis Rosetta DBMS framework core, or who are implementing Muldis
+Rosetta Engines, or who are writing Muldis Rosetta core documentation,
+tests, or examples.  It is not the main forum for the Muldis D language
+itself, nor is it the place for non-implementers to get help in using said.
 
 =back
 
