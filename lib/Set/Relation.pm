@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation; # role
-    our $VERSION = '0.012007';
+    our $VERSION = '0.012008';
     $VERSION = eval $VERSION;
 
     use namespace::autoclean 0.09;
@@ -100,14 +100,14 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation::Mutable; # role
-    our $VERSION = '0.012007';
+    our $VERSION = '0.012008';
     $VERSION = eval $VERSION;
 
     use namespace::autoclean 0.09;
 
     use Moose::Role 0.92;
 
-    with 'Set::Relation' => { -version => 0.012007 };
+    with 'Set::Relation' => { -version => 0.012008 };
 
     requires 'clone';
     requires 'has_frozen_identity';
@@ -136,7 +136,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.12.7 for Perl 5.
+This document describes Set::Relation version 0.12.8 for Perl 5.
 
 =head1 SYNOPSIS
 
