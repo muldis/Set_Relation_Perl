@@ -45,7 +45,7 @@ representations in terms of other objects or their internals, which is even
 lazier than what we have now but requires more smarts.  For example, one
 object is defined as another but for a tuple being inserted or deleted.  Or
 perhaps more likely, Set::Relation will never do this in general but
-Muldis::Rosetta would, probably as a side effect of its existing support
+Muldis::D::RefEng would, probably as a side effect of its existing support
 for functional Muldis D value expression code.
 
 * On the other hand, a simple version involving making an internal relation
@@ -68,7 +68,7 @@ consume much less memory.  This would likely also more closely resemble how
 non-trivial DBMSs tend to work internally since tuple storage as ordered
 arrays rather than named arrays should be a lot more efficient and more
 like how lower-level languages like C are accustomed to operate.  Or
-perhaps more likely, Set::Relation will never do this but Muldis::Rosetta
+perhaps more likely, Set::Relation will never do this but Muldis::D::RefEng
 would for its internal relation objects.
 
 * Consider adding more mutator methods.

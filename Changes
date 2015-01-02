@@ -66,6 +66,12 @@
     "isa('Moose::Object')" and besides this no other changes were needed
     for the code to work as it did in the previous release.
 
+    * (Relation.pm, README, TODO)  Replaced any references in this distro
+    to the obsolete Muldis Rosetta with its replacement Muldis::D::RefEng.
+    Muldis::D::RefEng is still under development and has no CPAN release
+    yet, which will be the case until it has a certain mainimum level of
+    functionality; meanwhile, what has been written can be seen on GitHub.
+
     * Note that the changes of this release were partly inspired by Ralf
     Peine having just released the new module PQL::Cache, which has no
     non-Perl-core dependencies and can install with a simple file copy.
