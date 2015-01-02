@@ -7,16 +7,12 @@
     * Set::Relation version 0.12.8 for Perl 5 is released on CPAN as
     Set-Relation-0.12.8.tar.gz.
 
-    * Updated external dependencies: Scalar::Util to version 1.22,
-    Test::More to version 0.94, List::MoreUtils version 0.28,
-    namespace::autoclean to version 0.12, Moose/etc to version 2.0000,
-    Test::Deep to version 0.108.  (Note that Moose now bundles Class::MOP
-    as of version 2.0000, and since we don't use CMOP directly, we no
-    longer explicitly list it as a dependency.)
+    * The sole purpose of this release is to publish on CPAN the various
+    minor updates made to Set::Relation up through the middle of 2011, but
+    that any dependency version increases were excluded / reverted.
 
-    * Updated the minimum required Perl version to 5.8.3 from 5.8.1; this
-    is because Moose 1.09 made the same change, due to its tests failing on
-    5.8.1-2 and those versions not being easily installable for testing.
+    * Note that if you are running Perl 5.10.1+ then your List::MoreUtils
+    must be v0.25_02+ rather than the actual hard dependency of v0.22+.
 
     * (Relation.pm)  Updated the *.pm file that declares
     multiple Perl packages, so that now every single package separately
@@ -26,23 +22,36 @@
     * (Relation.pm, V2.pm, V1.pm)  Updated all 1 role and 2 classes that
     compose roles so that they
     now specify what version numbers of said roles they require.  Moose had
-    added support for declaring/enforcing this in its v1.03 (2010 May 6).
+    added support for declaring/enforcing this in its v1.03 (2010-05-06).
+    Note that Set::Relation's hard dependency on Moose has not been
+    increased from v0.92+; it has not been tested if using a version before
+    v1.03 will actually fail or not.
 
     * (Relation.pm, README)  Updated the list of email forums focusing on
     Muldis D and its implementations, first to add a 4th list
     muldis-d-language, and second to update all 4 lists' descriptions.
+    (This change made near 2010-06-20.)
 
     * (Relation.pm, README, Makefile.PL)  Updated any instances of
     "http://mm.DarrenDuncan.net/mailman/listinfo" so that they are fully
     lower-cased, because the mixed case version doesn't work with some web
     browsers; browsers that don't automatically convert it to lowercase get
     a "There currently are no publically-advertised mailman lists" message.
+    (This change made near 2010-05-17.)
+
+    * (Relation.pm)  Now spell author personal name "Chris Date (C.J.
+    Date)" rather than "Christopher J. Date".
+    (This change made near 2010-10-08.)
 
     * (Relation.pm)  Following a Muldis D v0.110.0 spec change, updated the
     also-known-as notes for 5 functional methods.
+    (This change made near 2010-03-01.)
 
-TO NOTE: RELATION.PM - following OTHER SPEC CHANGES, MORE TODO NOTES
-FOR c15 MORE FUNCS ... POSTCIRCUM, SUB/SUP MAINLY, ALSO SET MEMB, CARDIN,...
+    * (Relation.pm)  Following one or more Muldis D spec changes between
+    v0.111.0 and v0.148.0 inclusive, updated the also-known-as notes for 11
+    more functional methods, and possibly the same 5 as for v0.110.0.
+
+    * There were also a few other minor documentation changes in the files.
 
     * Incremented all copyright year range-ends to 2011.
 

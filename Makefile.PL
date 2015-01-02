@@ -1,4 +1,4 @@
-use 5.008003;
+use 5.008001;
 use utf8;
 use strict;
 use warnings;
@@ -22,17 +22,18 @@ WriteMakefile(
       # itself, which in general wouldn't see the info in the other lists,
       # as the other lists are primarily used when generating the META.yml.
       'Carp::Always' => '0.09',
+      'Class::MOP' => '0.94',
       'ExtUtils::MakeMaker' => '6.48',
-      'List::MoreUtils' => '0.28',
-      'Moose' => '2.0000',
-      'Moose::Role' => '2.0000',
-      'namespace::autoclean' => '0.12',
-      'Scalar::Util' => '1.22',
-      'Test::Deep' => '0.108',
-      'Test::More' => '0.94',
+      'List::MoreUtils' => '0.22', # but req 0.25_02+ w Perl 5.10.1+
+      'Moose::Role' => '0.92',
+      'Moose' => '0.92',
+      'namespace::autoclean' => '0.09',
+      'Scalar::Util' => '1.21',
+      'Test::Deep' => '0.106',
+      'Test::More' => '0.92',
    },
    OPTIONAL( '6.48',
-      MIN_PERL_VERSION => '5.008003',
+      MIN_PERL_VERSION => '5.008001',
    ),
    OPTIONAL( '6.31',
       LICENSE => 'lgpl_3',
@@ -47,21 +48,22 @@ WriteMakefile(
          },
          build_requires => {
             'ExtUtils::MakeMaker' => '6.48',
-            # These are bundled with Perls 5.12.0+ but not earlier Perls.
-            'Test::More' => '0.94',
+            # These are bundled with Perls 5.10.1+ but not earlier Perls.
+            'Test::More' => '0.92',
             # These are not bundled with any version of Perl.
             'Carp::Always' => '0.09',
-            'Test::Deep' => '0.108',
+            'Test::Deep' => '0.106',
          },
          requires => {
-            'perl' => '5.008003', # as MIN_PERL_VERSION no affect META.yml
-            # These are bundled with Perls 5.12.0+ but not earlier Perls.
-            'Scalar::Util' => '1.22',
+            'perl' => '5.008001', # as MIN_PERL_VERSION no affect META.yml
+            # These are bundled with Perls 5.10.1+ but not earlier Perls.
+            'Scalar::Util' => '1.21',
             # These are not bundled with any version of Perl.
-            'List::MoreUtils' => '0.28',
-            'Moose' => '2.0000',
-            'Moose::Role' => '2.0000',
-            'namespace::autoclean' => '0.12',
+            'Class::MOP' => '0.94', # req latest indep of Moose
+            'List::MoreUtils' => '0.22', # but req 0.25_02+ w Perl 5.10.1+
+            'Moose' => '0.92',
+            'Moose::Role' => '0.92',
+            'namespace::autoclean' => '0.09',
          },
          resources => {
             homepage => 'http://www.muldis.com/',

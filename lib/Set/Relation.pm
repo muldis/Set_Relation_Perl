@@ -1,4 +1,4 @@
-use 5.008003;
+use 5.008001;
 use utf8;
 use strict;
 use warnings FATAL => 'all';
@@ -10,9 +10,9 @@ use warnings FATAL => 'all';
     our $VERSION = '0.012007';
     $VERSION = eval $VERSION;
 
-    use namespace::autoclean 0.12;
+    use namespace::autoclean 0.09;
 
-    use Moose::Role 2.0000;
+    use Moose::Role 0.92;
 
     requires 'export_for_new';
     requires 'which';
@@ -103,9 +103,9 @@ use warnings FATAL => 'all';
     our $VERSION = '0.012007';
     $VERSION = eval $VERSION;
 
-    use namespace::autoclean 0.12;
+    use namespace::autoclean 0.09;
 
-    use Moose::Role 2.0000;
+    use Moose::Role 0.92;
 
     with 'Set::Relation' => { -version => 0.012007 };
 
@@ -1843,12 +1843,12 @@ I<This documentation is pending.>
 
 =head1 DEPENDENCIES
 
-This file requires any version of Perl 5.x.y that is at least 5.8.3, and
-recommends one that is at least 5.12.3.
+This file requires any version of Perl 5.x.y that is at least 5.8.1, and
+recommends one that is at least 5.10.1.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<namespace::autoclean-ver(0.11..*)|namespace::autoclean>,
-L<Moose::Role-ver(2.0000..*)|Moose::Role>.
+L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
+L<Moose::Role-ver(0.92..*)|Moose::Role>.
 
 =head1 INCOMPATIBILITIES
 
