@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Set::Relation::V1; # class
-    our $VERSION = '0.012008';
+    our $VERSION = '0.013000';
     $VERSION = eval $VERSION;
 
     use Carp 'confess';
@@ -3523,7 +3523,7 @@ Bundled original implementation of Set::Relation role
 
 =head1 VERSION
 
-This document describes Set::Relation::V1 version 0.12.8 for Perl 5.
+This document describes Set::Relation::V1 version 0.13.0 for Perl 5.
 
 =head1 SYNOPSIS
 
