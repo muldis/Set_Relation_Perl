@@ -2,9 +2,9 @@ use 5.008001;
 use utf8;
 use strict;
 use warnings FATAL => 'all';
-use Carp::Always 0.09;
+use Carp::Always 0.01;
 
-use Test::More 0.92;
+use Test::More 0.47;
 
 my $sr_class_name;
 sub relation { return $sr_class_name->new( @_ ); }

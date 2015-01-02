@@ -2,6 +2,79 @@
                                   Changes
 ---------------------------------------------------------------------------
 
+2015-01-xx
+
+    * Set::Relation version 0.13.0 for Perl 5 is released on CPAN as
+    Set-Relation-0.13.0.tar.gz.
+
+    * The main purpose of this release is making Set::Relation
+    substantially lighter in its external dependencies, so that it can be
+    installed and used with a relative minimum of overhead.  This release
+    focuses on the low hanging fruit in that regard, namely the elimination
+    of the Moose and namespace::autoclean dependencies, which are very
+    large trees and didn't really bring much to the table.  As of this
+    release, each of the 2 Set::Relation classes require only the Perl core
+    or core modules to run, plus just the 1 CPAN module List::MoreUtils.
+    If you already have List::MoreUtils installed, you can use either V1 or
+    V2 as simply as copying the respective single file into a Perl lib dir.
+    If there is a user desire, the used functionality of List::MoreUtils
+    could be inlined as well, thus making Set::Relation only require core.
+
+    * This distribution has excised its direct external dependencies on the
+    modules Moose, Moose::Role, Class::MOP and namespace::autoclean.
+
+    * Updated explicit dependencies on Perl core modules to reduce the
+    required minimum version numbers to be the same as those bundled with
+    Perl 5.8.1, the minimum declared Perl version.  If it turns out we
+    actually need newer versions of any of these, they can be increased as
+    needed.  Meanwhile, in practice users would have much newer versions
+    anyway when their Perls are newer.  So minimum Carp is now 1.01
+    (previously no explicit dependency), ExtUtils::MakeMaker is now 6.17
+    (was 6.48), Scalar::Util is now 1.13 (was 1.21), Test::More is now 0.47
+    (was 0.92).  Requiring newer versions than these would require CPAN
+    installation or a newer Perl version.
+
+    * Updated explicit dependencies on Perl modules that are not bundled
+    with any version of Perl and must be installed from CPAN:  The minimum
+    List::MoreUtils was raised to 0.28 as versions before 0.25_02 fail on
+    Perl 5.10.1+.  The minimum Carp::Always (used only by the test suite)
+    was reduced to 0.01, its first version; this can be raised later if it
+    needs to be.  The minimum Test::Deep (used only by the test suite) was
+    left unchanged at 0.106, as versions below (0.104) fail on Perl 5.10.1+.
+
+    * (Relation.pm, V2.pm, V1.pm)  Demoted the packages Set::Relation and
+    Set::Relation::Mutable from being actual abstract roles to just being
+    placeholder namespaces for the distribution or for documentation
+    purposes.  Each of the 2 files V2.pm and V1.pm is now self-contained
+    and no longer has a hard dependency on Relation.pm; the latter now just
+    exists as common documentation, illustrating roles that the classes in
+    the former conceptually must compose, where this is unenforced by code.
+    As such, Relation.pm doesn't actually have to be installed.
+    Related to this, V2 and V1 now each declare their own does() method,
+    which hard-codes that they compose Set::Relation/::Mutable, in case one
+    wants to use it like the one Moose had provided.
+    Calling isa() on V2 or V1 will continue to work as it did before,
+    including that it returns false for Set::Relation/::Mutable.
+
+    * (Relation.pm, V2.pm, V1.pm)  Relation.pm no longer uses Moose::Role
+    and V2.pm plus V1.pm no longer use Moose; the latter 2 now explicitly
+    use Carp::confess() and Scalar::Util::blessed() instead.  Now V2 and V1
+    each have an explicitly defined new() submethod to replace what Moose
+    had provided, and each also now has a complement of explicitly defined
+    attribute private or public accessor methods, for the same reason.
+    Other parts of those modules now test for "can('does')" rather than
+    "isa('Moose::Object')" and besides this no other changes were needed
+    for the code to work as it did in the previous release.
+
+    * Note that the changes of this release were partly inspired by Ralf
+    Peine having just released the new module PQL::Cache, which has no
+    non-Perl-core dependencies and can install with a simple file copy.
+    (It was intended all along that my newer Muldis D implementations would
+    similarly eschew non-Perl-core dependencies, particularly Moose et al,
+    but what was new is I was inspired to change Set::Relation likewise.)
+
+    * Incremented all copyright year range-ends to 2015.
+
 2015-01-01
 
     * Set::Relation version 0.12.8 for Perl 5 is released on CPAN as

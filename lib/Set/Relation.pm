@@ -9,91 +9,6 @@ use warnings FATAL => 'all';
 { package Set::Relation; # role
     our $VERSION = '0.012008';
     $VERSION = eval $VERSION;
-
-    use namespace::autoclean 0.09;
-
-    use Moose::Role 0.92;
-
-    requires 'export_for_new';
-    requires 'which';
-    requires 'members';
-    requires 'heading';
-    requires 'body';
-    requires 'slice';
-    requires 'attr';
-    requires 'keys';
-
-    requires 'degree';
-    requires 'is_nullary';
-    requires 'has_attrs';
-    requires 'attr_names';
-    requires 'cardinality';
-    requires 'count';
-    requires 'is_empty';
-    requires 'has_member';
-    requires 'has_key';
-    requires 'empty';
-    requires 'insertion';
-    requires 'deletion';
-    requires 'rename';
-    requires 'projection';
-    requires 'cmpl_proj';
-    requires 'wrap';
-    requires 'cmpl_wrap';
-    requires 'unwrap';
-    requires 'group';
-    requires 'cmpl_group';
-    requires 'ungroup';
-    requires 'tclose';
-    requires 'restriction';
-    requires 'restr_and_cmpl';
-    requires 'cmpl_restr';
-    requires 'classification';
-    requires 'extension';
-    requires 'static_exten';
-    requires 'map';
-    requires 'summary';
-    requires 'cardinality_per_group';
-    requires 'count_per_group';
-
-    requires 'is_identical';
-    requires 'is_subset';
-    requires 'is_superset';
-    requires 'is_proper_subset';
-    requires 'is_proper_superset';
-    requires 'is_disjoint';
-    requires 'union';
-    requires 'exclusion';
-    requires 'symmetric_diff';
-    requires 'intersection';
-    requires 'diff';
-    requires 'semidiff';
-    requires 'antijoin';
-    requires 'semijoin_and_diff';
-    requires 'semijoin';
-    requires 'join';
-    requires 'product';
-    requires 'quotient';
-    requires 'composition';
-    requires 'join_with_group';
-
-    requires 'rank';
-    requires 'rank_by_attr_names';
-    requires 'limit';
-    requires 'limit_by_attr_names';
-
-    requires 'substitution';
-    requires 'static_subst';
-    requires 'subst_in_restr';
-    requires 'static_subst_in_restr';
-    requires 'subst_in_semijoin';
-    requires 'static_subst_in_semijoin';
-
-    requires 'outer_join_with_group';
-    requires 'outer_join_with_undefs';
-    requires 'outer_join_with_static_exten';
-    requires 'outer_join_with_exten';
-
 } # role Set::Relation
 
 ###########################################################################
@@ -102,21 +17,7 @@ use warnings FATAL => 'all';
 { package Set::Relation::Mutable; # role
     our $VERSION = '0.012008';
     $VERSION = eval $VERSION;
-
-    use namespace::autoclean 0.09;
-
-    use Moose::Role 0.92;
-
-    with 'Set::Relation' => { -version => 0.012008 };
-
-    requires 'clone';
-    requires 'has_frozen_identity';
-    requires 'freeze_identity';
-
-    requires 'evacuate';
-    requires 'insert';
-    requires 'delete';
-
+    # with Set::Relation
 } # role Set::Relation::Mutable
 
 ###########################################################################
@@ -1843,12 +1744,7 @@ I<This documentation is pending.>
 
 =head1 DEPENDENCIES
 
-This file requires any version of Perl 5.x.y that is at least 5.8.1, and
-recommends one that is at least 5.10.1.
-
-It also requires these Perl 5 packages that are on CPAN:
-L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
-L<Moose::Role-ver(0.92..*)|Moose::Role>.
+This file requires any version of Perl 5.x.y that is at least 5.8.1.
 
 =head1 INCOMPATIBILITIES
 
@@ -1888,7 +1784,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2011, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2015, Muldis Data Systems, Inc.
 
 L<http://www.muldis.com/>
 

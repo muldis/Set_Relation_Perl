@@ -3,8 +3,6 @@ use utf8;
 use strict;
 use warnings FATAL => 'all';
 
-use Set::Relation 0.012008;
-
 ###########################################################################
 ###########################################################################
 
@@ -12,31 +10,51 @@ use Set::Relation 0.012008;
     our $VERSION = '0.012008';
     $VERSION = eval $VERSION;
 
-    use namespace::autoclean 0.09;
-
-    use Scalar::Util 'refaddr';
+    use Carp 'confess';
+    use Scalar::Util 'blessed', 'refaddr';
     use List::MoreUtils 'any', 'all', 'notall', 'uniq';
 
-    use Moose 0.92;
+    # with Set::Relation::Mutable
+    sub does {
+        my ($self, $role_name) = @_;
+        confess q{This does() may only be invoked on an object.}
+            if not blessed $self;
+        confess q{does(): Bad $role_name arg; it must be a defined string.}
+            if !defined $role_name;
+        return 0
+            if !$self->isa( __PACKAGE__ );
+        return 1
+            if $role_name eq 'Set::Relation'
+                or $role_name eq 'Set::Relation::Mutable';
+        return 0;
+    }
 
-    has '_heading' => (
-        is      => 'rw',
-        isa     => 'HashRef',
+    # has _heading
+        # isa HashRef
             # One elem per attribute:
                 # hkey is Str attr name
                 # hval is undef+unused
-        default => sub { {} },
-    );
-    has '_degree' => (
-        is      => 'rw',
-        isa     => 'Int',
-        reader  => 'degree',
-        default => 0,
-    );
+        # default {}
+    sub _heading {
+        my $self = shift;
+        $self->{_heading} = $_[0] if scalar @_;
+        return $self->{_heading};
+    }
+    # has _degree
+        # isa Int
+        # default 0
+    sub _degree {
+        my $self = shift;
+        $self->{_degree} = $_[0] if scalar @_;
+        return $self->{_degree};
+    }
+    sub degree {
+        my $self = shift;
+        return $self->{_degree};
+    }
 
-    has '_body' => (
-        is      => 'rw',
-        isa     => 'HashRef',
+    # has _body
+        # isa HashRef
             # One elem per tuple:
                 # hkey is Str identity generated from all tuple attrs
                 # hval is HashRef that is the coll of separate tuple attrs:
@@ -44,24 +62,37 @@ use Set::Relation 0.012008;
                     # hval is 2-elem ArrayRef that is the tuple attr value
                         # [0] is actual attr value
                         # [1] is Str identity generated from attr value
-        default => sub { {} },
-    );
-    has '_cardinality' => (
-        is      => 'rw',
-        isa     => 'Int',
-        reader  => 'cardinality',
-        default => 0,
-    );
+        # default {}
+    sub _body {
+        my $self = shift;
+        $self->{_body} = $_[0] if scalar @_;
+        return $self->{_body};
+    }
+    # has _cardinality
+        # isa Int
+        # default 0
+    sub _cardinality {
+        my $self = shift;
+        $self->{_cardinality} = $_[0] if scalar @_;
+        return $self->{_cardinality};
+    }
+    sub cardinality {
+        my $self = shift;
+        return $self->{_cardinality};
+    }
 
     # This may only be made defined when _has_frozen_identity is true.
-    has '_which' => (
-        is  => 'rw',
-        isa => 'Maybe[Str]',
-    );
+    # has _which
+        # isa Maybe[Str]
+        # default undef
+    sub _which {
+        my $self = shift;
+        $self->{_which} = $_[0] if scalar @_;
+        return $self->{_which};
+    }
 
-    has '_indexes' => (
-        is      => 'rw',
-        isa     => 'HashRef',
+    # has _indexes
+        # isa HashRef
             # One elem per index:
                 # hkey is index name;
                     # - is Str ident gen f head subset tha index ranges ovr
@@ -75,47 +106,93 @@ use Set::Relation 0.012008;
                         # hval is set of body tup having projection tuples
                             # in comn; is HashRef; one elem per body tuple
                             # - structure same as '_body', is slice o _body
-        default => sub { {} },
-    );
+        # default {}
+    sub _indexes {
+        my $self = shift;
+        $self->{_indexes} = $_[0] if scalar @_;
+        return $self->{_indexes};
+    }
 
-    has '_keys' => (
-        is      => 'rw',
-        isa     => 'HashRef',
+    # has _keys
+        # isa HashRef
             # One elem per key:
                 # hkey is key name;
                     # - is Str ident gen f head subset tha index ranges ovr
                 # hval is HashRef of atnms that index ranges over
                     # - structure same as '_heading'
-        default => sub { {} },
-    );
+        # default {}
+    sub _keys {
+        my $self = shift;
+        $self->{_keys} = $_[0] if scalar @_;
+        return $self->{_keys};
+    }
 
     # If this is made true, no further mutation of S::R head/body allowed,
     # and then it can't be made false again.
-    has '_has_frozen_identity' => (
-        is       => 'rw',
-        isa      => 'Bool',
-        init_arg => 'has_frozen_identity',
-        default  => 0,
-        reader   => 'has_frozen_identity',
-    );
+    # has _has_frozen_identity
+        # isa Bool
+        # default 0
+    sub _has_frozen_identity {
+        my $self = shift;
+        $self->{_has_frozen_identity} = $_[0] if scalar @_;
+        return $self->{_has_frozen_identity};
+    }
+    sub has_frozen_identity {
+        my $self = shift;
+        return $self->{_has_frozen_identity};
+    }
 
-    # This "with" is placed below several "has" so that various accessor
-    # or delegate methods auto-generated by the latter will satisfy the
-    # consumed role's "requires"; this ordering shouldn't be necessary,
-    # but a workaround could be worse.
-    with 'Set::Relation::Mutable' => { -version => 0.012008 };
+###########################################################################
+
+sub new {
+    my ($class, @args) = @_;
+    $class = (blessed $class) || $class;
+
+    my $params = $class->BUILDARGS( @args );
+
+    my $self = bless {}, $class;
+
+    # Set attribute default values.
+    $self->_heading( {} );
+    $self->_degree( 0 );
+    $self->_body( {} );
+    $self->_cardinality( 0 );
+    $self->_which( undef );
+    $self->_indexes( {} );
+    $self->_keys( {} );
+    $self->_has_frozen_identity( 0 );
+
+    if (exists $params->{has_frozen_identity}) {
+        $self->_has_frozen_identity( $params->{has_frozen_identity} ? 1 : 0 );
+    }
+
+    $self->BUILD( $params );
+
+    return $self;
+}
 
 ###########################################################################
 
 sub BUILDARGS {
     my ($class, @args) = @_;
-    if (@args == 1 and ref $args[0] ne 'HASH') {
-        # Constructor was called with a single positional argument.
-        return { members => $args[0] };
+    if (@args == 1) {
+        if (ref $args[0] ne 'HASH') {
+            # Constructor was called with a single positional argument.
+            return { members => $args[0] };
+        }
+        else {
+            # Constructor was called with (possibly zero) named arguments.
+            return { %{$args[0]} };
+        }
+    }
+    elsif ((scalar @args % 2) == 0) {
+        # Constructor was called with (possibly zero) named arguments.
+        return { @args };
     }
     else {
-        # Constructor was called with named arguments or no arguments.
-        return $class->SUPER::BUILDARGS( @args );
+        # Constructor was called with odd number positional arguments >= 3.
+        confess q{new(): Bad arguments list; it must either have an even}
+            . q{ number of elements or exactly 1 element.};
     }
 }
 
@@ -136,7 +213,7 @@ sub BUILD {
         # Extra option 2.
         $members = [$members];
     }
-    elsif (blessed $members and $members->isa( 'Moose::Object' )
+    elsif (blessed $members and $members->can( 'does' )
             and $members->does( 'Set::Relation' )
             and !$members->isa( __PACKAGE__ )) {
         # We got a $members that is a Set::Relation-doing class where that
@@ -606,7 +683,7 @@ sub _import_nfmt_tuple {
         if (ref $atvl eq 'HASH') {
             $atvl = $self->_import_nfmt_tuple( $atvl );
         }
-        elsif (blessed $atvl and $atvl->isa( 'Moose::Object' )
+        elsif (blessed $atvl and $atvl->can( 'does' )
                 and $atvl->does( 'Set::Relation' )
                 and !$atvl->isa( __PACKAGE__ )) {
             $atvl = $self->_new( $atvl );
@@ -635,7 +712,7 @@ sub _import_ofmt_tuple {
         if (ref $atvl eq 'HASH') {
             $atvl = $self->_import_nfmt_tuple( $atvl );
         }
-        elsif (blessed $atvl and $atvl->isa( 'Moose::Object' )
+        elsif (blessed $atvl and $atvl->can( 'does' )
                 and $atvl->does( 'Set::Relation' )
                 and !$atvl->isa( __PACKAGE__ )) {
             $atvl = $self->_new( $atvl );
@@ -1888,7 +1965,7 @@ sub _assert_valid_tuple_result_of_func_arg {
 
 sub _normalize_same_heading_relation_arg {
     my ($self, $rtn_nm, $arg_nm, $other) = @_;
-    if (blessed $other and $other->isa( 'Moose::Object' )
+    if (blessed $other and $other->can( 'does' )
             and $other->does( 'Set::Relation' )
             and !$other->isa( __PACKAGE__ )) {
         $other = $self->_new( $other );
@@ -1904,7 +1981,7 @@ sub _normalize_same_heading_relation_arg {
 
 sub _normalize_relation_arg {
     my ($self, $rtn_nm, $arg_nm, $other) = @_;
-    if (blessed $other and $other->isa( 'Moose::Object' )
+    if (blessed $other and $other->can( 'does' )
             and $other->does( 'Set::Relation' )
             and !$other->isa( __PACKAGE__ )) {
         $other = $self->_new( $other );
@@ -2136,7 +2213,7 @@ sub _normalize_same_heading_relations_arg {
 
     my $self_h = $self->_heading();
 
-    if (blessed $others and $others->isa( 'Moose::Object' )
+    if (blessed $others and $others->can( 'does' )
             and $others->does( 'Set::Relation' )) {
         $others = [$others];
     }
@@ -2145,7 +2222,7 @@ sub _normalize_same_heading_relations_arg {
         if ref $others ne 'ARRAY';
     $others = [CORE::map {
         my $other = $_;
-        if (blessed $other and $other->isa( 'Moose::Object' )
+        if (blessed $other and $other->can( 'does' )
                 and $other->does( 'Set::Relation' )
                 and !$other->isa( __PACKAGE__ )) {
             $other = $self->_new( $other );
@@ -2165,7 +2242,7 @@ sub _normalize_same_heading_relations_arg {
 sub _normalize_relations_arg {
     my ($self, $rtn_nm, $arg_nm, $others) = @_;
 
-    if (blessed $others and $others->isa( 'Moose::Object' )
+    if (blessed $others and $others->can( 'does' )
             and $others->does( 'Set::Relation' )) {
         $others = [$others];
     }
@@ -2174,7 +2251,7 @@ sub _normalize_relations_arg {
         if ref $others ne 'ARRAY';
     $others = [CORE::map {
         my $other = $_;
-        if (blessed $other and $other->isa( 'Moose::Object' )
+        if (blessed $other and $other->can( 'does' )
                 and $other->does( 'Set::Relation' )
                 and !$other->isa( __PACKAGE__ )) {
             $other = $self->_new( $other );
@@ -3427,8 +3504,6 @@ sub _delete {
 
 ###########################################################################
 
-    __PACKAGE__->meta()->make_immutable();
-
 } # class Set::Relation::V1
 
 ###########################################################################
@@ -3606,17 +3681,14 @@ I<This documentation is pending.>
 
 =head1 DEPENDENCIES
 
-This file requires any version of Perl 5.x.y that is at least 5.8.1, and
-recommends one that is at least 5.10.1.
+This file requires any version of Perl 5.x.y that is at least 5.8.1.
+
+It also requires these Perl 5 packages that are available both bundled with
+Perl 5.8.1+ and on CPAN:
+L<Carp-ver(1.01..*)|Carp>, L<Scalar::Util-ver(1.13..*)|Scalar::Util>.
 
 It also requires these Perl 5 packages that are on CPAN:
-L<namespace::autoclean-ver(0.09..*)|namespace::autoclean>,
-L<Scalar::Util-ver(1.21..*)|Scalar::Util>,
-L<List::MoreUtils-ver(0.22..*)|List::MoreUtils>,
-L<Moose-ver(0.92..*)|Moose>.
-
-It also requires these Perl 5 packages that are in the current
-distribution: L<Set::Relation-ver(0.12.8..*)|Set::Relation>.
+L<List::MoreUtils-ver(0.28..*)|List::MoreUtils>.
 
 =head1 INCOMPATIBILITIES
 
@@ -3637,7 +3709,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2011, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2015, Muldis Data Systems, Inc.
 
 See the LICENSE AND COPYRIGHT of L<Set::Relation> for details.
 
