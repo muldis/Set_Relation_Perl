@@ -55,7 +55,7 @@ KEEPING UP TO DATE
 
 My module set is constantly under development.  The canonical copies are
 all linked to through my personal website, "http://www.darrenduncan.net/",
-on the page called "Perl Libraries I Made" (name subject to change).  Some
+on its front page by an "Open Source" heading.  Some
 of these modules are also linked to through my business website,
 "http://www.muldis.com/", on its front page.
 
@@ -64,9 +64,7 @@ have all parts of the Set::Relation project in one or more public
 repositories.  The Perl 5 Set::Relation project is in a Git repository
 whose public clone url is "git://github.com/muldis/Set-Relation.git" and
 whose web information url is at "http://github.com/muldis/Set-Relation".
-It is also in a Git repository whose public clone url is
-"git://utsl.gen.nz/Set-Relation" and whose web information url is at
-"http://utsl.gen.nz/gitweb/?p=Set-Relation".  The Perl 6 Set::Relation
+The Perl 6 Set::Relation
 project is in a Subversion repository at
 "http://svn.pugscode.org/pugs/ext/Set-Relation/".
 

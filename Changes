@@ -2,6 +2,15 @@
                                   Changes
 ---------------------------------------------------------------------------
 
+2015-01-xx
+
+    * Set::Relation version 0.13.x for Perl 5 is released on CPAN as
+    Set-Relation-0.13.x.tar.gz.
+
+    * Updated the README file to indicate that this distribution now only
+    has 1 public Git repository, on GitHub.com; the older one on
+    utsl.gen.nz appears to have been retired.
+
 2015-01-01
 
     * Set::Relation version 0.13.0 for Perl 5 is released on CPAN as
