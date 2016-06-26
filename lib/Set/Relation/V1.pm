@@ -12,7 +12,7 @@ use warnings;
 
     use Carp 'confess';
     use Scalar::Util 'blessed', 'refaddr';
-    use List::MoreUtils 'any', 'all', 'notall', 'uniq';
+    use List::Util 'any', 'all', 'notall', 'uniqstr';
 
     # with Set::Relation::Mutable
     sub does {
@@ -273,7 +273,7 @@ sub BUILD {
                 if notall { defined $_ and !ref $_ } @{$members};
             confess q{new(): Bad :$members arg; it specifies a list of}
                     . q{ attr names with at least one duplicated name.}
-                if (uniq @{$members}) != @{$members};
+                if (uniqstr @{$members}) != @{$members};
             $self->_heading( {CORE::map { ($_ => undef) } @{$members}} );
             $self->_degree( scalar @{$members} );
         }
@@ -320,7 +320,7 @@ sub BUILD {
                 if notall { defined $_ and !ref $_ } @{$member0};
             confess q{new(): Bad :$members arg; it specifies a list of}
                     . q{ attr names with at least one duplicated name.}
-                if (uniq @{$member0}) != @{$member0};
+                if (uniqstr @{$member0}) != @{$member0};
             my $heading = {CORE::map { ($_ => undef) } @{$member0}};
             my $body = {};
             for my $tuple (@{$member1}) {
@@ -852,7 +852,7 @@ sub rename {
     confess q{rename(): Bad $map arg;}
             . q{ its hash elem values specify a list of}
             . q{ attr names with at least one duplicated name.}
-        if (uniq values %{$map}) != (CORE::keys %{$map});
+        if (uniqstr values %{$map}) != (CORE::keys %{$map});
 
     my ($topic_attrs_to_ren, $topic_attrs_no_ren, $map_hvals_not_in_topic)
         = $topic->_ptn_conj_and_disj(
@@ -1918,7 +1918,7 @@ sub _atnms_hr_from_assert_valid_atnms_arg {
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it specifies a list of}
             . q{ attr names with at least one duplicated name.}
-        if (uniq @{$atnms}) != @{$atnms};
+        if (uniqstr @{$atnms}) != @{$atnms};
 
     my $heading = {CORE::map { ($_ => undef) } @{$atnms}};
     return ($heading, $atnms);
@@ -2552,7 +2552,7 @@ sub product {
     confess q{product(): Bad $others arg;}
             . q{ one of its elems has an attr name duplicated by}
             . q{ either the invocant or another $others elem.}
-        if (uniq @{$attr_names}) != @{$attr_names};
+        if (uniqstr @{$attr_names}) != @{$attr_names};
 
     if (any { $_->is_empty() } @{$inputs}) {
         # At least one input has zero tuples; so does result.
@@ -2909,7 +2909,7 @@ sub _normalize_order_by_arg {
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
             . q{ it specifies a list of}
             . q{ attr names with at least one duplicated name.}
-        if (uniq @{$atnms}) != @{$atnms};
+        if (uniqstr @{$atnms}) != @{$atnms};
 
     my $topic_h = $topic->_heading();
     confess qq{$rtn_nm(): Bad $arg_nm arg;}
@@ -3693,8 +3693,8 @@ It also requires these Perl 5 packages that are available both bundled with
 Perl 5.8.1+ and on CPAN:
 L<Carp-ver(1.01..*)|Carp>, L<Scalar::Util-ver(1.13..*)|Scalar::Util>.
 
-It also requires these Perl 5 packages that are on CPAN:
-L<List::MoreUtils-ver(0.28..*)|List::MoreUtils>.
+It also requires these Perl 5 packages that are available both bundled with
+Perl 5.25.1+ and on CPAN: L<List::Util-ver(1.45..*)|List::Util>.
 
 =head1 INCOMPATIBILITIES
 

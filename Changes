@@ -7,6 +7,18 @@
     * Set::Relation version 0.13.x for Perl 5 is released on CPAN as
     Set-Relation-0.13.x.tar.gz.
 
+    * The main purpose of this release is to excise Set::Relation's last
+    runtime dependency on a non-Perl-core module, which is List::MoreUtils.
+    As of this release, each of the 2 Set::Relation classes requires only
+    the Perl core or core modules to run, and nothing else.  Or at least
+    that is the case if that Perl is version 5.25.1 (5.26 when stable) or
+    newer; otherwise, they also depend on just the 1 dual-life CPAN module
+    List::Util version 1.45 or newer.  As of version 1.33 or Perl 5.20.0,
+    List::Util provided 3 of the 4 List::MoreUtils functions we use ("any",
+    "all", "notall"), and if it was just that, then Perl 5.20.0+ with no
+    further CPAN modules would have sufficed.  However, List::Util didn't
+    gain the 4th function we use ("uniqstr" nee "uniq") until version 1.45.
+
     * Updated all code files (3 lib/*.pm plus 3 t/*.t) with
     "use warnings FATAL => 'all';" to instead have "use warnings;".
     Starting with the 2015 release of Perl 5.22.0 it has been officially

@@ -24,7 +24,7 @@ WriteMakefile(
       'Carp' => '1.01',
       'Carp::Always' => '0.01',
       'ExtUtils::MakeMaker' => '6.17',
-      'List::MoreUtils' => '0.28',
+      'List::Util' => '1.45',
       'Scalar::Util' => '1.13',
       'Test::Deep' => '0.106',
       'Test::More' => '0.47',
@@ -54,8 +54,8 @@ WriteMakefile(
             'perl' => '5.008001', # as MIN_PERL_VERSION no affect META.yml
             'Carp' => '1.01', # bundled with Perl 5.8.1
             'Scalar::Util' => '1.13', # bundled with Perl 5.8.1
-            # These are not bundled with any version of Perl.
-            'List::MoreUtils' => '0.28', # req 0.25_02+ w Perl 5.10.1+
+            # These are bundled with newer versions of Perl only.
+            'List::Util' => '1.45', # bundled with Perl 5.25.1+ (5.26+ when stable)
          },
          resources => {
             homepage => 'http://www.muldis.com/',
