@@ -3715,7 +3715,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2015, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2016, Muldis Data Systems, Inc.
 
 See the LICENSE AND COPYRIGHT of L<Set::Relation> for details.
 

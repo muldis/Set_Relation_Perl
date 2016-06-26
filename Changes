@@ -36,6 +36,8 @@
     has 1 public Git repository, on GitHub.com; the older one on
     utsl.gen.nz appears to have been retired.
 
+    * Incremented all copyright year range-ends to 2016.
+
 2015-01-01
 
     * Set::Relation version 0.13.0 for Perl 5 is released on CPAN as
