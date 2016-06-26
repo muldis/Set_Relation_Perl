@@ -32,9 +32,11 @@
     of Performance" that the independently developed design feature to use
     hashing for performance also had prior art, called a "hash join".
 
-    * Updated the README file to indicate that this distribution now only
-    has 1 public Git repository, on GitHub.com; the older one on
-    utsl.gen.nz appears to have been retired.
+    * (README)  Indicate that this distribution now only has 1 public Git
+    repository, on GitHub.com; the older one on utsl.gen.nz appears to have
+    been retired.  Also indicate that the host domain pugscode.org of the
+    Perl 6 Pugs project that bundled the Perl 6 version has since expired.
+    Made a few other smaller documentation changes.
 
     * Incremented all copyright year range-ends to 2016.
 
