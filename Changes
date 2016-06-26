@@ -2,10 +2,23 @@
                                   Changes
 ---------------------------------------------------------------------------
 
-2015-01-xx
+2016-06-xx
 
     * Set::Relation version 0.13.x for Perl 5 is released on CPAN as
     Set-Relation-0.13.x.tar.gz.
+
+    * Updated all code files (3 lib/*.pm plus 3 t/*.t) with
+    "use warnings FATAL => 'all';" to instead have "use warnings;".
+    Starting with the 2015 release of Perl 5.22.0 it has been officially
+    documented that using "FATAL => 'all'" is a bad practice especially
+    in a CPAN module.  Since Set::Relation has no particularly strong
+    reason to do this (it was just thought to be a good practice before),
+    it no longer will.  See also for more context
+    http://search.cpan.org/dist/perl/lib/warnings.pm#Fatal_Warnings .
+
+    * (V1.pm)  Added a documentation note under "DESCRIPTION" -> "Matters
+    of Performance" that the independently developed design feature to use
+    hashing for performance also had prior art, called a "hash join".
 
     * Updated the README file to indicate that this distribution now only
     has 1 public Git repository, on GitHub.com; the older one on

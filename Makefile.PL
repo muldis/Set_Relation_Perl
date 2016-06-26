@@ -33,7 +33,7 @@ WriteMakefile(
       MIN_PERL_VERSION => '5.008001',
    ),
    OPTIONAL( '6.31',
-      LICENSE => 'lgpl_3',
+      LICENSE => 'lgpl_3_0',
    ),
    OPTIONAL( '6.46',
       # Use META_ADD instead of META_MERGE so that we can remove

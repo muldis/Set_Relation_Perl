@@ -1,7 +1,7 @@
 use 5.008001;
 use utf8;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 ###########################################################################
 ###########################################################################
@@ -3665,6 +3665,12 @@ parameter C<$allow_dup_tuples> on any applicable method of
 C<Set::Relation::V1> will have no effect since uniqueness comparisons for
 tuples are always done eagerly on storage and there is no mechanism to have
 even partial multiset semantics for performance.
+
+I<Note from 2016 May 3:  While the hashing-based algorithm
+Set::Relation::V1 (and V2) uses internally to make relational operations
+perform in O(N)/O(1) rather than O(N*M) was invented by its author in 2009
+for this purpose, in retrospect it turns out that the algorithm had prior
+art and an industry standard name, that being "hash join".>
 
 =head1 INTERFACE
 
