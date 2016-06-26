@@ -2,10 +2,10 @@
                                   Changes
 ---------------------------------------------------------------------------
 
-2016-06-xx
+2016-06-26
 
-    * Set::Relation version 0.13.x for Perl 5 is released on CPAN as
-    Set-Relation-0.13.x.tar.gz.
+    * Set::Relation version 0.13.1 for Perl 5 is released on CPAN as
+    Set-Relation-0.13.1.tar.gz.
 
     * The main purpose of this release is to excise Set::Relation's last
     runtime dependency on a non-Perl-core module, which is List::MoreUtils.

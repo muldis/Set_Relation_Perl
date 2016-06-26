@@ -7,7 +7,7 @@ use warnings;
 ###########################################################################
 
 { package Set::Relation; # role
-    our $VERSION = '0.013000';
+    our $VERSION = '0.013001';
     $VERSION = eval $VERSION;
 } # role Set::Relation
 
@@ -15,7 +15,7 @@ use warnings;
 ###########################################################################
 
 { package Set::Relation::Mutable; # role
-    our $VERSION = '0.013000';
+    our $VERSION = '0.013001';
     $VERSION = eval $VERSION;
     # with Set::Relation
 } # role Set::Relation::Mutable
@@ -37,7 +37,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.13.0 for Perl 5.
+This document describes Set::Relation version 0.13.1 for Perl 5.
 
 =head1 SYNOPSIS
 
