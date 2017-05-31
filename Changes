@@ -2,6 +2,30 @@
                                   Changes
 ---------------------------------------------------------------------------
 
+2017-xx-xx
+
+    * Set::Relation version 0.13.2 for Perl 5 is released on CPAN as
+    Set-Relation-0.13.2.tar.gz.
+
+    * For the first time, as long as your Perl is version 5.26.0 (2017) or
+    newer, each of the 2 Set::Relation classes requires only the Perl core
+    or core modules to run, and nothing else, so usage is trivially easy.
+    If your Perl is an older version, back to 5.8.1 (2003), you need only
+    also install the 1 dual-life CPAN module List::Util version 1.4602+.
+
+    * Increased the explicit dependency on the Perl core module List::Util
+    to 1.4602 (was 0.45), which is the version bundled with Perl 5.26.0;
+    1.45 is the actual minimum dependency, but 1.4602 was chosen so it
+    matched the version with the first stable Perl release to have any
+    suitable version.
+
+    * Reversing a minor change by release 0.13.0, increased the explicit
+    dependency on the Perl core module Test::More to 0.92 (was 0.47), which
+    is the version bundled with Perl 5.10.1; the reason is that the test
+    suite uses the done_testing() feature added by Test::More version 0.88.
+
+    * Incremented all copyright year range-ends to 2017.
+
 2016-06-26
 
     * Set::Relation version 0.13.1 for Perl 5 is released on CPAN as

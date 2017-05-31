@@ -23,7 +23,7 @@ use warnings;
 ###########################################################################
 ###########################################################################
 
-1; # Magic true value required at end of a reusable file's code.
+1;
 __END__
 
 =pod
@@ -1788,7 +1788,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2016, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2017, Muldis Data Systems, Inc.
 
 L<http://www.muldis.com/>
 

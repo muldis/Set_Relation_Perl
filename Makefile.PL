@@ -24,10 +24,10 @@ WriteMakefile(
       'Carp' => '1.01',
       'Carp::Always' => '0.01',
       'ExtUtils::MakeMaker' => '6.17',
-      'List::Util' => '1.45',
+      'List::Util' => '1.4602',
       'Scalar::Util' => '1.13',
       'Test::Deep' => '0.106',
-      'Test::More' => '0.47',
+      'Test::More' => '0.92',
    },
    OPTIONAL( '6.48',
       MIN_PERL_VERSION => '5.008001',
@@ -45,7 +45,8 @@ WriteMakefile(
          },
          build_requires => {
             'ExtUtils::MakeMaker' => '6.17', # bundled with Perl 5.8.1
-            'Test::More' => '0.47', # bundled with Perl 5.8.1
+            # These are bundled with newer versions of Perl only.
+            'Test::More' => '0.92', # bundled with Perl 5.10.1, min 0.88 needed
             # These are not bundled with any version of Perl.
             'Carp::Always' => '0.01', # first released version
             'Test::Deep' => '0.106', # tests req 0.106+ w Perl 5.10.1+
@@ -55,7 +56,7 @@ WriteMakefile(
             'Carp' => '1.01', # bundled with Perl 5.8.1
             'Scalar::Util' => '1.13', # bundled with Perl 5.8.1
             # These are bundled with newer versions of Perl only.
-            'List::Util' => '1.45', # bundled with Perl 5.25.1+ (5.26+ when stable)
+            'List::Util' => '1.4602', # bundled with Perl 5.26.0, min 1.45 needed
          },
          resources => {
             homepage => 'http://www.muldis.com/',

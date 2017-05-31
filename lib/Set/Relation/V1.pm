@@ -3509,7 +3509,7 @@ sub _delete {
 ###########################################################################
 ###########################################################################
 
-1; # Magic true value required at end of a reusable file's code.
+1;
 __END__
 
 =pod
@@ -3694,7 +3694,7 @@ Perl 5.8.1+ and on CPAN:
 L<Carp-ver(1.01..*)|Carp>, L<Scalar::Util-ver(1.13..*)|Scalar::Util>.
 
 It also requires these Perl 5 packages that are available both bundled with
-Perl 5.25.1+ and on CPAN: L<List::Util-ver(1.45..*)|List::Util>.
+Perl 5.26.0+ and on CPAN: L<List::Util-ver(1.4602..*)|List::Util>.
 
 =head1 INCOMPATIBILITIES
 
@@ -3715,7 +3715,7 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2016, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2017, Muldis Data Systems, Inc.
 
 See the LICENSE AND COPYRIGHT of L<Set::Relation> for details.
 
