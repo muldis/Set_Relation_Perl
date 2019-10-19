@@ -2,7 +2,7 @@
                                   Changes
 ---------------------------------------------------------------------------
 
-2017-xx-xx
+2019-xx-xx
 
     * Set::Relation version 0.13.2 for Perl 5 is released on CPAN as
     Set-Relation-0.13.2.tar.gz.
@@ -24,7 +24,11 @@
     is the version bundled with Perl 5.10.1; the reason is that the test
     suite uses the done_testing() feature added by Test::More version 0.88.
 
-    * Incremented all copyright year range-ends to 2017.
+    * Set::Relation is now released under the terms of the Artistic
+    License version 2 rather than the GNU Lesser General Public License
+    (LGPL) version 3+.
+
+    * Incremented all copyright year range-ends to 2019.
 
 2016-06-26
 

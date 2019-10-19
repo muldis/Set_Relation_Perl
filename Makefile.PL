@@ -33,7 +33,7 @@ WriteMakefile(
       MIN_PERL_VERSION => '5.008001',
    ),
    OPTIONAL( '6.31',
-      LICENSE => 'lgpl_3_0',
+      LICENSE => 'artistic_2',
    ),
    OPTIONAL( '6.46',
       # Use META_ADD instead of META_MERGE so that we can remove
@@ -60,7 +60,7 @@ WriteMakefile(
          },
          resources => {
             homepage => 'http://www.muldis.com/',
-            license => 'http://www.fsf.org/licensing/licenses/lgpl.html',
+            license => 'https://www.perlfoundation.org/artistic-license-20.html',
             MailingList => 'http://mm.darrenduncan.net/mailman/listinfo',
             repository => 'http://github.com/muldis/Set-Relation',
          },

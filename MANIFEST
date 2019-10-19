@@ -3,8 +3,7 @@ INSTALL
 lib/Set/Relation.pm
 lib/Set/Relation/V1.pm
 lib/Set/Relation/V2.pm
-LICENSE/GPL
-LICENSE/LGPL
+LICENSE/artistic-2_0.txt
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP

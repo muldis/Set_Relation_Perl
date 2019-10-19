@@ -1788,32 +1788,23 @@ Darren Duncan (C<darren@DarrenDuncan.net>)
 
 =head1 LICENSE AND COPYRIGHT
 
-Set::Relation is Copyright © 2006-2017, Muldis Data Systems, Inc.
+Set::Relation is Copyright © 2006-2019, Muldis Data Systems, Inc.
 
-L<http://www.muldis.com/>
+L<https://muldis.com>
 
-Set::Relation is free software; you can redistribute it and/or modify it
-under the terms of the GNU Lesser General Public License (LGPL) as
-published by the Free Software Foundation (L<http://www.fsf.org/>); either
-version 3 of the License, or (at your option) any later version.  You
-should have received a copy of the LGPL as part of the Set::Relation
-distribution, in the files named "LICENSE/LGPL" and "LICENSE/GPL" (the
-LGPLv3 is defined as the terms of the GPLv3 plus extra permissions); if
-not, see L<http://www.gnu.org/licenses/>.
-
-If it is not feasible for you to employ Set::Relation subject to the terms
-of the LGPL, then the copyright holder of Set::Relation can provide you a
-customized proprietary license, often at no cost, so that it is still
-possible for you to employ Set::Relation to meet your needs.
+Set::Relation is free software; you can redistribute it and/or modify
+it under the terms of the Artistic License version 2 (AL2) as published by
+the Perl Foundation (L<https://www.perlfoundation.org>).  You should have
+received a copy of the AL2 as part of the Set::Relation distribution,
+in the file named "LICENSE/artistic-2_0.txt"; if not, see
+L<https://www.perlfoundation.org/artistic-license-20.html>.
 
 Any versions of Set::Relation that you modify and distribute must carry
 prominent notices stating that you changed the files and the date of any
 changes, in addition to preserving this original copyright notice and other
-credits.  Set::Relation is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  However, for an
-additional fee, the copyright holders of Set::Relation can sell you a
-warranty for it.
+credits.  Set::Relation is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 While it is by no means required, the copyright holder of Set::Relation
 would appreciate being informed any time you create a modified version of
