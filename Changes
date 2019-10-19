@@ -7,17 +7,28 @@
     * Set::Relation version 0.13.2 for Perl 5 is released on CPAN as
     Set-Relation-0.13.2.tar.gz.
 
+    * Lowered the declared minimum Perl version dependency to 5.8.0 (2002)
+    from 5.8.1 (2003) since the prior .1 requirement seemed rather
+    arbitrary and all 5.8.z and newer should suffice.
+
+    * The declared minimum version dependencies for some Perl-bundled
+    modules were lowered to those shipped with 5.8.0 from those with 5.8.1:
+    ExtUtils::MakeMaker is now 6.03 from 6.17.
+
     * For the first time, as long as your Perl is version 5.26.0 (2017) or
     newer, each of the 2 Set::Relation classes requires only the Perl core
-    or core modules to run, and nothing else, so usage is trivially easy.
+    and core modules to run, and nothing else, so usage is trivially easy.
     If your Perl is an older version, back to 5.8.1 (2003), you need only
     also install the 1 dual-life CPAN module List::Util version 1.4602+.
+    If your Perl is instead version 5.8.0 (2002), you need to install that
+    plus the 1 dual-life CPAN module Scalar::Util version 1.13+.
 
     * Increased the explicit dependency on the Perl core module List::Util
     to 1.4602 (was 0.45), which is the version bundled with Perl 5.26.0;
     1.45 is the actual minimum dependency, but 1.4602 was chosen so it
     matched the version with the first stable Perl release to have any
-    suitable version.
+    suitable version.  Similarly for Scalar::Util, 1.09 is the actual
+    minimum dependency, but 1.13 matches what was bundled with Perl 5.8.1.
 
     * Reversing a minor change by release 0.13.0, increased the explicit
     dependency on the Perl core module Test::More to 0.92 (was 0.47), which

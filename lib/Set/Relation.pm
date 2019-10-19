@@ -1,4 +1,4 @@
-use 5.008001;
+use 5.008000;
 use utf8;
 use strict;
 use warnings;
@@ -1748,7 +1748,7 @@ I<This documentation is pending.>
 
 =head1 DEPENDENCIES
 
-This file requires any version of Perl 5.x.y that is at least 5.8.1.
+This file requires any version of Perl 5.x.y that is at least 5.8.0.
 
 =head1 INCOMPATIBILITIES
 

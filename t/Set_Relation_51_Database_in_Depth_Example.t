@@ -3,7 +3,7 @@
 # This is trying to use the running example data from
 # "Database in Depth" by C.J. Date.
 
-use 5.008001;
+use 5.008000;
 use utf8;
 use strict;
 use warnings;

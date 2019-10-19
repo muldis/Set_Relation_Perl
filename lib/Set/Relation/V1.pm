@@ -1,4 +1,4 @@
-use 5.008001;
+use 5.008000;
 use utf8;
 use strict;
 use warnings;
@@ -3687,11 +3687,13 @@ I<This documentation is pending.>
 
 =head1 DEPENDENCIES
 
-This file requires any version of Perl 5.x.y that is at least 5.8.1.
+This file requires any version of Perl 5.x.y that is at least 5.8.0.
 
 It also requires these Perl 5 packages that are available both bundled with
-Perl 5.8.1+ and on CPAN:
-L<Carp-ver(1.01..*)|Carp>, L<Scalar::Util-ver(1.13..*)|Scalar::Util>.
+Perl 5.8.0+ and on CPAN: L<Carp-ver(1.01..*)|Carp>.
+
+It also requires these Perl 5 packages that are available both bundled with
+Perl 5.8.1+ and on CPAN: L<Scalar::Util-ver(1.13..*)|Scalar::Util>.
 
 It also requires these Perl 5 packages that are available both bundled with
 Perl 5.26.0+ and on CPAN: L<List::Util-ver(1.4602..*)|List::Util>.
