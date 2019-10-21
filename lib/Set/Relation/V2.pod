@@ -9,7 +9,7 @@ Bundled second implementation of Set::Relation role
 
 =head1 VERSION
 
-This document describes Set::Relation::V2 version 0.13.1 for Perl.
+This document describes Set::Relation::V2 version 0.13.2 for Perl.
 
 =head1 SYNOPSIS
 
