@@ -202,7 +202,7 @@ sub BUILD {
     my ($self, $args) = @_;
     my ($members, $keys) = @{$args}{'members', 'keys'};
 
-    # Note, $members may be in all of the same formats as a HDMD_Perl5_STD
+    # Note, $members may be in all of the same formats as a HDMD_Perl_STD
     # Relation value literal payload, but with a few extra trivial options.
 
     if (!defined $members) {
@@ -3523,7 +3523,7 @@ Bundled original implementation of Set::Relation role
 
 =head1 VERSION
 
-This document describes Set::Relation::V1 version 0.13.1 for Perl 5.
+This document describes Set::Relation::V1 version 0.13.1 for Perl.
 
 =head1 SYNOPSIS
 
@@ -3689,13 +3689,13 @@ I<This documentation is pending.>
 
 This file requires any version of Perl 5.x.y that is at least 5.8.0.
 
-It also requires these Perl 5 packages that are available both bundled with
+It also requires these Perl packages that are available both bundled with
 Perl 5.8.0+ and on CPAN: L<Carp-ver(1.01..*)|Carp>.
 
-It also requires these Perl 5 packages that are available both bundled with
+It also requires these Perl packages that are available both bundled with
 Perl 5.8.1+ and on CPAN: L<Scalar::Util-ver(1.13..*)|Scalar::Util>.
 
-It also requires these Perl 5 packages that are available both bundled with
+It also requires these Perl packages that are available both bundled with
 Perl 5.26.0+ and on CPAN: L<List::Util-ver(1.4602..*)|List::Util>.
 
 =head1 INCOMPATIBILITIES

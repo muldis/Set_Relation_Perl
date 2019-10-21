@@ -59,10 +59,10 @@ WriteMakefile(
             'List::Util' => '1.4602', # bundled with Perl 5.26.0, min 1.45 needed
          },
          resources => {
-            homepage => 'http://www.muldis.com/',
+            homepage => 'https://muldis.com',
             license => 'https://www.perlfoundation.org/artistic-license-20.html',
             MailingList => 'http://mm.darrenduncan.net/mailman/listinfo',
-            repository => 'http://github.com/muldis/Set-Relation',
+            repository => 'https://github.com/muldis/Set-Relation',
          },
       },
    ),

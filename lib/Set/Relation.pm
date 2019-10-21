@@ -37,7 +37,7 @@ Relation data type for Perl
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.13.1 for Perl 5.
+This document describes Set::Relation version 0.13.1 for Perl.
 
 =head1 SYNOPSIS
 
@@ -82,11 +82,11 @@ without having to employ a separate DBMS, and without having to employ a
 whole separate sub-/language (such as L<Muldis::D::RefEng>
 does).  Rather, it is integrated a lot more into the Perl way of doing
 things, and you use it much like a Perl array or hash, or like some other
-third-party Set:: modules available for Perl.  This module defines a Perl 5
+third-party Set:: modules available for Perl.  This module defines a Perl
 object role that represents a L<Muldis D|Muldis::D> relation value,
 whose methods implement all the Muldis D relational operators.  Or more
 specifically, it defines several such roles (immutable and mutable
-variants) and there are several bundled implementing Perl 5 classes.
+variants) and there are several bundled implementing Perl classes.
 
 B<WARNING:  This module is still experimental and may change in
 incompatible ways between releases.  While the module is considered feature
@@ -228,7 +228,7 @@ Array and Hash types, including 'map' and 'grep' operations.  It is useful
 when you want to do miscellaneous combining or filtering of lists of data
 against other lists, particularly multi-dimensional ones, or helping in
 summarizing lists of data for reports.  Maybe helping with some tasks that
-are easier in Perl 6 than in Perl 5, when you're using Perl 5.
+are easier in Raku than in Perl, when you're using Perl.
 
 =back
 
@@ -352,8 +352,8 @@ If you want a Hash-ref/tuple or Set::Relation object to be treated as a
 reference type, then pass it around using another layer of reference
 indirection, such as by adding a scalar-ref up front.
 
-I<Note: Were this Perl 6, we would basically just use the standard C<WHICH>
-method or C<===> comparison operator to determine identity; but Perl 5
+I<Note: Were this Raku, we would basically just use the standard C<WHICH>
+method or C<===> comparison operator to determine identity; but Perl
 doesn't have that so we do the aforementioned instead.>
 
 =head2 Matters of Correctness
@@ -482,9 +482,9 @@ using the multi-dimensional Perl data structure given in its C<$members>
 argument, which defines the member attributes and tuples of the new
 relation.  The allowed formats of a C<$members> argument mostly are those
 defined by the Muldis D language dialect
-L<HDMD_Perl5_STD|Muldis::D::Dialect::HDMD_Perl5_STD> for a C<Relation>
+L<HDMD_Perl_STD|Muldis::D::Dialect::HDMD_Perl_STD> for a C<Relation>
 value literal node payload, except that attribute values are just ordinary
-Perl values and not HDMD_Perl5_STD value literal nodes.  Examples are:
+Perl values and not HDMD_Perl_STD value literal nodes.  Examples are:
 
     sub relation { return $sr_class_name->new( @_ ); }
 
@@ -621,7 +621,7 @@ of which are encoded and sorted in such a way that any 2 Set::Relation
 values having the same attributes and tuples are guaranteed to have the
 same value identity, and any 2 with different attributes or tuples are
 guaranteed to have different ones.  This method is analogous to the special
-C<WHICH> method of Perl 6 and lets you treat Set::Relation as a "value
+C<WHICH> method of Raku and lets you treat Set::Relation as a "value
 type".  That all being said, currently the details of the serialization
 format are implementation dependent, and it is assumed that an application
 will exclusively use a single Set::Relation implementation in any
@@ -1762,23 +1762,23 @@ mainly based on.  The Muldis D language in turn has as a primary influence
 the work of Chris Date (C.J. Date) and Hugh Darwen whose home website is
 L<http://www.thethirdmanifesto.com/>.
 
-These Perl 5 packages that are in the current distribution are classes that
+These Perl packages that are in the current distribution are classes that
 implement the Set::Relation roles: L<Set::Relation::V1>,
 L<Set::Relation::V2>.
 
-These other Perl 6 packages: L<Muldis::D::RefEng>, L<Set>.
+These other Raku packages: L<Muldis::D::RefEng>, L<Set>.
 
-These other Perl 5 packages: L<Muldis::D::RefEng>, L<Set::Object>,
+These other Perl packages: L<Muldis::D::RefEng>, L<Set::Object>,
 L<Set::Scalar>.
 
 =head1 BUGS AND LIMITATIONS
 
-The Set::Relation library for Perl 5 does not make explicit attempts in
+The Set::Relation library for Perl does not make explicit attempts in
 code to enforce privacy of the library's internals, besides not documenting
-them as part of the public API.  (The Set::Relation library for Perl 6 is
+them as part of the public API.  (The Set::Relation library for Raku is
 different.)  That said, you should still respect that privacy and just use
 the public API that Set::Relation provides.  If you bypass the public API
-anyway, as Perl 5 allows, you do so at your own peril.
+anyway, as Perl allows, you do so at your own peril.
 
 I<This documentation is pending.>
 
@@ -1875,6 +1875,6 @@ intended, but not yet started.
 
 Alternately, you can purchase more advanced commercial support for various
 Muldis D implementations, particularly Muldis::D::RefEng, from its author by
-way of Muldis Data Systems; see L<http://www.muldis.com/> for details.
+way of Muldis Data Systems; see L<https://muldis.com> for details.
 
 =cut

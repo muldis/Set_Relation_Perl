@@ -4,8 +4,19 @@
 
 2019-xx-xx
 
-    * Set::Relation version 0.13.2 for Perl 5 is released on CPAN as
+    * Set::Relation version 0.13.2 for Perl is released on CPAN as
     Set-Relation-0.13.2.tar.gz.
+
+    * Between the prior release and this one, the programming language
+    formerly known as "Perl 6" was renamed to "Raku".  As such, all
+    documentation that refers to that language was updated to use its new
+    name, and all language that referred to "Perl 5" now simply refers to
+    "Perl" because "Perl" now unambiguously means Perl 5.  The only
+    exception to these changes is in documentation about history, such as
+    all prior entries in this Changes file.
+
+    * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
+    obsolete Muldis D dialect HDMD_Perl5_STD was renamed to HDMD_Perl_STD.
 
     * Lowered the declared minimum Perl version dependency to 5.8.0 (2002)
     from 5.8.1 (2003) since the prior .1 requirement seemed rather
@@ -38,6 +49,9 @@
     * Set::Relation is now released under the terms of the Artistic
     License version 2 rather than the GNU Lesser General Public License
     (LGPL) version 3+.
+
+    * Updated all documentation to use an updated canonical Muldis Data
+    Systems url of https://muldis.com rather than several http:// variants.
 
     * Incremented all copyright year range-ends to 2019.
 
