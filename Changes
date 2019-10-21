@@ -7,6 +7,11 @@
     * Set::Relation version 0.13.2 for Perl is released on CPAN as
     Set-Relation-0.13.2.tar.gz.
 
+    * Split the 3 files lib/Set/Relation[|/V[1|2]].pm into themselves plus
+    the 3 new files lib/Set/Relation[|/V[1|2]].pod or in other words split
+    every main file in 2.  As such, all of the lib/*.pm files now only
+    contain Perl code, and all POD now lives in lib/*.pod files.
+
     * Between the prior release and this one, the programming language
     formerly known as "Perl 6" was renamed to "Raku".  As such, all
     documentation that refers to that language was updated to use its new
@@ -15,7 +20,7 @@
     exception to these changes is in documentation about history, such as
     all prior entries in this Changes file.
 
-    * (Relation.pm, V2.pm, V1.pm)  Minor docs update to reflect that the
+    * (Relation.pod, V2.pm, V1.pm)  Minor docs update to reflect that the
     obsolete Muldis D dialect HDMD_Perl5_STD was renamed to HDMD_Perl_STD.
 
     * Lowered the declared minimum Perl version dependency to 5.8.0 (2002)
