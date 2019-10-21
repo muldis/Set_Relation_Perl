@@ -4,8 +4,7 @@
 
 =head1 NAME
 
-Set::Relation -
-Relation data type for Perl
+Set::Relation - Relation data type for Perl
 
 =head1 VERSION
 
