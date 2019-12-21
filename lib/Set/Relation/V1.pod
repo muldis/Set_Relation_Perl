@@ -4,8 +4,7 @@
 
 =head1 NAME
 
-Set::Relation::V1 -
-Bundled original implementation of Set::Relation role
+Set::Relation::V1 - Bundled original implementation of Set::Relation role
 
 =head1 VERSION
 
