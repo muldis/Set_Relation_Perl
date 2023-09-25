@@ -14,7 +14,7 @@ sub OPTIONAL {
 WriteMakefile(
    NAME => 'Set::Relation',
    VERSION => '0.13.2',
-   ABSTRACT => 'Relation data type for Perl',
+   ABSTRACT => 'A relation data type',
    AUTHOR => 'Darren Duncan <darren@DarrenDuncan.net>',
    PREREQ_PM => {
       # This list is a copy of "META_ADD:[configure_|build_|]requires"
@@ -62,7 +62,7 @@ WriteMakefile(
             homepage => 'https://muldis.com',
             license => 'https://www.perlfoundation.org/artistic-license-20.html',
             MailingList => 'http://mm.darrenduncan.net/mailman/listinfo',
-            repository => 'https://github.com/muldis/Set-Relation',
+            repository => 'https://github.com/muldis/Set_Relation_Perl',
          },
       },
    ),

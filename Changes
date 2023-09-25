@@ -11,7 +11,11 @@
     For every pod file, tweak its NAME section so the abstract
     is on the same line as the package name rather than the next line.
 
-    * TODO: meta_yml_has_provides
+    * Update main module name/abstract to "A relation data type"
+    from "Relation data type for Perl".
+
+    * Update all references to GitHub to use the updated project url
+    "https://github.com/muldis/Set_Relation_Perl".
 
 2019-10-20
 
