@@ -8,7 +8,7 @@ Set::Relation - A relation data type
 
 =head1 VERSION
 
-This document describes Set::Relation version 0.13.2 for Perl.
+This document describes Set::Relation version 0.13.3 for Perl.
 
 =head1 SYNOPSIS
 
