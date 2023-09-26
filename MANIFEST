@@ -1,5 +1,4 @@
 Changes
-INSTALL
 lib/Set/Relation.pm
 lib/Set/Relation.pod
 lib/Set/Relation/V1.pm
@@ -14,4 +13,3 @@ README
 t/Set_Relation_00_Compile.t
 t/Set_Relation_50_Synopsis.t
 t/Set_Relation_51_Database_in_Depth_Example.t
-TODO

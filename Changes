@@ -11,11 +11,18 @@
     For every pod file, tweak its NAME section so the abstract
     is on the same line as the package name rather than the next line.
 
-    * Update main module name/abstract to "A relation data type"
+    * Update main module name/abstract text to "A relation data type"
     from "Relation data type for Perl".
 
     * Update all references to GitHub to use the updated project url
     "https://github.com/muldis/Set_Relation_Perl".
+
+    * Remove entire file "INSTALL" as it is more noise than useful.
+    Set::Relation is installed like any other pure-Perl CPAN module
+    and has no special instructions.  The ones in this file were archaic.
+
+    * Remove entire file "TODO" as it is more noise than useful.
+    This module will be entirely replaced by something else eventually.
 
 2019-10-20
 
