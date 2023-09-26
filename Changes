@@ -32,6 +32,9 @@
     * Remove all references to official Mailman mailing lists for support
     and discussion as these no longer exist.
 
+    * Mostly rewrite the "README" file, removing almost all old content
+    and correcting what is left.
+
     * Remove entire file "INSTALL" as it is more noise than useful.
     Set::Relation is installed like any other pure-Perl CPAN module
     and has no special instructions.  The ones in this file were archaic.
