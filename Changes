@@ -17,6 +17,15 @@
     * Update all references to GitHub to use the updated project url
     "https://github.com/muldis/Set_Relation_Perl".
 
+    * Replaced any references to the non-existent CPAN distribution/package
+    name Muldis::D::RefEng with the title "Muldis Data Engine Reference"
+    so that these don't constitute broken external links.
+
+    * Replaced any references to the non-existent CPAN distribution/package
+    name Muldis::D with the title "Muldis Data Language" so that these
+    don't constitute broken external links.  Likewise replace any
+    references to the "Muldis D" language with the same.
+
     * Remove all references to a Raku version of Set::Relation developed in
     parallel with the Perl version; we only talk about the Perl version here.
 

@@ -50,12 +50,12 @@ I<This documentation is pending.>
 Set::Relation provides a simple Perl-native facility for an application to
 organize and process information using the relational model of data,
 without having to employ a separate DBMS, and without having to employ a
-whole separate sub-/language (such as L<Muldis::D::RefEng>
+whole separate sub-/language (such as B<Muldis Data Engine Reference>
 does).  Rather, it is integrated a lot more into the Perl way of doing
 things, and you use it much like a Perl array or hash, or like some other
 third-party Set:: modules available for Perl.  This module defines a Perl
-object role that represents a L<Muldis D|Muldis::D> relation value,
-whose methods implement all the Muldis D relational operators.  Or more
+object role that represents a B<Muldis Data Language> relation value,
+whose methods implement all the B<Muldis Data Language> relational operators.  Or more
 specifically, it defines several such roles (immutable and mutable
 variants) and there are several bundled implementing Perl classes.
 
@@ -72,8 +72,8 @@ I suggest looking at the test suites of other Set:: modules as well as
 various database related modules as inspiration or a source for copying.>
 
 B<That being said, Set::Relation is several years out of date on its
-tracking of the Muldis D language, so there is limited value in spending a
-lot of time on it before Muldis::D::RefEng has nailed the spec down.>
+tracking of the B<Muldis Data Language>, so there is limited value in spending a
+lot of time on it before B<Muldis Data Engine Reference> has nailed the spec down.>
 
 Loosely speaking, a Set::Relation object is a wrapper over a set of hash
 refs, where all the hash refs in the set have the same number of elements
@@ -206,27 +206,27 @@ Of course, like any generic tool, Set::Relation should be widely applicable
 in many different situations.
 
 Now, another situation where you may not want to use Set::Relation is when
-its sibling project L<Muldis::D::RefEng> would serve you
+its sibling project B<Muldis Data Engine Reference> would serve you
 better.  In contrast to Set::Relation, which is standalone and intended to
-integrate closely with Perl, Muldis::D::RefEng implements a whole programming
-language distinct from Perl, L<Muldis D|Muldis::D>, and presents a superior
+integrate closely with Perl, B<Muldis Data Engine Reference> implements a whole programming
+language distinct from Perl, B<Muldis Data Language>, and presents a superior
 environment at large for working with the relational model of data; you use
 it sort of like how you use L<DBI> to talk to a SQL DBMS, as a separate
-thing walled off from Perl.  The benefits of using Muldis::D::RefEng over
+thing walled off from Perl.  The benefits of using B<Muldis Data Engine Reference> over
 Set::Relation are multiple, including much better performance and
 scalability, and that it can directly persist data as you'd expect a DBMS
 to do, as well as provide easy access to many other relational model
 features like stronger typing and arbitrary database constraints, and
 nested transactions, as well as access to full powered DBMS engines like
 PostgreSQL and Oracle and SQLite (though you don't have to use those and
-Muldis::D::RefEng can be used purely implemented in Perl).
+B<Muldis Data Engine Reference> can be used purely implemented in Perl).
 
 I<That all said, Set::Relation is actually implemented and works today,
-while Muldis::D::RefEng is still under construction and you can't use it yet.>
+while B<Muldis Data Engine Reference> is still under construction and you can't use it yet.>
 
 That brings out another important reason why Set::Relation exists now; it
-also serves as a proof of concept for a main part of Muldis D and
-Muldis::D::RefEng, or for a so-called "truly relational DBMSs" in general.
+also serves as a proof of concept for a main part of B<Muldis Data Language> and
+B<Muldis Data Engine Reference>, or for a so-called "truly relational DBMSs" in general.
 It demonstrates ideal features and behaviour for relational operators, in a
 functioning form that users can experiment with right now.  Set::Relation
 is also meant to serve as inspiration for similar projects, and better
@@ -246,7 +246,7 @@ measure their effect and know we didn't break the behaviour.  Also if the
 behaviour/API is nailed first, then new benchmarks we make along the way
 will be backwards compatible with previous baseline versions.  But keep in
 mind that only some kinds of improvements are suitable; some others may be
-inordinately complex and may better be relegated to Muldis::D::RefEng or other
+inordinately complex and may better be relegated to B<Muldis Data Engine Reference> or other
 overlapping solutions instead; the distinction can be discussed
 case-by-case as solutions are proposed.>
 
@@ -447,8 +447,8 @@ object, representing a single relation value, that is initialized primarily
 using the multi-dimensional Perl data structure given in its C<$members>
 argument, which defines the member attributes and tuples of the new
 relation.  The allowed formats of a C<$members> argument mostly are those
-defined by the Muldis D language dialect
-L<HDMD_Perl_STD|Muldis::D::Dialect::HDMD_Perl_STD> for a C<Relation>
+defined by the B<Muldis Data Language> dialect
+L<HDMD_Perl_STD> for a C<Relation>
 value literal node payload, except that attribute values are just ordinary
 Perl values and not HDMD_Perl_STD value literal nodes.  Examples are:
 
@@ -1721,9 +1721,9 @@ None reported.
 
 =head1 SEE ALSO
 
-The separate all-documentation distribution L<Muldis::D> is the formal
-definition of the Muldis D language, a portion of which Set::Relation is
-mainly based on.  The Muldis D language in turn has as a primary influence
+The separate all-documentation distribution B<Muldis Data Language> is the formal
+definition of the B<Muldis Data Language>, a portion of which Set::Relation is
+mainly based on.  The B<Muldis Data Language> in turn has as a primary influence
 the work of Chris Date (C.J. Date) and Hugh Darwen whose home website is
 L<http://www.thethirdmanifesto.com/>.
 
@@ -1731,8 +1731,7 @@ These Perl packages that are in the current distribution are classes that
 implement the Set::Relation roles: L<Set::Relation::V1>,
 L<Set::Relation::V2>.
 
-These other Perl packages: L<Muldis::D::RefEng>, L<Set::Object>,
-L<Set::Scalar>.
+These other Perl packages: L<Set::Object>, L<Set::Scalar>.
 
 =head1 BUGS AND LIMITATIONS
 
