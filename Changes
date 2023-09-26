@@ -17,6 +17,9 @@
     * Update all references to GitHub to use the updated project url
     "https://github.com/muldis/Set_Relation_Perl".
 
+    * Remove all references to a Raku version of Set::Relation developed in
+    parallel with the Perl version; we only talk about the Perl version here.
+
     * Remove all references to official Mailman mailing lists for support
     and discussion as these no longer exist.
 

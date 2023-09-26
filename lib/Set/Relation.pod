@@ -198,8 +198,7 @@ Set::Relation is complementary to the things you do with Perl's built-in
 Array and Hash types, including 'map' and 'grep' operations.  It is useful
 when you want to do miscellaneous combining or filtering of lists of data
 against other lists, particularly multi-dimensional ones, or helping in
-summarizing lists of data for reports.  Maybe helping with some tasks that
-are easier in Raku than in Perl, when you're using Perl.
+summarizing lists of data for reports.
 
 =back
 
@@ -322,10 +321,6 @@ convention can be devised like Set::Relation's own 'which' convention)>.
 If you want a Hash-ref/tuple or Set::Relation object to be treated as a
 reference type, then pass it around using another layer of reference
 indirection, such as by adding a scalar-ref up front.
-
-I<Note: Were this Raku, we would basically just use the standard C<WHICH>
-method or C<===> comparison operator to determine identity; but Perl
-doesn't have that so we do the aforementioned instead.>
 
 =head2 Matters of Correctness
 
@@ -591,8 +586,7 @@ serialization of all the invocant's attribute names and tuple values, all
 of which are encoded and sorted in such a way that any 2 Set::Relation
 values having the same attributes and tuples are guaranteed to have the
 same value identity, and any 2 with different attributes or tuples are
-guaranteed to have different ones.  This method is analogous to the special
-C<WHICH> method of Raku and lets you treat Set::Relation as a "value
+guaranteed to have different ones.  This method lets you treat Set::Relation as a "value
 type".  That all being said, currently the details of the serialization
 format are implementation dependent, and it is assumed that an application
 will exclusively use a single Set::Relation implementation in any
@@ -1737,8 +1731,6 @@ These Perl packages that are in the current distribution are classes that
 implement the Set::Relation roles: L<Set::Relation::V1>,
 L<Set::Relation::V2>.
 
-These other Raku packages: L<Muldis::D::RefEng>, L<Set>.
-
 These other Perl packages: L<Muldis::D::RefEng>, L<Set::Object>,
 L<Set::Scalar>.
 
@@ -1746,8 +1738,8 @@ L<Set::Scalar>.
 
 The Set::Relation library for Perl does not make explicit attempts in
 code to enforce privacy of the library's internals, besides not documenting
-them as part of the public API.  (The Set::Relation library for Raku is
-different.)  That said, you should still respect that privacy and just use
+them as part of the public API.
+That said, you should still respect that privacy and just use
 the public API that Set::Relation provides.  If you bypass the public API
 anyway, as Perl allows, you do so at your own peril.
 

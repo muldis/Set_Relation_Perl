@@ -6,28 +6,8 @@ by Darren Duncan <darren@DarrenDuncan.net>
 
 PREFACE
 
-This distribution features the Perl or Raku (depending on which copy of this
-README file you are reading) module named Set::Relation (Relation data type
-for Perl) and its support structure.
-
-Set::Relation has 2 co-developed versions, which are written in native
-Perl and Raku respectively, and which are distributed separately from
-each other.  But while the 2 versions would be similar, they are explicitly
-not intended to be drop-in substitutable for each other, as each would have
-some API differences that optimizes it for its host language.  The actual
-Muldis D language specification document will be identical for both,
-though.
-
-The Perl version is intended to be the primary version during the present
-time, as Perl itself is stable, production-ready, and commonly used now.
-Eventually the Raku version is expected to supercede it, once Raku
-itself has implementations that are production-ready and in common use.
-
-That all being said, development of the Raku version has been temporarily
-suspended, to focus resources on the Perl version, and therefore the Raku
-version is likely out of date by the time you read this.  In the future,
-the more-advanced Perl version will be translated to Raku again, either
-to re-establish their parallel development, or just to provide snapshots.
+This distribution features the Perl module named Set::Relation (a relation
+data type) and its support structure.
 
 Read below for how to get support or keep up to date.
 
@@ -58,8 +38,6 @@ For those of you that are interested in the bleeding edge of development, I
 have all parts of the Set::Relation project in one or more public
 repositories.  The Perl Set::Relation project is in a Git repository
 at "https://github.com/muldis/Set_Relation_Perl".
-The Raku Set::Relation project used to be in a Subversion repository for
-the Raku Pugs project but the host domain pugscode.org has since expired.
 
 You can download slightly older versions of all of my modules from the
 public CPAN archives at "http://www.cpan.org/authors/id/D/DU/DUNCAND/", or
