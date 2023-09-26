@@ -61,7 +61,6 @@ WriteMakefile(
          resources => {
             homepage => 'https://muldis.com',
             license => 'https://www.perlfoundation.org/artistic-license-20.html',
-            MailingList => 'http://mm.darrenduncan.net/mailman/listinfo',
             repository => 'https://github.com/muldis/Set_Relation_Perl',
          },
       },
