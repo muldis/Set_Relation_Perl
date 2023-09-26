@@ -32,6 +32,9 @@
     * Remove all references to official Mailman mailing lists for support
     and discussion as these no longer exist.
 
+    * Update the main module description text to better reflect the current
+    and intended maintenance plans for the project.
+
     * Mostly rewrite the "README" file, removing almost all old content
     and correcting what is left.
 
