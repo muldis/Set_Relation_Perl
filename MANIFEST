@@ -8,7 +8,6 @@ lib/Set/Relation/V2.pod
 LICENSE/artistic-2_0.txt
 Makefile.PL
 MANIFEST
-MANIFEST.SKIP
 README
 t/Set_Relation_00_Compile.t
 t/Set_Relation_50_Synopsis.t
